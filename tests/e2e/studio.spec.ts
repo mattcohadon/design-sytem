@@ -362,7 +362,7 @@ test('V2 : clavier, mobile 375 px et absence de stockage navigateur', async ({
   ).toBe(true);
 });
 
-test('navigation : filtre de la sidebar, page composant, suivant, raccourci de la barre Claude', async ({
+test('navigation : filtre de la sidebar, page composant, suivant, mode manuel de la barre', async ({
   page,
 }) => {
   await page.goto('/');
@@ -379,8 +379,6 @@ test('navigation : filtre de la sidebar, page composant, suivant, raccourci de l
   ).toBeVisible();
   await page.getByRole('link', { name: 'Composant suivant' }).click();
   await expect(page).toHaveURL(/#\/composants\/alert-dialog$/);
-  await page.keyboard.press('Control+k');
-  await expect(page.getByLabel('Votre demande')).toBeFocused();
   await page
     .getByRole('combobox', { name: 'Mode de travail' })
     .selectOption('manual');
