@@ -153,7 +153,8 @@ Inspirez-vous des deux skills fournis, sans copier vos identifiants ou vos conve
 | Catalogue SortUI (66 composants, 7 blocs), clair / sombre           | **TESTED**, e2e Chromium macOS (10/10) + revue manuelle des 73 démos                               |
 | Import/export JSON local                                            | **TESTED**, API + navigateur                                                                       |
 | Chat Codex, JSON proposé avant acceptation                          | **TESTED**, CLI 0.164.0, compte enseignant disponible pendant la qualification ; quota non garanti |
-| Claude Code / Gemini dans l’application                             | **NOT IMPLEMENTED**, adaptateurs indisponibles et contrat documenté                                |
+| Claude Code dans l’application, propositions sur tous les tokens    | **TESTED**, macOS, CLI 2.1.311 connecté + tests unitaires (faux CLI)                               |
+| Gemini dans l’application                                           | **NOT IMPLEMENTED**, adaptateur indisponible et contrat documenté                                  |
 | Figma MCP et synchronisation                                        | **NOT IMPLEMENTED**, statut non connecté, contrat et procédure future documentés                   |
 | Skills et harness personnalisable                                   | **IMPLEMENTED**, structure et liens vérifiés ; pas une validation des choix d’un étudiant          |
 | Qualification automatisée Windows / macOS                           | **TESTED en CI** pour API, navigateur et contrôleur ; **PARTIAL** pour Finder/WSH natifs           |

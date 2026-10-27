@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { Store } from '../app/server/store.js';
 import { tokensSchema } from '../app/shared/model.js';
 import { createStudioServer } from '../app/server/http.js';
+import type { AgentAdapter } from '../connectors/agents/types.js';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const seed = tokensSchema.parse(
   JSON.parse(
@@ -17,9 +18,20 @@ const seed = tokensSchema.parse(
     ),
   ),
 );
+// Jamais le vrai CLI en test : ni réseau, ni quota.
+const offlineClaude = {
+  id: 'claude',
+  async status() {
+    return { available: false, detail: 'Non authentifié (simulation)' };
+  },
+  async reply(): Promise<never> {
+    throw new Error('Claude Code indisponible : authentification nécessaire.');
+  },
+};
 async function fixture(
   t: { after: (fn: () => Promise<void>) => void },
   dev = false,
+  claude: AgentAdapter = offlineClaude,
 ) {
   const directory = await mkdtemp(path.join(tmpdir(), 'ds-http-'));
   const store = new Store(directory, seed);
@@ -28,6 +40,7 @@ async function fixture(
     root,
     store,
     dev,
+    claude,
     agent: {
       id: 'codex',
       async status() {
@@ -217,6 +230,7 @@ test('mode manuel disponible immédiatement même si la détection IA ne répond
   const app = await createStudioServer({
     root,
     store,
+    claude: offlineClaude,
     agent: {
       id: 'codex',
       async status() {
@@ -238,4 +252,37 @@ test('mode manuel disponible immédiatement même si la détection IA ne répond
   });
   assert.equal(response.status, 200);
   assert.equal(typeof (await response.json()).csrf, 'string');
+});
+
+test('Claude : proposition sur plusieurs tokens, source « claude », rien sans validation', async (t) => {
+  const { post, store } = await fixture(t, false, {
+    id: 'claude',
+    async status() {
+      return { available: true, detail: 'simulation' };
+    },
+    async reply() {
+      return {
+        message: 'Palette plus chaude.',
+        changes: [
+          { key: 'light.primary', value: 'oklch(0.6 0.18 40)' },
+          { key: 'dark.primary', value: 'oklch(0.7 0.16 40)' },
+          { key: 'radius.base', value: 12 },
+        ],
+      };
+    },
+  });
+  const response = await post('agent', {
+    agent: 'claude',
+    revision: 0,
+    message: 'Réchauffe la marque',
+    history: [],
+  });
+  assert.equal(response.status, 200);
+  const { proposal } = await response.json();
+  assert.equal(proposal.source, 'claude');
+  assert.equal(proposal.patches.length, 3);
+  assert.equal(store.snapshot().revision, 0);
+  const commit = await post('commit', { id: proposal.id });
+  assert.equal(commit.status, 200);
+  assert.equal(store.snapshot().history[0].source, 'claude');
 });

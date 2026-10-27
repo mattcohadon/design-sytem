@@ -172,6 +172,7 @@ export interface Patch {
 export const revisionSources = [
   'manual',
   'codex',
+  'claude',
   'import',
   'undo',
   'migration',
@@ -223,7 +224,7 @@ export const stateSchema = z
 export const agentReplySchema = z
   .object({
     message: z.string().max(12000),
-    changes: z.array(changeSchema).max(40),
+    changes: z.array(changeSchema).max(tokenKeys.length),
   })
   .strict();
 export type AgentReply = z.infer<typeof agentReplySchema>;
