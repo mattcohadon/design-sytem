@@ -288,7 +288,7 @@ export const overlays: Family = {
       render: () => (
         <HoverCard>
           <HoverCardTrigger render={<Button variant="link" />}>
-            @sortui
+            SortUI
           </HoverCardTrigger>
           <HoverCardContent className="flex w-72 gap-3">
             <Avatar>

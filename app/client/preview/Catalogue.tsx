@@ -78,9 +78,7 @@ function DemoSection({ demo }: { demo: Demo }) {
         <h3 id={`${demo.id}-title`} className="text-sm font-medium">
           {demo.title}
         </h3>
-        <code className="text-2xs text-muted-foreground">
-          @sortui/{demo.id}
-        </code>
+        <code className="text-2xs text-muted-foreground">{demo.id}</code>
       </div>
       <DemoBoundary>
         <Lazy>{demo.render}</Lazy>
