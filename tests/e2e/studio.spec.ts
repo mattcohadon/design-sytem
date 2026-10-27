@@ -38,6 +38,7 @@ test('boucle centrale réelle : diff, validation, propagation, recharge, annulat
   await page.getByRole('button', { name: 'Proposer', exact: true }).click();
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
   await expect(mainButton).toHaveCSS('background-color', 'rgb(138, 59, 32)');
+  await page.getByRole('tab', { name: 'Aperçu responsive' }).click();
   await expect(
     mobile.getByRole('button', { name: 'Réserver une place', exact: true }),
   ).toHaveCSS('background-color', 'rgb(138, 59, 32)');
@@ -61,6 +62,7 @@ test('boucle centrale réelle : diff, validation, propagation, recharge, annulat
     'oklch(0.585 0.233 277.117)',
   );
   await expect(mainButton).toHaveCSS('border-top-left-radius', '22px');
+  await page.getByRole('tab', { name: 'Aperçu responsive' }).click();
   await expect(
     mobile.getByRole('button', { name: 'Réserver une place', exact: true }),
   ).toHaveCSS('background-color', 'oklch(0.585 0.233 277.117)');
@@ -71,6 +73,7 @@ test('largeurs réelles, interactions, formulaire et desktop responsive', async 
   page,
 }) => {
   await page.goto('/');
+  await page.getByRole('tab', { name: 'Aperçu responsive' }).click();
   const preview = page.locator('iframe[title="Aperçu responsive"]');
   const frame = page.frameLocator('iframe[title="Aperçu responsive"]');
   for (const [value, width] of [
@@ -228,7 +231,7 @@ test('V2 : brief privé persistant, indépendant du mode IA', async ({
   );
   await expect(
     page.getByRole('combobox', { name: 'Mode de travail' }),
-  ).toHaveValue('manual');
+  ).toHaveValue('claude');
 });
 
 test('V2 : recherche, brouillon récupéré après recharge et abandon sans écriture', async ({

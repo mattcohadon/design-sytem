@@ -67,6 +67,26 @@ function Lazy({ children }: { children: () => ReactNode }) {
   return <div ref={ref}>{shown ? children() : <div className="h-24" />}</div>;
 }
 
+/** Page d’un seul composant, rendue seule dans l’iframe de l’atelier. */
+export function ComponentView({ id }: { id: string }) {
+  const demo = families.flatMap((f) => f.demos).find((d) => d.id === id);
+  if (!demo)
+    return (
+      <p role="alert" className="p-6 text-sm">
+        Composant inconnu : {id}
+      </p>
+    );
+  return (
+    <section
+      id={demo.id}
+      aria-label={demo.title}
+      className="mx-auto max-w-4xl p-6"
+    >
+      <DemoBoundary>{demo.render()}</DemoBoundary>
+    </section>
+  );
+}
+
 function DemoSection({ demo }: { demo: Demo }) {
   return (
     <section
