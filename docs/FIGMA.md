@@ -11,7 +11,9 @@ sont pas distribués avec ce starter et ne constituent pas une connexion de l’
 1. Figma > Settings > Security > Personal access tokens : créer un jeton avec le seul
    droit `file_variables:read`. L’API des variables exige un espace Enterprise et un
    siège complet sur le fichier.
-2. `npm run figma:setup` demande le lien du fichier et le jeton (masqué) et les écrit
+2. Copier le jeton (Cmd+C) puis lancer `pbpaste | npm run figma:setup -- "<lien du fichier>"` :
+   le jeton passe par l’entrée standard, sans être tapé ni gardé dans l’historique du shell.
+   Sans argument, `npm run figma:setup` le demande en saisie masquée. Dans les deux cas il est écrit
    dans `.ds-studio/figma.json` (mode 600, hors Git). `FIGMA_TOKEN` et `FIGMA_FILE_KEY`
    sont aussi acceptés. Redémarrer DS-Studio ; l’en-tête affiche alors Figma connecté.
 3. **Sync Figma** appelle `GET /v1/files/:key/variables/local`, compare les collections

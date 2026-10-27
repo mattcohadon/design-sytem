@@ -1,23 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  ChevronLeftIcon,
   ChevronRightIcon,
   DownloadIcon,
   RefreshCwIcon,
   HistoryIcon,
   SearchIcon,
+  PaletteIcon,
   SwatchBookIcon,
   Undo2Icon,
   UploadIcon,
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { Button, buttonVariants } from '@/components/ui/button';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 import {
   Dialog,
   DialogContent,
@@ -33,7 +29,6 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/input-group';
-import { Message, MessageContent } from '@/components/ui/message';
 import {
   NativeSelect,
   NativeSelectOption,
@@ -47,9 +42,14 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
+  SidebarInput,
   SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import {
   Table,
@@ -59,8 +59,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { AssistantBar } from './AssistantBar.js';
+import { manifest } from './preview/manifest.js';
 import ProjectBrief from './ProjectBrief.js';
 import { useTokenDraft } from './useTokenDraft.js';
 import { announceChange, useDesignState } from './useDesignState.js';
@@ -100,6 +102,28 @@ const scenarios = [
   { id: 'welcome', label: 'Accueil assistant' },
   { id: 'widgets', label: 'Widgets' },
 ];
+type Route = { kind: 'tokens' } | { kind: 'component'; id: string };
+const componentPrefix = '#/composants/';
+/** Seuls #/tokens et #/composants/<id> sont des pages ; #ds-title (lien d’évitement) est ignoré. */
+const routeOf = (hash: string): Route | null =>
+  hash === '#/tokens'
+    ? { kind: 'tokens' }
+    : hash.startsWith(componentPrefix)
+      ? {
+          kind: 'component',
+          id: decodeURIComponent(hash.slice(componentPrefix.length)),
+        }
+      : null;
+/** Referme le panneau mobile après un clic de navigation. */
+function CloseOnNavigate({ routeKey }: { routeKey: string }) {
+  const { setOpenMobile } = useSidebar();
+  useEffect(() => {
+    setOpenMobile(false);
+  }, [routeKey, setOpenMobile]);
+  return null;
+}
+/** Ligne de navigation façon doc shadcn : 30 px, 0,8 rem, medium, pastille grise si active. */
+const navItem = 'h-[30px] text-[0.8rem] font-medium';
 const modeLabels: Record<Mode, string> = { light: 'Clair', dark: 'Sombre' };
 // Damier sous la couleur : beaucoup de tokens SortUI ont une opacité.
 const checker =
@@ -202,7 +226,16 @@ export default function App() {
   const [notice, setNotice] = useState('');
   const [device, setDevice] = useState(1);
   const [scenario, setScenario] = useState('cards');
-  const [agent, setAgent] = useState('manual');
+  const [agent, setAgent] = useState('claude');
+  const [route, setRoute] = useState<Route>(
+    () => routeOf(location.hash) ?? { kind: 'tokens' },
+  );
+  const [tab, setTab] = useState<'page' | 'preview' | 'history' | 'project'>(
+    'page',
+  );
+  const [showTokens, setShowTokens] = useState(false);
+  const [navQuery, setNavQuery] = useState('');
+  const [syncing, setSyncing] = useState(false);
   const [message, setMessage] = useState('');
   const [chat, setChat] = useState<
     { role: 'user' | 'assistant'; text: string }[]
@@ -217,6 +250,33 @@ export default function App() {
       .catch((e) => setError(e.message));
     return () => controller.current?.abort();
   }, []);
+  useEffect(() => {
+    const sync = () => {
+      const next = routeOf(location.hash);
+      if (!next) return;
+      setRoute(next);
+      setTab('page');
+      window.scrollTo(0, 0);
+    };
+    addEventListener('hashchange', sync);
+    return () => removeEventListener('hashchange', sync);
+  }, []);
+  // La liste est longue : on amène la page active dans le champ de la barre latérale.
+  const ready = !!state;
+  useEffect(() => {
+    document
+      .querySelector(
+        '[data-sidebar="menu-button"][data-active]:not([data-active="false"])',
+      )
+      ?.scrollIntoView({ block: 'nearest' });
+  }, [route, ready]);
+  useEffect(() => {
+    const item =
+      route.kind === 'component'
+        ? manifest.flatMap((f) => f.items).find((i) => i.id === route.id)
+        : undefined;
+    document.title = `${item?.title ?? 'Tokens'} · DS-Studio`;
+  }, [route]);
   useEffect(() => {
     if (agent !== 'manual')
       request<Bootstrap['agents']>('agents')
@@ -312,7 +372,6 @@ export default function App() {
       </main>
     );
   const selectedAgent = agents.find((a) => a.id === agent);
-  const agentName = agent === 'claude' ? 'Claude' : 'Codex';
   const staleProposal = !!proposal && proposal.revision !== state.revision;
   const token = state.tokens[key];
   const pairMode = tokenMode(key) ?? mode;
@@ -338,8 +397,239 @@ export default function App() {
     token.$type === 'color' ? (toHex(draft) ?? toHex(String(current))) : null;
   const iframeQuery = `preview=1&mode=${mode}`;
   const dirty = draft !== String(current);
+  const found =
+    route.kind === 'component'
+      ? manifest
+          .flatMap((f) => f.items.map((i) => ({ ...i, family: f.title })))
+          .find((i) => i.id === route.id)
+      : undefined;
+  const q = navQuery.trim().toLowerCase();
+  const filtered = manifest
+    .map((f) => ({
+      ...f,
+      items: q
+        ? f.items.filter(
+            (i) => i.title.toLowerCase().includes(q) || i.id.includes(q),
+          )
+        : f.items,
+    }))
+    .filter((f) => f.items.length);
+  const pages = manifest.flatMap((f) => f.items);
+  const at = found ? pages.findIndex((i) => i.id === found.id) : -1;
+  const editor = (
+    <div className="grid gap-4 rounded-2xl border bg-card p-4 text-card-foreground shadow-card">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-sm font-medium">
+          Tokens sémantiques{' '}
+          <span className="font-normal text-muted-foreground tabular-nums">
+            · {tokenKeys.length}
+          </span>
+        </h3>
+        <ToggleGroup
+          variant="outline"
+          size="sm"
+          spacing={0}
+          aria-label="Mode affiché"
+          value={[mode]}
+          onValueChange={(value) => {
+            const m = value[0] as Mode | undefined;
+            if (!m) return;
+            setMode(m);
+            const name = key.split('.')[1];
+            if (tokenMode(key)) setKey(`${m}.${name}` as TokenKey);
+          }}
+        >
+          {(['light', 'dark'] as const).map((m) => (
+            <ToggleGroupItem key={m} value={m}>
+              {modeLabels[m]}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </div>
+      <Field>
+        <FieldLabel htmlFor="token-search">Rechercher un token</FieldLabel>
+        <InputGroup>
+          <InputGroupAddon>
+            <SearchIcon />
+          </InputGroupAddon>
+          <InputGroupInput
+            id="token-search"
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="primary, dark.border, radius…"
+          />
+        </InputGroup>
+        <p role="status" className="text-xs text-muted-foreground">
+          {matchingKeys.length} résultat(s).{' '}
+          {search && 'La sélection courante reste accessible.'}
+        </p>
+      </Field>
+      <div className="grid gap-3">
+        {families.map(([family]) => {
+          const keys = matchingKeys.filter(
+            (k) => state.tokens[k].$type === 'color' && familyOf(k) === family,
+          );
+          if (!keys.length) return null;
+          return (
+            <div key={family} className="grid gap-1.5">
+              <span className="text-2xs text-muted-foreground">{family}</span>
+              <div className="flex flex-wrap gap-1.5">
+                {keys.map((k) => (
+                  <button
+                    title={k}
+                    aria-label={`Sélectionner ${k}`}
+                    aria-pressed={key === k}
+                    key={k}
+                    className="size-7 rounded-md ring-1 ring-border outline-none ring-inset hover:scale-110 focus-visible:ring-2 focus-visible:ring-ring aria-pressed:ring-2 aria-pressed:ring-foreground aria-pressed:ring-offset-2 aria-pressed:ring-offset-card motion-safe:transition-transform"
+                    style={{
+                      background: `linear-gradient(${state.tokens[k].$value}, ${state.tokens[k].$value}), ${checker}`,
+                    }}
+                    onClick={() => setKey(k)}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <form
+        className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void proposeToken();
+        }}
+      >
+        <Field>
+          <FieldLabel htmlFor="token-key">Token</FieldLabel>
+          <NativeSelect
+            id="token-key"
+            className="w-full"
+            value={key}
+            onChange={(e) => setKey(e.target.value as TokenKey)}
+          >
+            {[...new Set([key, ...matchingKeys])].map((k) => (
+              <NativeSelectOption key={k}>{k}</NativeSelectOption>
+            ))}
+          </NativeSelect>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="token-value">Valeur</FieldLabel>
+          {token.$type === 'fontFamily' ? (
+            <NativeSelect
+              id="token-value"
+              className="w-full"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+            >
+              {fontFamilies.map((f) => (
+                <NativeSelectOption key={f}>{f}</NativeSelectOption>
+              ))}
+            </NativeSelect>
+          ) : (
+            <InputGroup>
+              {token.$type === 'color' && (
+                <InputGroupAddon>
+                  <Chip value={parseColor(draft) ? draft : String(current)} />
+                </InputGroupAddon>
+              )}
+              <InputGroupInput
+                id="token-value"
+                aria-label="Valeur du token"
+                className="font-mono"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                required
+                type={token.$type === 'dimension' ? 'number' : 'text'}
+                min={token.$type === 'dimension' ? 0 : undefined}
+                max={token.$type === 'dimension' ? 128 : undefined}
+                step={token.$type === 'dimension' ? 'any' : undefined}
+                maxLength={60}
+                spellCheck={false}
+              />
+              {token.$type === 'dimension' && (
+                <InputGroupAddon align="inline-end">px</InputGroupAddon>
+              )}
+            </InputGroup>
+          )}
+        </Field>
+        <Button type="submit" disabled={!dirty}>
+          Proposer
+        </Button>
+      </form>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+        {pickerHex && (
+          <label className="flex items-center gap-2">
+            <input
+              aria-label="Sélecteur de couleur"
+              type="color"
+              className="h-7 w-10 cursor-pointer rounded-md border bg-transparent p-0.5"
+              value={pickerHex.toLowerCase()}
+              onChange={(e) =>
+                setDraft(
+                  withHex(
+                    parseColor(draft) ? draft : String(current),
+                    e.target.value,
+                  ),
+                )
+              }
+            />
+            Choisir visuellement (converti en OKLCH, opacité conservée)
+          </label>
+        )}
+        <span>
+          {token.$type === 'color'
+            ? 'oklch(L C H) ou oklch(L C H / A%), #RRGGBB accepté · '
+            : token.$type === 'dimension'
+              ? 'Pixels, de 0 à 128 · '
+              : ''}
+          Rien n’est écrit avant validation.
+        </span>
+      </div>
+      {dirty && (
+        <div
+          role="status"
+          className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-fill-1 px-3 py-2 text-xs"
+        >
+          <span>
+            {recovered
+              ? 'Brouillon récupéré dans cet onglet.'
+              : 'Brouillon non enregistré.'}{' '}
+            Rien n’est appliqué.
+          </span>
+          <Button type="button" variant="ghost" size="xs" onClick={discard}>
+            Abandonner le brouillon
+          </Button>
+        </div>
+      )}
+      <Separator />
+      <div className="grid gap-2 text-xs">
+        <p aria-live="polite" className="flex flex-wrap items-center gap-2">
+          <span className="font-mono text-muted-foreground">
+            {pair[0]} / {pair[1]} ({modeLabels[pairMode].toLowerCase()})
+          </span>
+          <strong className="tabular-nums">{savedContrast.toFixed(2)}:1</strong>
+          <ContrastVerdict ratio={savedContrast} />
+        </p>
+        {draftContrast !== undefined && dirty && (
+          <p role="status" className="flex flex-wrap items-center gap-2">
+            Contraste proposé :
+            <strong className="tabular-nums">
+              {draftContrast.toFixed(2)}:1
+            </strong>
+            <ContrastVerdict ratio={draftContrast} />
+            <span className="basis-full text-muted-foreground">
+              Cette indication ne certifie pas tous les états du composant.
+            </span>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+  const frameSrc = `/?${iframeQuery}&view=component&id=${found?.id ?? 'button'}`;
   return (
     <SidebarProvider>
+      <CloseOnNavigate routeKey={found?.id ?? 'tokens'} />
       <a
         href="#ds-title"
         className="sr-only z-50 rounded-lg bg-background px-3 py-2 text-sm font-medium shadow-md focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
@@ -368,208 +658,64 @@ export default function App() {
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>Projet</SidebarGroupLabel>
+            <SidebarGroupLabel className="h-8 text-xs">
+              Sections
+            </SidebarGroupLabel>
             <SidebarGroupContent>
-              <ProjectBrief />
-            </SidebarGroupContent>
-          </SidebarGroup>
-          <SidebarGroup aria-labelledby="agent-title">
-            <SidebarGroupLabel id="agent-title">Assistant</SidebarGroupLabel>
-            <SidebarGroupContent className="grid gap-3 px-2">
-              <Field>
-                <FieldLabel htmlFor="agent-mode">Mode de travail</FieldLabel>
-                <NativeSelect
-                  id="agent-mode"
-                  className="w-full"
-                  value={agent}
-                  onChange={(e) => {
-                    setAgent(e.target.value);
-                    setChat([]);
-                  }}
-                >
-                  <NativeSelectOption value="manual">
-                    Manuel · sans compte IA
-                  </NativeSelectOption>
-                  <NativeSelectOption value="codex">
-                    Codex · expérimental qualifié
-                  </NativeSelectOption>
-                  <NativeSelectOption value="claude">
-                    Claude Code · sans outils
-                  </NativeSelectOption>
-                  <NativeSelectOption value="gemini" disabled>
-                    Gemini CLI · non implémenté
-                  </NativeSelectOption>
-                </NativeSelect>
-              </Field>
-              {agent === 'manual' ? (
-                <div className="grid gap-2 text-xs text-muted-foreground">
-                  <p>
-                    Aucun compte nécessaire. Le Design System vous appartient :
-                  </p>
-                  <ol className="grid list-inside list-decimal gap-1 text-foreground">
-                    <li>Choisissez un token.</li>
-                    <li>Proposez une valeur.</li>
-                    <li>Validez le diff, observez les aperçus.</li>
-                  </ol>
-                  <p>
-                    Tout reste sur votre machine. Figma et l’IA sont
-                    facultatifs.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid gap-3">
-                  <p className="text-xs text-muted-foreground">
-                    {selectedAgent?.detail ?? 'Détection du CLI…'}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Envoi à {agentName} : tokens, workspace/PFE.md, brief privé,
-                    DESIGN_RULES.md et 10 messages récents. Aucun outil ni
-                    commande ; propositions seulement, sur tous les tokens.
-                  </p>
-                  {chat.length > 0 && (
-                    <div
-                      className="grid max-h-80 gap-2 overflow-auto"
-                      aria-label="Conversation"
-                      aria-live="polite"
-                    >
-                      {chat.map((c, i) => (
-                        <Message
-                          key={i}
-                          align={c.role === 'user' ? 'end' : 'start'}
-                        >
-                          <MessageContent>
-                            <span className="sr-only">
-                              {c.role === 'user' ? 'Vous' : agentName} :
-                            </span>
-                            <Bubble
-                              variant={
-                                c.role === 'user' ? 'secondary' : 'default'
-                              }
-                            >
-                              <BubbleContent className="text-xs whitespace-pre-wrap">
-                                {c.text}
-                              </BubbleContent>
-                            </Bubble>
-                          </MessageContent>
-                        </Message>
-                      ))}
-                    </div>
-                  )}
-                  <form
-                    className="grid gap-2"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      void sendMessage();
-                    }}
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={!found}
+                    className={navItem}
+                    render={<a href="#/tokens" />}
                   >
-                    <Field>
-                      <FieldLabel htmlFor="agent-message">
-                        Votre demande
-                      </FieldLabel>
-                      <Textarea
-                        id="agent-message"
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        maxLength={8000}
-                        placeholder="Rends la palette plus chaleureuse, en clair et en sombre."
-                        disabled={thinking}
-                      />
-                    </Field>
-                    <div className="flex gap-2">
-                      <Button
-                        type="submit"
-                        disabled={
-                          thinking ||
-                          !message.trim() ||
-                          !selectedAgent?.available
-                        }
-                      >
-                        {thinking
-                          ? 'Réflexion en cours…'
-                          : `Envoyer à ${agentName}`}
-                      </Button>
-                      {thinking && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => controller.current?.abort()}
-                        >
-                          Arrêter
-                        </Button>
-                      )}
-                    </div>
-                  </form>
-                </div>
-              )}
+                    <PaletteIcon /> Tokens
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
           <SidebarGroup>
-            <Collapsible className="grid gap-2">
-              <CollapsibleTrigger className="group/history flex h-8 w-full items-center gap-2 rounded-lg px-2 text-left text-sm font-medium outline-none hover:bg-fill-1 focus-visible:ring-2 focus-visible:ring-ring/30">
-                <HistoryIcon className="size-4 text-muted-foreground" />
-                Historique · {state.revision}
-                <ChevronRightIcon className="ml-auto size-4 text-muted-foreground transition-transform group-aria-expanded/history:rotate-90" />
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <section
-                  aria-label="Historique des changements"
-                  className="grid gap-2 px-2"
-                >
-                  <p className="text-xs text-muted-foreground">
-                    Annuler une révision n’écrase pas les autres tokens.
-                    L’annulation s’enregistre elle aussi.
-                  </p>
-                  {!state.history.length && (
-                    <p className="text-xs">
-                      Aucun changement enregistré. Chaque validation apparaîtra
-                      ici, annulable une à une.
-                    </p>
-                  )}
-                  <ol className="grid gap-1.5">
-                    {[...state.history].reverse().map((event) => (
-                      <li
-                        key={event.id}
-                        className="grid gap-1 rounded-lg border p-2 text-xs"
-                      >
-                        <div className="flex items-baseline justify-between gap-2">
-                          <strong className="font-medium">
-                            Révision {event.revision}
-                          </strong>
-                          <Badge variant="outline">
-                            {sourceLabels[event.source]}
-                          </Badge>
-                        </div>
-                        <time className="text-muted-foreground tabular-nums">
-                          {new Date(event.date).toLocaleString('fr-FR')}
-                        </time>
-                        <p className="font-mono text-2xs break-all text-muted-foreground">
-                          {event.patches.map((p) => p.key).join(', ')}
-                        </p>
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          className="w-fit"
-                          onClick={() =>
-                            void perform(async () =>
-                              setProposal(
-                                await request('undo', {
-                                  revision: state.revision,
-                                  id: event.id,
-                                }),
-                              ),
-                            )
-                          }
-                        >
-                          <Undo2Icon data-icon="inline-start" />
-                          Annuler la révision {event.revision}
-                        </Button>
-                      </li>
-                    ))}
-                  </ol>
-                </section>
-              </CollapsibleContent>
-            </Collapsible>
+            <SidebarGroupLabel className="h-8 text-xs">
+              Composants
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarInput
+                type="search"
+                aria-label="Filtrer les composants"
+                placeholder={`Filtrer les ${pages.length} pages…`}
+                value={navQuery}
+                onChange={(e) => setNavQuery(e.target.value)}
+              />
+            </SidebarGroupContent>
           </SidebarGroup>
+          {filtered.map((family) => (
+            <SidebarGroup key={family.id}>
+              <SidebarGroupLabel className="h-8 text-xs">
+                {family.title}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {family.items.map((item) => (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        isActive={item.id === found?.id}
+                        className={navItem}
+                        render={<a href={`#/composants/${item.id}`} />}
+                      >
+                        <span>{item.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
+          {q && !filtered.length && (
+            <p className="px-4 py-1 text-xs text-muted-foreground">
+              Aucune page.
+            </p>
+          )}
         </SidebarContent>
         <SidebarFooter className="p-3 text-2xs text-muted-foreground">
           DS-Studio V2 · JSON local → validation → composants SortUI
@@ -596,19 +742,29 @@ export default function App() {
                   ? 'Lire les variables Figma et proposer les différences'
                   : 'Figma non configuré : npm run figma:setup'
               }
+              disabled={syncing}
               onClick={() =>
                 void perform(async () => {
-                  const result = await request<{ proposal: Proposal | null }>(
-                    'figma-sync',
-                    { revision: state.revision },
-                  );
-                  if (result.proposal) setProposal(result.proposal);
-                  else setNotice('Figma et DS-Studio sont déjà identiques.');
+                  setSyncing(true);
+                  try {
+                    const result = await request<{
+                      proposal: Proposal | null;
+                    }>('figma-sync', { revision: state.revision });
+                    if (result.proposal) setProposal(result.proposal);
+                    else setNotice('Figma et DS-Studio sont déjà identiques.');
+                  } finally {
+                    setSyncing(false);
+                  }
                 })
               }
             >
-              <RefreshCwIcon data-icon="inline-start" />
-              <span className="max-sm:sr-only">Sync Figma</span>
+              <RefreshCwIcon
+                data-icon="inline-start"
+                className={syncing ? 'animate-spin' : undefined}
+              />
+              <span className="max-sm:sr-only">
+                {syncing ? 'Lecture de Figma…' : 'Sync Figma'}
+              </span>
             </Button>
             <Button
               variant="outline"
@@ -645,6 +801,23 @@ export default function App() {
               />
             </label>
           </div>
+          <Tabs
+            className="w-full overflow-x-auto"
+            value={tab}
+            onValueChange={(v) => setTab(v as typeof tab)}
+          >
+            <TabsList>
+              <TabsTrigger value="page">
+                {found ? 'Composant' : 'Tokens'}
+              </TabsTrigger>
+              <TabsTrigger value="preview">Aperçu responsive</TabsTrigger>
+              <TabsTrigger value="history">
+                <HistoryIcon className="size-3.5" />
+                Historique · {state.revision}
+              </TabsTrigger>
+              <TabsTrigger value="project">Projet</TabsTrigger>
+            </TabsList>
+          </Tabs>
           {/* Dans l’en-tête collant : visible quel que soit le défilement. */}
           <div className="grid w-full gap-2 empty:hidden" aria-live="polite">
             {(error || stateError) && !proposal && (
@@ -669,264 +842,10 @@ export default function App() {
             </Alert>
           )}
         </div>
-        <div className="grid items-start gap-6 p-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,auto)]">
-          <section aria-labelledby="ds-title" className="grid min-w-0 gap-4">
-            <div className="flex items-baseline justify-between gap-3">
-              <div>
-                <h2
-                  id="ds-title"
-                  tabIndex={-1}
-                  className="text-lg font-semibold tracking-tight outline-none"
-                >
-                  Design System
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  SortUI · 66 composants, 7 blocs, sources locales
-                </p>
-              </div>
-              <Badge variant="outline" className="tabular-nums">
-                r{state.revision}
-              </Badge>
-            </div>
-            <div className="grid gap-4 rounded-2xl border bg-card p-4 text-card-foreground shadow-card">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="text-sm font-medium">
-                  Tokens sémantiques{' '}
-                  <span className="font-normal text-muted-foreground tabular-nums">
-                    · {tokenKeys.length}
-                  </span>
-                </h3>
-                <ToggleGroup
-                  variant="outline"
-                  size="sm"
-                  spacing={0}
-                  aria-label="Mode affiché"
-                  value={[mode]}
-                  onValueChange={(value) => {
-                    const m = value[0] as Mode | undefined;
-                    if (!m) return;
-                    setMode(m);
-                    const name = key.split('.')[1];
-                    if (tokenMode(key)) setKey(`${m}.${name}` as TokenKey);
-                  }}
-                >
-                  {(['light', 'dark'] as const).map((m) => (
-                    <ToggleGroupItem key={m} value={m}>
-                      {modeLabels[m]}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
-              </div>
-              <Field>
-                <FieldLabel htmlFor="token-search">
-                  Rechercher un token
-                </FieldLabel>
-                <InputGroup>
-                  <InputGroupAddon>
-                    <SearchIcon />
-                  </InputGroupAddon>
-                  <InputGroupInput
-                    id="token-search"
-                    type="search"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="primary, dark.border, radius…"
-                  />
-                </InputGroup>
-                <p role="status" className="text-xs text-muted-foreground">
-                  {matchingKeys.length} résultat(s).{' '}
-                  {search && 'La sélection courante reste accessible.'}
-                </p>
-              </Field>
-              <div className="grid gap-3">
-                {families.map(([family]) => {
-                  const keys = matchingKeys.filter(
-                    (k) =>
-                      state.tokens[k].$type === 'color' &&
-                      familyOf(k) === family,
-                  );
-                  if (!keys.length) return null;
-                  return (
-                    <div key={family} className="grid gap-1.5">
-                      <span className="text-2xs text-muted-foreground">
-                        {family}
-                      </span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {keys.map((k) => (
-                          <button
-                            title={k}
-                            aria-label={`Sélectionner ${k}`}
-                            aria-pressed={key === k}
-                            key={k}
-                            className="size-7 rounded-md ring-1 ring-border outline-none ring-inset hover:scale-110 focus-visible:ring-2 focus-visible:ring-ring aria-pressed:ring-2 aria-pressed:ring-foreground aria-pressed:ring-offset-2 aria-pressed:ring-offset-card motion-safe:transition-transform"
-                            style={{
-                              background: `linear-gradient(${state.tokens[k].$value}, ${state.tokens[k].$value}), ${checker}`,
-                            }}
-                            onClick={() => setKey(k)}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <form
-                className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void proposeToken();
-                }}
-              >
-                <Field>
-                  <FieldLabel htmlFor="token-key">Token</FieldLabel>
-                  <NativeSelect
-                    id="token-key"
-                    className="w-full"
-                    value={key}
-                    onChange={(e) => setKey(e.target.value as TokenKey)}
-                  >
-                    {[...new Set([key, ...matchingKeys])].map((k) => (
-                      <NativeSelectOption key={k}>{k}</NativeSelectOption>
-                    ))}
-                  </NativeSelect>
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="token-value">Valeur</FieldLabel>
-                  {token.$type === 'fontFamily' ? (
-                    <NativeSelect
-                      id="token-value"
-                      className="w-full"
-                      value={draft}
-                      onChange={(e) => setDraft(e.target.value)}
-                    >
-                      {fontFamilies.map((f) => (
-                        <NativeSelectOption key={f}>{f}</NativeSelectOption>
-                      ))}
-                    </NativeSelect>
-                  ) : (
-                    <InputGroup>
-                      {token.$type === 'color' && (
-                        <InputGroupAddon>
-                          <Chip
-                            value={parseColor(draft) ? draft : String(current)}
-                          />
-                        </InputGroupAddon>
-                      )}
-                      <InputGroupInput
-                        id="token-value"
-                        aria-label="Valeur du token"
-                        className="font-mono"
-                        value={draft}
-                        onChange={(e) => setDraft(e.target.value)}
-                        required
-                        type={token.$type === 'dimension' ? 'number' : 'text'}
-                        min={token.$type === 'dimension' ? 0 : undefined}
-                        max={token.$type === 'dimension' ? 128 : undefined}
-                        step={token.$type === 'dimension' ? 'any' : undefined}
-                        maxLength={60}
-                        spellCheck={false}
-                      />
-                      {token.$type === 'dimension' && (
-                        <InputGroupAddon align="inline-end">px</InputGroupAddon>
-                      )}
-                    </InputGroup>
-                  )}
-                </Field>
-                <Button type="submit" disabled={!dirty}>
-                  Proposer
-                </Button>
-              </form>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-                {pickerHex && (
-                  <label className="flex items-center gap-2">
-                    <input
-                      aria-label="Sélecteur de couleur"
-                      type="color"
-                      className="h-7 w-10 cursor-pointer rounded-md border bg-transparent p-0.5"
-                      value={pickerHex.toLowerCase()}
-                      onChange={(e) =>
-                        setDraft(
-                          withHex(
-                            parseColor(draft) ? draft : String(current),
-                            e.target.value,
-                          ),
-                        )
-                      }
-                    />
-                    Choisir visuellement (converti en OKLCH, opacité conservée)
-                  </label>
-                )}
-                <span>
-                  {token.$type === 'color'
-                    ? 'oklch(L C H) ou oklch(L C H / A%), #RRGGBB accepté · '
-                    : token.$type === 'dimension'
-                      ? 'Pixels, de 0 à 128 · '
-                      : ''}
-                  Rien n’est écrit avant validation.
-                </span>
-              </div>
-              {dirty && (
-                <div
-                  role="status"
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-fill-1 px-3 py-2 text-xs"
-                >
-                  <span>
-                    {recovered
-                      ? 'Brouillon récupéré dans cet onglet.'
-                      : 'Brouillon non enregistré.'}{' '}
-                    Rien n’est appliqué.
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="xs"
-                    onClick={discard}
-                  >
-                    Abandonner le brouillon
-                  </Button>
-                </div>
-              )}
-              <Separator />
-              <div className="grid gap-2 text-xs">
-                <p
-                  aria-live="polite"
-                  className="flex flex-wrap items-center gap-2"
-                >
-                  <span className="font-mono text-muted-foreground">
-                    {pair[0]} / {pair[1]} ({modeLabels[pairMode].toLowerCase()})
-                  </span>
-                  <strong className="tabular-nums">
-                    {savedContrast.toFixed(2)}:1
-                  </strong>
-                  <ContrastVerdict ratio={savedContrast} />
-                </p>
-                {draftContrast !== undefined && dirty && (
-                  <p
-                    role="status"
-                    className="flex flex-wrap items-center gap-2"
-                  >
-                    Contraste proposé :
-                    <strong className="tabular-nums">
-                      {draftContrast.toFixed(2)}:1
-                    </strong>
-                    <ContrastVerdict ratio={draftContrast} />
-                    <span className="basis-full text-muted-foreground">
-                      Cette indication ne certifie pas tous les états du
-                      composant.
-                    </span>
-                  </p>
-                )}
-              </div>
-            </div>
-            <iframe
-              className="catalogue-frame h-[min(1100px,85vh)] w-full rounded-2xl border bg-background"
-              title="Catalogue SortUI"
-              src={`/?${iframeQuery}&view=catalogue`}
-            />
-          </section>
+        {tab === 'preview' ? (
           <section
             aria-labelledby="mobile-title"
-            className="grid min-w-0 gap-3 xl:sticky xl:top-20"
+            className="grid min-w-0 gap-3 p-4"
           >
             <div>
               <h2
@@ -984,7 +903,179 @@ export default function App() {
               nécessaire
             </p>
           </section>
-        </div>
+        ) : tab === 'history' ? (
+          <section
+            aria-label="Historique des changements"
+            className="mx-auto grid w-full max-w-2xl gap-3 p-4"
+          >
+            <h2 className="text-lg font-semibold tracking-tight">Historique</h2>
+            <p className="text-xs text-muted-foreground">
+              Annuler une révision n’écrase pas les autres tokens. L’annulation
+              s’enregistre elle aussi.
+            </p>
+            {!state.history.length && (
+              <p className="text-xs">
+                Aucun changement enregistré. Chaque validation apparaîtra ici,
+                annulable une à une.
+              </p>
+            )}
+            <ol className="grid gap-1.5">
+              {[...state.history].reverse().map((event) => (
+                <li
+                  key={event.id}
+                  className="grid gap-1 rounded-lg border p-2 text-xs"
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <strong className="font-medium">
+                      Révision {event.revision}
+                    </strong>
+                    <Badge variant="outline">
+                      {sourceLabels[event.source]}
+                    </Badge>
+                  </div>
+                  <time className="text-muted-foreground tabular-nums">
+                    {new Date(event.date).toLocaleString('fr-FR')}
+                  </time>
+                  <p className="font-mono text-2xs break-all text-muted-foreground">
+                    {event.patches.map((p) => p.key).join(', ')}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="w-fit"
+                    onClick={() =>
+                      void perform(async () =>
+                        setProposal(
+                          await request('undo', {
+                            revision: state.revision,
+                            id: event.id,
+                          }),
+                        ),
+                      )
+                    }
+                  >
+                    <Undo2Icon data-icon="inline-start" />
+                    Annuler la révision {event.revision}
+                  </Button>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ) : tab === 'project' ? (
+          <section className="mx-auto grid w-full max-w-2xl gap-3 p-4">
+            <h2 className="text-lg font-semibold tracking-tight">Projet</h2>
+            <ProjectBrief />
+          </section>
+        ) : (
+          <div
+            className={
+              found && showTokens
+                ? 'grid items-start gap-6 p-4 xl:grid-cols-[minmax(0,1fr)_26rem]'
+                : 'grid gap-6 p-4'
+            }
+          >
+            <section aria-labelledby="ds-title" className="grid min-w-0 gap-4">
+              <div className="flex items-baseline justify-between gap-3">
+                <div>
+                  <h2
+                    id="ds-title"
+                    tabIndex={-1}
+                    className="text-lg font-semibold tracking-tight outline-none"
+                  >
+                    {found?.title ?? 'Design System'}
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    {found
+                      ? found.family
+                      : 'SortUI · 66 composants, 7 blocs, sources locales'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {found && (
+                    <>
+                      <Button
+                        variant={showTokens ? 'secondary' : 'outline'}
+                        size="sm"
+                        aria-pressed={showTokens}
+                        onClick={() => setShowTokens(!showTokens)}
+                      >
+                        <PaletteIcon data-icon="inline-start" />
+                        Tokens
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon-sm"
+                        aria-label="Composant précédent"
+                        disabled={at <= 0}
+                        render={
+                          at > 0 ? (
+                            <a href={`#/composants/${pages[at - 1].id}`} />
+                          ) : undefined
+                        }
+                      >
+                        <ChevronLeftIcon />
+                      </Button>
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {at + 1} / {pages.length}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon-sm"
+                        aria-label="Composant suivant"
+                        disabled={at >= pages.length - 1}
+                        render={
+                          at < pages.length - 1 ? (
+                            <a href={`#/composants/${pages[at + 1].id}`} />
+                          ) : undefined
+                        }
+                      >
+                        <ChevronRightIcon />
+                      </Button>
+                    </>
+                  )}
+                  <Badge variant="outline" className="tabular-nums">
+                    r{state.revision}
+                  </Badge>
+                </div>
+              </div>
+              {found ? (
+                <iframe
+                  className="catalogue-frame h-[min(640px,calc(100svh-14rem))] w-full rounded-2xl border bg-background"
+                  title={`Composant ${found.title}`}
+                  src={frameSrc}
+                />
+              ) : (
+                <>
+                  {editor}
+                  <iframe
+                    className="catalogue-frame h-64 w-full rounded-2xl border bg-background"
+                    title="Aperçu en direct"
+                    src={frameSrc}
+                  />
+                </>
+              )}
+            </section>
+            {found && showTokens && (
+              <aside className="grid gap-4 xl:sticky xl:top-20 xl:max-h-[calc(100svh-6rem)] xl:overflow-auto">
+                {editor}
+              </aside>
+            )}
+          </div>
+        )}
+        <AssistantBar
+          agent={agent}
+          onAgent={(a) => {
+            setAgent(a);
+            setChat([]);
+          }}
+          info={selectedAgent}
+          message={message}
+          onMessage={setMessage}
+          chat={chat}
+          thinking={thinking}
+          onSend={() => void sendMessage()}
+          onStop={() => controller.current?.abort()}
+        />
       </SidebarInset>
       <Dialog
         open={!!proposal}

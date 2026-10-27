@@ -34,3 +34,23 @@ test('chaque composant et bloc SortUI importé a sa démonstration', async () =>
     [...blocks].sort(),
   );
 });
+
+test('la sidebar liste exactement les pages de composants et de blocs', async () => {
+  const source = await readFile(new URL('preview/manifest.ts', root), 'utf8');
+  const listed = [...source.matchAll(/^\s+id: '([a-z0-9-]+)',\n\s+title:/gm)]
+    .map((m) => m[1])
+    .filter(
+      (id) =>
+        !/^(actions|forms|navigation|display|overlays|ai|blocks)$/.test(id),
+    );
+  const demos = (
+    await Promise.all([
+      ...['actions', 'forms', 'navigation', 'display', 'overlays', 'ai'].map(
+        (f) => demoIds(`preview/demos/${f}.tsx`, f),
+      ),
+      demoIds('preview/blocks.tsx', 'blocks'),
+    ])
+  ).flat();
+  assert.equal(listed.length, 73);
+  assert.deepEqual([...listed].sort(), [...demos].sort());
+});

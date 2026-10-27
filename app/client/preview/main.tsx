@@ -2,7 +2,7 @@ import { createRoot } from 'react-dom/client';
 import '../sortui.css';
 import { modes, type Mode } from '../../shared/model.js';
 import { useDesignState } from '../useDesignState.js';
-import { Catalogue } from './Catalogue.js';
+import { Catalogue, ComponentView } from './Catalogue.js';
 import { Scenario } from './Scenario.js';
 import { SortUIRoot } from './SortUIRoot.js';
 
@@ -10,6 +10,7 @@ import { SortUIRoot } from './SortUIRoot.js';
 const params = new URLSearchParams(location.search);
 const view = params.get('view') ?? 'scenario';
 const scenario = params.get('scenario') ?? 'cards';
+const component = params.get('id') ?? '';
 const requested = params.get('mode');
 const mode: Mode = modes.includes(requested as Mode)
   ? (requested as Mode)
@@ -25,7 +26,13 @@ function Preview() {
     );
   return (
     <SortUIRoot tokens={state.tokens} mode={mode}>
-      {view === 'catalogue' ? <Catalogue /> : <Scenario scenario={scenario} />}
+      {view === 'catalogue' ? (
+        <Catalogue />
+      ) : view === 'component' ? (
+        <ComponentView id={component} />
+      ) : (
+        <Scenario scenario={scenario} />
+      )}
     </SortUIRoot>
   );
 }

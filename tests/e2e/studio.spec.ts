@@ -38,6 +38,7 @@ test('boucle centrale réelle : diff, validation, propagation, recharge, annulat
   await page.getByRole('button', { name: 'Proposer', exact: true }).click();
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
   await expect(mainButton).toHaveCSS('background-color', 'rgb(138, 59, 32)');
+  await page.getByRole('tab', { name: 'Aperçu responsive' }).click();
   await expect(
     mobile.getByRole('button', { name: 'Réserver une place', exact: true }),
   ).toHaveCSS('background-color', 'rgb(138, 59, 32)');
@@ -51,16 +52,19 @@ test('boucle centrale réelle : diff, validation, propagation, recharge, annulat
   await page.getByLabel('Valeur du token').fill('22');
   await page.getByRole('button', { name: 'Proposer', exact: true }).click();
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
-  await page.getByRole('button', { name: /Historique/ }).click();
+  await page.getByRole('tab', { name: /Historique/ }).click();
   await page
     .getByRole('button', { name: 'Annuler la révision 1', exact: true })
     .click();
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
+  // On revient de l'onglet Historique à la page Tokens.
+  await page.getByRole('tab', { name: 'Tokens', exact: true }).click();
   await expect(mainButton).toHaveCSS(
     'background-color',
     'oklch(0.585 0.233 277.117)',
   );
   await expect(mainButton).toHaveCSS('border-top-left-radius', '22px');
+  await page.getByRole('tab', { name: 'Aperçu responsive' }).click();
   await expect(
     mobile.getByRole('button', { name: 'Réserver une place', exact: true }),
   ).toHaveCSS('background-color', 'oklch(0.585 0.233 277.117)');
@@ -71,6 +75,7 @@ test('largeurs réelles, interactions, formulaire et desktop responsive', async 
   page,
 }) => {
   await page.goto('/');
+  await page.getByRole('tab', { name: 'Aperçu responsive' }).click();
   const preview = page.locator('iframe[title="Aperçu responsive"]');
   const frame = page.frameLocator('iframe[title="Aperçu responsive"]');
   for (const [value, width] of [
@@ -209,7 +214,7 @@ test('V2 : brief privé persistant, indépendant du mode IA', async ({
   page,
 }) => {
   await page.goto('/');
-  await page.getByText('Mon PFE · brief privé', { exact: true }).click();
+  await page.getByRole('tab', { name: 'Projet' }).click();
   await page
     .getByLabel('Nom du PFE', { exact: true })
     .fill('Mon atelier accessible');
@@ -222,13 +227,13 @@ test('V2 : brief privé persistant, indépendant du mode IA', async ({
   await page.getByRole('button', { name: 'Enregistrer le brief' }).click();
   await expect(page.getByText('Brief enregistré sur ce poste.')).toBeVisible();
   await page.reload();
-  await page.getByText('Mon PFE · brief privé', { exact: true }).click();
+  await page.getByRole('tab', { name: 'Projet' }).click();
   await expect(page.getByLabel('Nom du PFE', { exact: true })).toHaveValue(
     'Mon atelier accessible',
   );
   await expect(
     page.getByRole('combobox', { name: 'Mode de travail' }),
-  ).toHaveValue('manual');
+  ).toHaveValue('claude');
 });
 
 test('V2 : recherche, brouillon récupéré après recharge et abandon sans écriture', async ({
@@ -357,4 +362,42 @@ test('V2 : clavier, mobile 375 px et absence de stockage navigateur', async ({
   expect(
     await page.locator('body').evaluate((el) => el.scrollWidth <= innerWidth),
   ).toBe(true);
+});
+
+test('navigation : filtre de la sidebar, page composant, suivant, mode manuel de la barre', async ({
+  page,
+}) => {
+  await page.goto('/');
+  // Barre latérale ouverte : la barre Claude reste centrée sur la fenêtre (1600 px).
+  const bar = await page
+    .locator('form')
+    .filter({ has: page.getByLabel('Votre demande') })
+    .boundingBox();
+  expect(Math.abs(bar!.x + bar!.width / 2 - 800)).toBeLessThan(2);
+  await page.getByLabel('Filtrer les composants').fill('dialog');
+  await page.getByRole('link', { name: 'Dialog', exact: true }).click();
+  await expect(page).toHaveURL(/#\/composants\/dialog$/);
+  await expect(
+    page.getByRole('heading', { name: 'Dialog', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.frameLocator('iframe[title="Composant Dialog"]').getByRole('button', {
+      name: 'Modifier le profil',
+    }),
+  ).toBeVisible();
+  // Page composant : le composant seul ; l'éditeur de tokens s'affiche à la demande.
+  await expect(page.getByLabel('Valeur du token')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Tokens', exact: true }).click();
+  await expect(page.getByLabel('Valeur du token')).toBeVisible();
+  await page.getByRole('link', { name: 'Composant suivant' }).click();
+  await expect(page).toHaveURL(/#\/composants\/alert-dialog$/);
+  await page
+    .getByRole('combobox', { name: 'Mode de travail' })
+    .selectOption('manual');
+  await expect(page.getByLabel('Votre demande')).toBeDisabled();
+  // Arrivée directe sur une page lointaine : son lien est amené dans la barre latérale.
+  await page.goto('/?direct=1#/composants/sonner');
+  await expect(
+    page.getByRole('link', { name: 'Sonner (toast)', exact: true }),
+  ).toBeInViewport();
 });
