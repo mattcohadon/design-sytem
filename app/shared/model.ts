@@ -173,6 +173,7 @@ export const revisionSources = [
   'manual',
   'codex',
   'claude',
+  'figma',
   'import',
   'undo',
   'migration',

@@ -1,9 +1,31 @@
 # Figma : source de vérité réelle, pas intégration simulée
 
-**V2 : NOT IMPLEMENTED / non connecté.** Aucune authentification, lecture ou écriture
-Figma n’a été réalisée. Aucun fichier explicitement autorisé n’a été fourni. Les
-outils Figma présents dans une session de développement ne sont pas distribués
-avec ce starter et ne constituent pas une connexion de l’application.
+**Lecture des variables : IMPLEMENTED, essai réel en attente du jeton.** Le bouton
+« Sync Figma » lit les variables d’un fichier autorisé (API REST officielle, lecture
+seule) et prépare un diff ; rien n’est appliqué sans validation humaine. **Écriture
+vers Figma : NOT IMPLEMENTED.** Les outils Figma d’une session de développement ne
+sont pas distribués avec ce starter et ne constituent pas une connexion de l’application.
+
+## Sync Figma (lecture seule)
+
+1. Figma > Settings > Security > Personal access tokens : créer un jeton avec le seul
+   droit `file_variables:read`. L’API des variables exige un espace Enterprise et un
+   siège complet sur le fichier.
+2. `npm run figma:setup` demande le lien du fichier et le jeton (masqué) et les écrit
+   dans `.ds-studio/figma.json` (mode 600, hors Git). `FIGMA_TOKEN` et `FIGMA_FILE_KEY`
+   sont aussi acceptés. Redémarrer DS-Studio ; l’en-tête affiche alors Figma connecté.
+3. **Sync Figma** appelle `GET /v1/files/:key/variables/local`, compare les collections
+   « DS-Studio · Couleurs » (modes Light / Dark) et « DS-Studio · Base » (`radius/base`,
+   `font/sans`) à l’état courant, et ne propose que les tokens réellement différents,
+   avec la source « Figma » dans l’historique. Les alias sont résolus, les variables
+   inconnues sont ignorées, une police hors liste est refusée.
+4. Figma stocke du sRGB : deux couleurs sont égales à un demi-niveau 8 bits près, donc
+   un fichier inchangé ne propose rien. Une couleur modifiée dans Figma revient en
+   `#RRGGBB` (ou OKLCH avec opacité), pas en OKLCH d’origine.
+
+Le jeton ne quitte jamais la machine sauf vers `api.figma.com` et n’apparaît dans aucun
+message d’erreur. Testé : parseur sur les valeurs réelles du fichier (0 écart, retouche
+simulée détectée), route HTTP avec Figma simulé. Non testé : appel réseau réel.
 
 La [documentation Figma officielle du serveur distant](https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/)
 indique que seuls les clients du catalogue autorisé peuvent se connecter. Un
