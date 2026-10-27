@@ -389,4 +389,9 @@ test('navigation : filtre de la sidebar, page composant, suivant, mode manuel de
     .getByRole('combobox', { name: 'Mode de travail' })
     .selectOption('manual');
   await expect(page.getByLabel('Votre demande')).toBeDisabled();
+  // Arrivée directe sur une page lointaine : son lien est amené dans la barre latérale.
+  await page.goto('/?direct=1#/composants/sonner');
+  await expect(
+    page.getByRole('link', { name: 'Sonner (toast)', exact: true }),
+  ).toBeInViewport();
 });

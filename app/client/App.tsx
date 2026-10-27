@@ -52,9 +52,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarProvider,
   SidebarTrigger,
   useSidebar,
@@ -130,6 +127,8 @@ function CloseOnNavigate({ routeKey }: { routeKey: string }) {
   }, [routeKey, setOpenMobile]);
   return null;
 }
+/** Ligne de navigation façon doc shadcn : 30 px, 0,8 rem, medium, pastille grise si active. */
+const navItem = 'h-[30px] text-[0.8rem] font-medium';
 const modeLabels: Record<Mode, string> = { light: 'Clair', dark: 'Sombre' };
 // Damier sous la couleur : beaucoup de tokens SortUI ont une opacité.
 const checker =
@@ -264,6 +263,15 @@ export default function App() {
     addEventListener('hashchange', sync);
     return () => removeEventListener('hashchange', sync);
   }, []);
+  // La liste est longue : on amène la page active dans le champ de la barre latérale.
+  const ready = !!state;
+  useEffect(() => {
+    document
+      .querySelector(
+        '[data-sidebar="menu-button"][data-active]:not([data-active="false"])',
+      )
+      ?.scrollIntoView({ block: 'nearest' });
+  }, [route, ready]);
   useEffect(() => {
     const item =
       route.kind === 'component'
@@ -652,62 +660,20 @@ export default function App() {
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>Design System</SidebarGroupLabel>
+            <SidebarGroupLabel className="h-8 text-xs">
+              Sections
+            </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarInput
-                type="search"
-                aria-label="Filtrer les composants"
-                placeholder={`Filtrer les ${pages.length} pages…`}
-                value={navQuery}
-                onChange={(e) => setNavQuery(e.target.value)}
-                className="mb-2"
-              />
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     isActive={!found}
+                    className={navItem}
                     render={<a href="#/tokens" />}
                   >
                     <PaletteIcon /> Tokens
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                {filtered.map((family) => (
-                  <SidebarMenuItem key={family.id}>
-                    <Collapsible
-                      key={q ? 'filtre' : 'normal'}
-                      defaultOpen={
-                        !!q || family.items.some((i) => i.id === found?.id)
-                      }
-                    >
-                      <CollapsibleTrigger className="group/family flex h-8 w-full items-center gap-2 rounded-lg px-2 text-left text-sm outline-none hover:bg-fill-1 focus-visible:ring-2 focus-visible:ring-ring/30">
-                        <ChevronRightIcon className="size-4 text-muted-foreground transition-transform group-aria-expanded/family:rotate-90" />
-                        {family.title}
-                        <span className="ml-auto text-2xs text-muted-foreground tabular-nums">
-                          {family.items.length}
-                        </span>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {family.items.map((item) => (
-                            <SidebarMenuSubItem key={item.id}>
-                              <SidebarMenuSubButton
-                                isActive={item.id === found?.id}
-                                render={<a href={`#/composants/${item.id}`} />}
-                              >
-                                <span>{item.title}</span>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </SidebarMenuItem>
-                ))}
-                {q && !filtered.length && (
-                  <p className="px-2 py-1 text-xs text-muted-foreground">
-                    Aucune page.
-                  </p>
-                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -784,6 +750,47 @@ export default function App() {
               </CollapsibleContent>
             </Collapsible>
           </SidebarGroup>
+          <SidebarGroup>
+            <SidebarGroupLabel className="h-8 text-xs">
+              Composants
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarInput
+                type="search"
+                aria-label="Filtrer les composants"
+                placeholder={`Filtrer les ${pages.length} pages…`}
+                value={navQuery}
+                onChange={(e) => setNavQuery(e.target.value)}
+              />
+            </SidebarGroupContent>
+          </SidebarGroup>
+          {filtered.map((family) => (
+            <SidebarGroup key={family.id}>
+              <SidebarGroupLabel className="h-8 text-xs">
+                {family.title}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {family.items.map((item) => (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        isActive={item.id === found?.id}
+                        className={navItem}
+                        render={<a href={`#/composants/${item.id}`} />}
+                      >
+                        <span>{item.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
+          {q && !filtered.length && (
+            <p className="px-4 py-1 text-xs text-muted-foreground">
+              Aucune page.
+            </p>
+          )}
         </SidebarContent>
         <SidebarFooter className="p-3 text-2xs text-muted-foreground">
           DS-Studio V2 · JSON local → validation → composants SortUI
