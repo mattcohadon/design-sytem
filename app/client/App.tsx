@@ -15,11 +15,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -235,7 +230,10 @@ export default function App() {
   const [route, setRoute] = useState<Route>(
     () => routeOf(location.hash) ?? { kind: 'tokens' },
   );
-  const [tab, setTab] = useState<'page' | 'preview'>('page');
+  const [tab, setTab] = useState<'page' | 'preview' | 'history' | 'project'>(
+    'page',
+  );
+  const [showTokens, setShowTokens] = useState(false);
   const [navQuery, setNavQuery] = useState('');
   const [syncing, setSyncing] = useState(false);
   const [message, setMessage] = useState('');
@@ -678,79 +676,6 @@ export default function App() {
             </SidebarGroupContent>
           </SidebarGroup>
           <SidebarGroup>
-            <SidebarGroupLabel>Projet</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <ProjectBrief />
-            </SidebarGroupContent>
-          </SidebarGroup>
-          <SidebarGroup>
-            <Collapsible className="grid gap-2">
-              <CollapsibleTrigger className="group/history flex h-8 w-full items-center gap-2 rounded-lg px-2 text-left text-sm font-medium outline-none hover:bg-fill-1 focus-visible:ring-2 focus-visible:ring-ring/30">
-                <HistoryIcon className="size-4 text-muted-foreground" />
-                Historique · {state.revision}
-                <ChevronRightIcon className="ml-auto size-4 text-muted-foreground transition-transform group-aria-expanded/history:rotate-90" />
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <section
-                  aria-label="Historique des changements"
-                  className="grid gap-2 px-2"
-                >
-                  <p className="text-xs text-muted-foreground">
-                    Annuler une révision n’écrase pas les autres tokens.
-                    L’annulation s’enregistre elle aussi.
-                  </p>
-                  {!state.history.length && (
-                    <p className="text-xs">
-                      Aucun changement enregistré. Chaque validation apparaîtra
-                      ici, annulable une à une.
-                    </p>
-                  )}
-                  <ol className="grid gap-1.5">
-                    {[...state.history].reverse().map((event) => (
-                      <li
-                        key={event.id}
-                        className="grid gap-1 rounded-lg border p-2 text-xs"
-                      >
-                        <div className="flex items-baseline justify-between gap-2">
-                          <strong className="font-medium">
-                            Révision {event.revision}
-                          </strong>
-                          <Badge variant="outline">
-                            {sourceLabels[event.source]}
-                          </Badge>
-                        </div>
-                        <time className="text-muted-foreground tabular-nums">
-                          {new Date(event.date).toLocaleString('fr-FR')}
-                        </time>
-                        <p className="font-mono text-2xs break-all text-muted-foreground">
-                          {event.patches.map((p) => p.key).join(', ')}
-                        </p>
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          className="w-fit"
-                          onClick={() =>
-                            void perform(async () =>
-                              setProposal(
-                                await request('undo', {
-                                  revision: state.revision,
-                                  id: event.id,
-                                }),
-                              ),
-                            )
-                          }
-                        >
-                          <Undo2Icon data-icon="inline-start" />
-                          Annuler la révision {event.revision}
-                        </Button>
-                      </li>
-                    ))}
-                  </ol>
-                </section>
-              </CollapsibleContent>
-            </Collapsible>
-          </SidebarGroup>
-          <SidebarGroup>
             <SidebarGroupLabel className="h-8 text-xs">
               Composants
             </SidebarGroupLabel>
@@ -877,15 +802,20 @@ export default function App() {
             </label>
           </div>
           <Tabs
-            className="w-full"
+            className="w-full overflow-x-auto"
             value={tab}
-            onValueChange={(v) => setTab(v as 'page' | 'preview')}
+            onValueChange={(v) => setTab(v as typeof tab)}
           >
             <TabsList>
               <TabsTrigger value="page">
                 {found ? 'Composant' : 'Tokens'}
               </TabsTrigger>
               <TabsTrigger value="preview">Aperçu responsive</TabsTrigger>
+              <TabsTrigger value="history">
+                <HistoryIcon className="size-3.5" />
+                Historique · {state.revision}
+              </TabsTrigger>
+              <TabsTrigger value="project">Projet</TabsTrigger>
             </TabsList>
           </Tabs>
           {/* Dans l’en-tête collant : visible quel que soit le défilement. */}
@@ -973,10 +903,73 @@ export default function App() {
               nécessaire
             </p>
           </section>
+        ) : tab === 'history' ? (
+          <section
+            aria-label="Historique des changements"
+            className="mx-auto grid w-full max-w-2xl gap-3 p-4"
+          >
+            <h2 className="text-lg font-semibold tracking-tight">Historique</h2>
+            <p className="text-xs text-muted-foreground">
+              Annuler une révision n’écrase pas les autres tokens. L’annulation
+              s’enregistre elle aussi.
+            </p>
+            {!state.history.length && (
+              <p className="text-xs">
+                Aucun changement enregistré. Chaque validation apparaîtra ici,
+                annulable une à une.
+              </p>
+            )}
+            <ol className="grid gap-1.5">
+              {[...state.history].reverse().map((event) => (
+                <li
+                  key={event.id}
+                  className="grid gap-1 rounded-lg border p-2 text-xs"
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <strong className="font-medium">
+                      Révision {event.revision}
+                    </strong>
+                    <Badge variant="outline">
+                      {sourceLabels[event.source]}
+                    </Badge>
+                  </div>
+                  <time className="text-muted-foreground tabular-nums">
+                    {new Date(event.date).toLocaleString('fr-FR')}
+                  </time>
+                  <p className="font-mono text-2xs break-all text-muted-foreground">
+                    {event.patches.map((p) => p.key).join(', ')}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="w-fit"
+                    onClick={() =>
+                      void perform(async () =>
+                        setProposal(
+                          await request('undo', {
+                            revision: state.revision,
+                            id: event.id,
+                          }),
+                        ),
+                      )
+                    }
+                  >
+                    <Undo2Icon data-icon="inline-start" />
+                    Annuler la révision {event.revision}
+                  </Button>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ) : tab === 'project' ? (
+          <section className="mx-auto grid w-full max-w-2xl gap-3 p-4">
+            <h2 className="text-lg font-semibold tracking-tight">Projet</h2>
+            <ProjectBrief />
+          </section>
         ) : (
           <div
             className={
-              found
+              found && showTokens
                 ? 'grid items-start gap-6 p-4 xl:grid-cols-[minmax(0,1fr)_26rem]'
                 : 'grid gap-6 p-4'
             }
@@ -1000,6 +993,15 @@ export default function App() {
                 <div className="flex items-center gap-2">
                   {found && (
                     <>
+                      <Button
+                        variant={showTokens ? 'secondary' : 'outline'}
+                        size="sm"
+                        aria-pressed={showTokens}
+                        onClick={() => setShowTokens(!showTokens)}
+                      >
+                        <PaletteIcon data-icon="inline-start" />
+                        Tokens
+                      </Button>
                       <Button
                         variant="outline"
                         size="icon-sm"
@@ -1053,7 +1055,7 @@ export default function App() {
                 </>
               )}
             </section>
-            {found && (
+            {found && showTokens && (
               <aside className="grid gap-4 xl:sticky xl:top-20 xl:max-h-[calc(100svh-6rem)] xl:overflow-auto">
                 {editor}
               </aside>

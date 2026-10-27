@@ -52,11 +52,13 @@ test('boucle centrale réelle : diff, validation, propagation, recharge, annulat
   await page.getByLabel('Valeur du token').fill('22');
   await page.getByRole('button', { name: 'Proposer', exact: true }).click();
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
-  await page.getByRole('button', { name: /Historique/ }).click();
+  await page.getByRole('tab', { name: /Historique/ }).click();
   await page
     .getByRole('button', { name: 'Annuler la révision 1', exact: true })
     .click();
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
+  // On revient de l'onglet Historique à la page Tokens.
+  await page.getByRole('tab', { name: 'Tokens', exact: true }).click();
   await expect(mainButton).toHaveCSS(
     'background-color',
     'oklch(0.585 0.233 277.117)',
@@ -212,7 +214,7 @@ test('V2 : brief privé persistant, indépendant du mode IA', async ({
   page,
 }) => {
   await page.goto('/');
-  await page.getByText('Mon PFE · brief privé', { exact: true }).click();
+  await page.getByRole('tab', { name: 'Projet' }).click();
   await page
     .getByLabel('Nom du PFE', { exact: true })
     .fill('Mon atelier accessible');
@@ -225,7 +227,7 @@ test('V2 : brief privé persistant, indépendant du mode IA', async ({
   await page.getByRole('button', { name: 'Enregistrer le brief' }).click();
   await expect(page.getByText('Brief enregistré sur ce poste.')).toBeVisible();
   await page.reload();
-  await page.getByText('Mon PFE · brief privé', { exact: true }).click();
+  await page.getByRole('tab', { name: 'Projet' }).click();
   await expect(page.getByLabel('Nom du PFE', { exact: true })).toHaveValue(
     'Mon atelier accessible',
   );
@@ -383,6 +385,10 @@ test('navigation : filtre de la sidebar, page composant, suivant, mode manuel de
       name: 'Modifier le profil',
     }),
   ).toBeVisible();
+  // Page composant : le composant seul ; l'éditeur de tokens s'affiche à la demande.
+  await expect(page.getByLabel('Valeur du token')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Tokens', exact: true }).click();
+  await expect(page.getByLabel('Valeur du token')).toBeVisible();
   await page.getByRole('link', { name: 'Composant suivant' }).click();
   await expect(page).toHaveURL(/#\/composants\/alert-dialog$/);
   await page
