@@ -42,6 +42,8 @@ test('boucle centrale réelle : diff, validation, propagation, recharge, annulat
     mobile.getByRole('button', { name: 'Réserver une place', exact: true }),
   ).toHaveCSS('background-color', 'rgb(138, 59, 32)');
   await page.reload();
+  // Les démos du catalogue se montent à l’approche du viewport.
+  await page.locator('.catalogue-frame').scrollIntoViewIfNeeded();
   await expect(mainButton).toHaveCSS('background-color', 'rgb(138, 59, 32)');
   await page
     .getByRole('combobox', { name: 'Token', exact: true })

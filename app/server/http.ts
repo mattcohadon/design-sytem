@@ -9,6 +9,7 @@ import { ProjectStore } from './project.js';
 import { projectSchema } from '../shared/project.js';
 import { CodexAdapter } from '../../connectors/agents/codex.js';
 import { unvalidatedAdapter } from '../../connectors/agents/unvalidated.js';
+import { ClaudeAdapter } from '../../connectors/agents/claude.js';
 import type { AgentAdapter } from '../../connectors/agents/types.js';
 import { figmaStatus } from '../../connectors/figma/contract.js';
 import type { RecordInfo } from '../../scripts/runtime.mjs';
@@ -17,13 +18,14 @@ export async function createStudioServer(options: {
   root: string;
   store: Store;
   agent?: AgentAdapter;
+  claude?: AgentAdapter;
   dev?: boolean;
   control?: { record: RecordInfo; stop: () => void };
 }) {
   const { root, store } = options;
   const adapters: Record<string, AgentAdapter> = {
     codex: options.agent ?? new CodexAdapter(),
-    claude: unvalidatedAdapter('claude'),
+    claude: options.claude ?? new ClaudeAdapter(),
     gemini: unvalidatedAdapter('gemini'),
   };
   const project = new ProjectStore(store.directory);
@@ -228,7 +230,12 @@ export async function createStudioServer(options: {
               controller.signal,
             );
             const proposal = reply.changes.length
-              ? store.propose(b.revision, reply.changes, 'codex')
+              ? // Gemini n'atteint jamais ce point : son adaptateur refuse.
+                store.propose(
+                  b.revision,
+                  reply.changes,
+                  b.agent as 'codex' | 'claude',
+                )
               : null;
             return send(200, { message: reply.message, proposal });
           } finally {
@@ -316,7 +323,7 @@ function urlSafeMessage(error: unknown) {
   // Les erreurs agent sont rédigées dans l'adaptateur, jamais de stderr brut ni de stack.
   const message = (error as Error).message ?? '';
   if (
-    /^(CLI |Codex |Version non|Échec Codex|Délai CLI|Demande interrompue|Le CLI|Réponse CLI|claude non|gemini non|Impossible de démarrer)/.test(
+    /^(CLI |Codex |Claude Code |Claude a tenté|Réponse Claude|Version non|Échec Codex|Échec Claude|Délai CLI|Demande interrompue|Le CLI|Réponse CLI|claude non|gemini non|Impossible de démarrer)/.test(
       message,
     )
   )

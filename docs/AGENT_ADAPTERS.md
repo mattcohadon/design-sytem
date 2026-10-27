@@ -36,16 +36,32 @@ Le protocole et la version ont été exécutés, pas seulement décrits. Pour ch
 la version acceptée, refaire le smoke test, le test hostile, le refus sans auth,
 la proposition/validation via API et les essais sur chaque OS cible.
 
-## Claude Code — NOT IMPLEMENTED
+## Claude Code — TESTED sous macOS avec 2.1.311
 
-Point d’extension : `unvalidatedAdapter('claude')`. L’interface affiche son indisponibilité.
-La [documentation officielle headless](https://code.claude.com/docs/en/headless)
-décrit `claude -p` et des sorties structurées. Elle ne valide pas un contrôle des
-permissions par notre interface. Avant activation : vérifier authentification
-sans exporter le cache, désactiver les outils ou construire un protocole de demandes
-d’approbation réellement bloquant, normaliser les erreurs et le JSON, puis tester
-le refus, l’arrêt, le quota, les écritures hors scope et la non-connexion Figma.
-Ne pas remplacer cette qualification par `--dangerously-skip-permissions`.
+`connectors/agents/claude.ts` lance `claude -p --output-format json` avec :
+
+- `--tools ""` : aucun outil (ni fichier, ni shell, ni web) ;
+- `--strict-mcp-config --mcp-config '{"mcpServers":{}}'` : aucun serveur MCP ;
+- `--setting-sources ""` : aucun réglage utilisateur ou projet, donc ni hooks ni plugins ;
+- `--no-session-persistence` : conversation non conservée par le CLI ;
+- `--json-schema` : réponse `{message, changes}` imposée, `key` limitée aux 120 tokens.
+
+Le processus tourne dans un dossier temporaire vide, avec une liste blanche de
+variables d’environnement ; le contexte passe par stdin. `--bare` n’est pas utilisé :
+il refuse l’authentification OAuth du CLI. Le CLI est accepté sur ses capacités
+(options présentes dans `--help`), pas sur une version figée, car il se met à jour
+seul. Une réponse en erreur, illisible, avec un outil tenté ou un token inconnu est
+refusée sans proposition. Les propositions portent la source `claude` et passent par
+le même diff et la même validation humaine que le mode manuel.
+
+Authentification : `claude auth login`, faite par l’utilisateur ; `claude auth status`
+pour vérifier. Tests : `tests/claude.test.ts` (faux CLI) et `tests/http.test.ts`.
+Essai réel (27/10/2026, macOS, CLI 2.1.311, compte claude.ai) : sans connexion, refus
+en moins d’une seconde avec « vérifiez claude auth status » et aucune écriture ;
+connecté, une demande « primaire plus chaleureuse » rend en 22 s une proposition de
+6 tokens (clair et sombre, barre latérale incluse), source `claude`, révision
+inchangée avant validation. Les ratios annoncés par Claude (5,2 / 6,4 / 2,8:1)
+concordent avec `contrast()`. Non testé : quota épuisé, Windows et Linux.
 
 ## Gemini CLI — NOT IMPLEMENTED
 

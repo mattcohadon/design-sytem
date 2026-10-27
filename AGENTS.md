@@ -9,7 +9,7 @@ Lire [START_HERE.md](START_HERE.md). Le contexte appartient à l’étudiant.
 - `app/server/http.ts` : frontière HTTP locale et routes à périmètre fermé.
 - `app/client/sortui/` : composants et blocs SortUI importés (MIT), à modifier avec soin.
 - `app/client/preview/` : catalogue, scénarios et pose des tokens, rendus en iframe.
-- `connectors/agents/` : Codex qualifié, Claude/Gemini explicitement indisponibles.
+- `connectors/agents/` : Codex qualifié, Claude Code sans outils, Gemini indisponible.
 - `connectors/figma/` : contrat seulement, aucune connexion réseau.
 - `workspace/` : PFE, règles, décisions et DS d’exemple versionnables.
 - `.ds-studio/` : état privé d’exécution, jamais à commiter.
