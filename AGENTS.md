@@ -7,7 +7,8 @@ Lire [START_HERE.md](START_HERE.md). Le contexte appartient à l’étudiant.
 - `app/shared/model.ts` : contrat des tokens, validations, diff et variables CSS.
 - `app/server/store.ts` : propositions, journal local et annulations sélectives.
 - `app/server/http.ts` : frontière HTTP locale et routes à périmètre fermé.
-- `app/client/DesignSystem.tsx` : composants uniques partagés entre les viewers.
+- `app/client/sortui/` : composants et blocs SortUI importés (MIT), à modifier avec soin.
+- `app/client/preview/` : catalogue, scénarios et pose des tokens, rendus en iframe.
 - `connectors/agents/` : Codex qualifié, Claude/Gemini explicitement indisponibles.
 - `connectors/figma/` : contrat seulement, aucune connexion réseau.
 - `workspace/` : PFE, règles, décisions et DS d’exemple versionnables.

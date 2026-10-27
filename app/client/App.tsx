@@ -1,21 +1,28 @@
 import { useEffect, useRef, useState } from 'react';
-import { Catalogue, Scenario } from './DesignSystem.js';
 import ProjectBrief from './ProjectBrief.js';
 import { useTokenDraft } from './useTokenDraft.js';
+import { announceChange, useDesignState } from './useDesignState.js';
 import {
   bootstrap,
   commit,
   exportTokens,
-  getState,
   request,
   type Bootstrap,
 } from './api.js';
 import {
-  contrast,
+  contrastPairs,
+  fontFamilies,
+  pairContrast,
+  parseColor,
   tokenKeys,
+  tokenMode,
+  toHex,
+  withHex,
+  type ColorName,
+  type Mode,
   type Proposal,
-  type State,
   type TokenKey,
+  type Tokens,
 } from '../shared/model.js';
 
 const devices = [
@@ -24,54 +31,20 @@ const devices = [
   { label: 'Grand · 430', width: 430 },
   { label: 'Desktop · 1024', width: 1024 },
 ];
-function useDesignState() {
-  const [state, setState] = useState<State>();
-  const [error, setError] = useState('');
-  useEffect(() => {
-    let live = true;
-    let inFlight = false;
-    const refresh = async () => {
-      if (inFlight || !live) return;
-      inFlight = true;
-      try {
-        const s = await getState();
-        if (live) {
-          setState((current) =>
-            !current || s.revision >= current.revision ? s : current,
-          );
-          setError('');
-        }
-      } catch (e) {
-        if (live) setError((e as Error).message);
-      } finally {
-        inFlight = false;
-      }
-    };
-    void refresh();
-    const timer = setInterval(() => void refresh(), 1200);
-    const channel = new BroadcastChannel('ds-studio');
-    channel.onmessage = refresh;
-    return () => {
-      live = false;
-      clearInterval(timer);
-      channel.close();
-    };
-  }, []);
-  return { state, setState, error };
-}
-function announceChange() {
-  const c = new BroadcastChannel('ds-studio');
-  c.postMessage('updated');
-  c.close();
-}
-export function Preview() {
-  const { state, error } = useDesignState();
-  const scenario =
-    new URLSearchParams(location.search).get('scenario') ?? 'cards';
-  return state ? (
-    <Scenario tokens={state.tokens} scenario={scenario} />
-  ) : (
-    <p role="alert">{error || 'Chargement du scénario…'}</p>
+const scenarios = [
+  { id: 'cards', label: 'Découvrir' },
+  { id: 'form', label: 'Inscription' },
+  { id: 'chat', label: 'Assistant (blocs chat)' },
+  { id: 'welcome', label: 'Accueil assistant' },
+  { id: 'widgets', label: 'Widgets' },
+];
+const modeLabels: Record<Mode, string> = { light: 'Clair', dark: 'Sombre' };
+/** Paire de contraste à afficher pour un token : la sienne, sinon primaire / texte. */
+function pairFor(key: TokenKey): [ColorName, ColorName] {
+  const name = key.split('.')[1] as ColorName;
+  return (
+    contrastPairs.find(([fg, bg]) => fg === name || bg === name) ??
+    contrastPairs[1]
   );
 }
 export default function App() {
@@ -86,8 +59,9 @@ export default function App() {
     } catch {
       /* Facultatif. */
     }
-    return 'color.brand';
+    return 'light.primary';
   });
+  const [mode, setMode] = useState<Mode>(() => tokenMode(key) ?? 'light');
   const { draft, setDraft, recovered, discard } = useTokenDraft(
     key,
     state?.tokens[key].$value,
@@ -214,19 +188,29 @@ export default function App() {
     );
   const selectedAgent = agents.find((a) => a.id === agent);
   const staleProposal = !!proposal && proposal.revision !== state.revision;
+  const token = state.tokens[key];
+  const pairMode = tokenMode(key) ?? mode;
+  const pair = pairFor(key);
+  const savedContrast = pairContrast(state.tokens, pairMode, pair);
   const draftContrast =
-    /^#[0-9a-fA-F]{6}$/.test(draft) &&
-    (key === 'color.brand' || key === 'color.onBrand')
-      ? contrast(
-          key === 'color.brand' ? draft : state.tokens['color.brand'].$value,
-          key === 'color.onBrand'
-            ? draft
-            : state.tokens['color.onBrand'].$value,
+    token.$type === 'color' && parseColor(draft) && tokenMode(key)
+      ? pairContrast(
+          {
+            ...state.tokens,
+            [key]: { $type: 'color', $value: draft },
+          } as Tokens,
+          pairMode,
+          pair,
         )
       : undefined;
+  const query = search.trim().toLowerCase();
+  // Sans recherche, seuls les tokens du mode affiché sont listés.
   const matchingKeys = tokenKeys.filter((k) =>
-    k.toLowerCase().includes(search.trim().toLowerCase()),
+    query ? k.toLowerCase().includes(query) : (tokenMode(k) ?? mode) === mode,
   );
+  const pickerHex =
+    token.$type === 'color' ? (toHex(draft) ?? toHex(String(current))) : null;
+  const iframeQuery = `preview=1&mode=${mode}`;
   return (
     <>
       <a className="skip-link" href="#ds-title">
@@ -292,6 +276,12 @@ export default function App() {
           </label>
         </div>
       </div>
+      {boot?.migratedFrom && (
+        <p className="notice migration-notice" role="status">
+          Vos tokens V1 ont été migrés vers le modèle SortUI (clair / sombre).
+          Original conservé dans .ds-studio/{boot.migratedFrom}.
+        </p>
+      )}
       <div className="feedback" aria-live="polite">
         {(error || stateError) && (
           <p className="error" role="alert">
@@ -458,7 +448,7 @@ export default function App() {
               <h2 id="ds-title" tabIndex={-1}>
                 Design System
               </h2>
-              <p>Lisière · exemple fictif, sources locales</p>
+              <p>SortUI · 66 composants, 7 blocs, sources locales</p>
             </div>
             <span className="revision-tag">r{state.revision}</span>
           </div>
@@ -467,13 +457,32 @@ export default function App() {
               <h3>Tokens sémantiques</h3>
               <span>{tokenKeys.length} tokens</span>
             </div>
+            <fieldset className="mode-switch">
+              <legend>Mode affiché</legend>
+              {(['light', 'dark'] as const).map((m) => (
+                <label key={m}>
+                  <input
+                    type="radio"
+                    name="mode"
+                    value={m}
+                    checked={mode === m}
+                    onChange={() => {
+                      setMode(m);
+                      const name = key.split('.')[1];
+                      if (tokenMode(key)) setKey(`${m}.${name}` as TokenKey);
+                    }}
+                  />
+                  {modeLabels[m]}
+                </label>
+              ))}
+            </fieldset>
             <label className="field token-search">
               Rechercher un token
               <input
                 type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="color, space, font…"
+                placeholder="primary, dark.border, radius…"
               />
             </label>
             <p className="token-hint" role="status">
@@ -482,14 +491,16 @@ export default function App() {
             </p>
             <div className="swatches">
               {matchingKeys
-                .filter((k) => k.startsWith('color.'))
+                .filter((k) => state.tokens[k].$type === 'color')
                 .map((k) => (
                   <button
                     title={k}
                     aria-label={`Sélectionner ${k}`}
                     aria-pressed={key === k}
                     key={k}
-                    style={{ background: String(state.tokens[k].$value) }}
+                    style={{
+                      ['--swatch' as string]: String(state.tokens[k].$value),
+                    }}
                     onClick={() => setKey(k)}
                   >
                     <span className="sr-only">{k}</span>
@@ -521,7 +532,7 @@ export default function App() {
                     value={draft}
                     onChange={(e) => setDraft(e.target.value)}
                   >
-                    {['system-ui', 'Arial', 'Georgia', 'Verdana'].map((f) => (
+                    {fontFamilies.map((f) => (
                       <option key={f}>{f}</option>
                     ))}
                   </select>
@@ -547,7 +558,8 @@ export default function App() {
                         ? 'any'
                         : undefined
                     }
-                    maxLength={20}
+                    maxLength={60}
+                    spellCheck={false}
                   />
                 )}
               </label>
@@ -558,17 +570,23 @@ export default function App() {
                 Proposer
               </button>
             </form>
-            {state.tokens[key].$type === 'color' && (
+            {pickerHex && (
               <label className="color-picker">
                 Choisir visuellement
                 <input
                   aria-label="Sélecteur de couleur"
                   type="color"
-                  value={
-                    /^#[0-9a-fA-F]{6}$/.test(draft) ? draft : String(current)
+                  value={pickerHex.toLowerCase()}
+                  onChange={(e) =>
+                    setDraft(
+                      withHex(
+                        parseColor(draft) ? draft : String(current),
+                        e.target.value,
+                      ),
+                    )
                   }
-                  onChange={(e) => setDraft(e.target.value)}
                 />
+                <span>Converti en OKLCH, opacité conservée.</span>
               </label>
             )}
             {draft !== String(current) && (
@@ -584,26 +602,16 @@ export default function App() {
             )}
             <p className="token-hint">
               {state.tokens[key].$type === 'color'
-                ? '#RRGGBB · '
+                ? 'oklch(L C H) ou oklch(L C H / A%), #RRGGBB accepté · '
                 : state.tokens[key].$type === 'dimension'
                   ? 'Pixels, de 0 à 128 · '
                   : ''}
               Rien n’est écrit avant validation.
             </p>
             <p className="contrast" aria-live="polite">
-              Marque / texte sur marque :{' '}
-              <strong>
-                {contrast(
-                  state.tokens['color.brand'].$value,
-                  state.tokens['color.onBrand'].$value,
-                ).toFixed(2)}
-                :1
-              </strong>{' '}
-              ·{' '}
-              {contrast(
-                state.tokens['color.brand'].$value,
-                state.tokens['color.onBrand'].$value,
-              ) >= 4.5
+              {pair[0]} / {pair[1]} ({modeLabels[pairMode].toLowerCase()}) :{' '}
+              <strong>{savedContrast.toFixed(2)}:1</strong> ·{' '}
+              {savedContrast >= 4.5
                 ? 'AA texte courant'
                 : 'Contraste à améliorer'}
             </p>
@@ -618,7 +626,11 @@ export default function App() {
               </p>
             )}
           </div>
-          <Catalogue tokens={state.tokens} />
+          <iframe
+            className="catalogue-frame"
+            title="Catalogue SortUI"
+            src={`/?${iframeQuery}&view=catalogue`}
+          />
         </section>
         <section className="panel mobile-panel" aria-labelledby="mobile-title">
           <div className="panel-heading">
@@ -650,15 +662,18 @@ export default function App() {
                 value={scenario}
                 onChange={(e) => setScenario(e.target.value)}
               >
-                <option value="cards">Découvrir</option>
-                <option value="form">Inscription</option>
+                {scenarios.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.label}
+                  </option>
+                ))}
               </select>
             </label>
           </div>
           <div className="viewport-scroll">
             <iframe
               title="Aperçu responsive"
-              src={`/?preview=1&scenario=${scenario}`}
+              src={`/?${iframeQuery}&scenario=${scenario}`}
               width={devices[device].width}
               height={760}
             />
@@ -671,7 +686,7 @@ export default function App() {
       </main>
       <footer className="studio-footer">
         <span>DS-Studio V2 · Fait pour être transformé.</span>
-        <span>JSON local → validation → composants partagés</span>
+        <span>JSON local → validation → composants SortUI partagés</span>
       </footer>
       <dialog
         ref={dialog}

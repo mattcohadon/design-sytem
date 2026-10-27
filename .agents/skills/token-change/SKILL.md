@@ -16,9 +16,11 @@ L’import affiche une proposition avant acceptation ; ne pas la valider à la p
 de l’étudiant. Si vous intervenez sur le seed à sa demande, préciser qu’il n’est
 chargé que pour un nouveau dossier de données : aucun état personnel ne sera écrasé.
 
-Évaluer l’impact dans `app/client/DesignSystem.tsx` et `app/client/styles.css`.
-Pour la marque, contrôler au minimum action principale, réservation, navigation
-et vue mobile. Calculer le contraste via la fonction `contrast` partagée ; ne pas
+Chaque couleur existe en `light.*` et `dark.*` : vérifier les deux modes. Évaluer
+l’impact dans le catalogue (`app/client/preview/`) et les composants
+`app/client/sortui/components/ui/` qui utilisent la classe Tailwind correspondante
+(`bg-primary`, `text-muted-foreground`…). Pour la marque, contrôler au minimum
+boutons, réservation, onglets et vue mobile. Calculer le contraste via la fonction `contrast` partagée ; ne pas
 qualifier tout le DS accessible à partir d’une seule paire de couleurs.
 
 Donner le nom du token, l’ancienne et la nouvelle valeur, les usages touchés,

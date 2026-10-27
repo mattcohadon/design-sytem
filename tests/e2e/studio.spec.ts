@@ -10,39 +10,42 @@ test('boucle centrale réelle : diff, validation, propagation, recharge, annulat
   await expect(
     page.getByText('Figma non connecté', { exact: true }),
   ).toBeVisible();
-  const catalogue = page.locator('.ds-panel');
-  const mobile = page.frameLocator('iframe');
-  const mainButton = catalogue.getByRole('button', {
-    name: 'Action principale',
-    exact: true,
-  });
-  await expect(mainButton).toHaveCSS('background-color', 'rgb(49, 84, 196)');
+  const catalogue = page.frameLocator('.catalogue-frame');
+  const mobile = page.frameLocator('iframe[title="Aperçu responsive"]');
+  await page.locator('.catalogue-frame').scrollIntoViewIfNeeded();
+  const mainButton = catalogue
+    .locator('#button')
+    .getByRole('button', { name: 'Principal', exact: true });
+  await expect(mainButton).toHaveCSS(
+    'background-color',
+    'oklch(0.585 0.233 277.117)',
+  );
   await page.getByLabel('Valeur du token').fill('#8A3B20');
   await page.getByRole('button', { name: 'Proposer', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText('#3154C4');
+  await expect(dialog).toContainText('oklch(0.585 0.233 277.117)');
   await expect(dialog).toContainText('#8A3B20');
-  await expect(mainButton).toHaveCSS('background-color', 'rgb(49, 84, 196)');
+  await expect(mainButton).toHaveCSS(
+    'background-color',
+    'oklch(0.585 0.233 277.117)',
+  );
   await dialog.getByRole('button', { name: 'Ne pas appliquer' }).click();
-  await expect(mainButton).toHaveCSS('background-color', 'rgb(49, 84, 196)');
+  await expect(mainButton).toHaveCSS(
+    'background-color',
+    'oklch(0.585 0.233 277.117)',
+  );
   await page.getByRole('button', { name: 'Proposer', exact: true }).click();
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
   await expect(mainButton).toHaveCSS('background-color', 'rgb(138, 59, 32)');
   await expect(
-    catalogue.getByRole('button', { name: 'Réserver une place', exact: true }),
-  ).toHaveCSS('background-color', 'rgb(138, 59, 32)');
-  await expect(
     mobile.getByRole('button', { name: 'Réserver une place', exact: true }),
-  ).toHaveCSS('background-color', 'rgb(138, 59, 32)');
-  await expect(
-    mobile.getByRole('button', { name: 'Découvrir', exact: true }),
   ).toHaveCSS('background-color', 'rgb(138, 59, 32)');
   await page.reload();
   await expect(mainButton).toHaveCSS('background-color', 'rgb(138, 59, 32)');
   await page
     .getByRole('combobox', { name: 'Token', exact: true })
-    .selectOption('space.md');
+    .selectOption('radius.base');
   await page.getByLabel('Valeur du token').fill('22');
   await page.getByRole('button', { name: 'Proposer', exact: true }).click();
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
@@ -51,11 +54,14 @@ test('boucle centrale réelle : diff, validation, propagation, recharge, annulat
     .getByRole('button', { name: 'Annuler la révision 1', exact: true })
     .click();
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
-  await expect(mainButton).toHaveCSS('background-color', 'rgb(49, 84, 196)');
-  await expect(mainButton).toHaveCSS('padding-left', '22px');
+  await expect(mainButton).toHaveCSS(
+    'background-color',
+    'oklch(0.585 0.233 277.117)',
+  );
+  await expect(mainButton).toHaveCSS('border-top-left-radius', '22px');
   await expect(
     mobile.getByRole('button', { name: 'Réserver une place', exact: true }),
-  ).toHaveCSS('background-color', 'rgb(49, 84, 196)');
+  ).toHaveCSS('background-color', 'oklch(0.585 0.233 277.117)');
   await page.screenshot({ path: 'test-results/studio.png', fullPage: true });
 });
 
@@ -63,7 +69,8 @@ test('largeurs réelles, interactions, formulaire et desktop responsive', async 
   page,
 }) => {
   await page.goto('/');
-  const frame = page.frameLocator('iframe');
+  const preview = page.locator('iframe[title="Aperçu responsive"]');
+  const frame = page.frameLocator('iframe[title="Aperçu responsive"]');
   for (const [value, width] of [
     ['0', 320],
     ['1', 375],
@@ -73,15 +80,10 @@ test('largeurs réelles, interactions, formulaire et desktop responsive', async 
     await page
       .getByRole('combobox', { name: 'Viewport', exact: true })
       .selectOption(value);
-    await expect(page.locator('iframe')).toHaveAttribute(
-      'width',
-      String(width),
-    );
+    await expect(preview).toHaveAttribute('width', String(width));
     await expect
       .poll(() =>
-        page
-          .locator('iframe')
-          .evaluate((f: HTMLIFrameElement) => f.contentWindow?.innerWidth),
+        preview.evaluate((f: HTMLIFrameElement) => f.contentWindow?.innerWidth),
       )
       .toBe(width);
     expect(
@@ -105,7 +107,7 @@ test('largeurs réelles, interactions, formulaire et desktop responsive', async 
   await expect(
     frame.getByRole('button', { name: 'Réservation confirmée ✓' }),
   ).toBeVisible();
-  await frame.getByRole('button', { name: 'Favoris', exact: true }).click();
+  await frame.getByRole('tab', { name: 'Favoris', exact: true }).click();
   await expect(
     frame.getByText('Vos ateliers favoris apparaîtront ici.'),
   ).toBeVisible();
@@ -156,21 +158,21 @@ test('export navigateur, import valide avec diff, fichier invalide sans écritur
   const { readFile } = await import('node:fs/promises');
   const exported = JSON.parse(await readFile((await file.path())!, 'utf8'));
   expect(exported).toEqual(before.tokens);
-  exported['color.success'].$value = '#125533';
+  exported['light.chart-4'].$value = '#125533';
   await page.locator('input[type=file]').setInputFiles({
     name: 'palette.json',
     mimeType: 'application/json',
     buffer: Buffer.from(JSON.stringify(exported)),
   });
   const dialog = page.getByRole('dialog');
-  await expect(dialog).toContainText('color.success');
+  await expect(dialog).toContainText('light.chart-4');
   expect((await (await page.request.get('/api/state')).json()).revision).toBe(
     before.revision,
   );
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
   await expect(dialog).not.toBeVisible();
   const after = await (await page.request.get('/api/state')).json();
-  expect(after.tokens['color.success'].$value).toBe('#125533');
+  expect(after.tokens['light.chart-4'].$value).toBe('#125533');
   await page.locator('input[type=file]').setInputFiles({
     name: 'invalid.json',
     mimeType: 'application/json',
@@ -188,7 +190,7 @@ test('V2 : contraste proposé immédiat sans modifier les composants enregistré
   await page.goto('/');
   await page
     .getByRole('combobox', { name: 'Token', exact: true })
-    .selectOption('color.brand');
+    .selectOption('light.primary');
   await page.getByLabel('Valeur du token').fill('#FFFFFF');
   await expect(
     page.getByText('Contraste proposé :', { exact: false }),
@@ -198,7 +200,7 @@ test('V2 : contraste proposé immédiat sans modifier les composants enregistré
   ).toContainText('Contraste à améliorer');
   await expect(page.getByRole('dialog')).not.toBeVisible();
   const current = await (await page.request.get('/api/state')).json();
-  expect(current.tokens['color.brand'].$value).not.toBe('#FFFFFF');
+  expect(current.tokens['light.primary'].$value).not.toBe('#FFFFFF');
 });
 
 test('V2 : brief privé persistant, indépendant du mode IA', async ({
@@ -232,13 +234,13 @@ test('V2 : recherche, brouillon récupéré après recharge et abandon sans écr
 }) => {
   await page.goto('/');
   const before = await (await page.request.get('/api/state')).json();
-  await page.getByLabel('Rechercher un token').fill('space');
+  await page.getByLabel('Rechercher un token').fill('radius');
   await expect(
-    page.getByText('3 résultat(s).', { exact: false }),
+    page.getByText('1 résultat(s).', { exact: false }),
   ).toBeVisible();
   await page
     .getByRole('combobox', { name: 'Token', exact: true })
-    .selectOption('space.lg');
+    .selectOption('radius.base');
   await page.getByLabel('Valeur du token').fill('31');
   await expect(
     page.getByText('Brouillon non enregistré.', { exact: false }),
@@ -246,14 +248,14 @@ test('V2 : recherche, brouillon récupéré après recharge et abandon sans écr
   await page.reload();
   await expect(
     page.getByRole('combobox', { name: 'Token', exact: true }),
-  ).toHaveValue('space.lg');
+  ).toHaveValue('radius.base');
   await expect(page.getByLabel('Valeur du token')).toHaveValue('31');
   await expect(
     page.getByText('Brouillon récupéré', { exact: false }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Abandonner le brouillon' }).click();
   await expect(page.getByLabel('Valeur du token')).toHaveValue(
-    String(before.tokens['space.lg'].$value),
+    String(before.tokens['radius.base'].$value),
   );
   expect((await (await page.request.get('/api/state')).json()).revision).toBe(
     before.revision,
@@ -267,14 +269,14 @@ test('V2 : conflit multi-onglets visible dans le diff, aucune perte de données'
   await page.goto('/');
   await page
     .getByRole('combobox', { name: 'Token', exact: true })
-    .selectOption('color.brand');
+    .selectOption('light.primary');
   await page.getByLabel('Valeur du token').fill('#223355');
   await page.getByRole('button', { name: 'Proposer', exact: true }).click();
   const other = await context.newPage();
   await other.goto('/');
   await other
     .getByRole('combobox', { name: 'Token', exact: true })
-    .selectOption('color.brand');
+    .selectOption('light.primary');
   await other.getByLabel('Valeur du token').fill('#664422');
   await other.getByRole('button', { name: 'Proposer', exact: true }).click();
   await other.getByRole('button', { name: 'Valider et enregistrer' }).click();
@@ -286,8 +288,9 @@ test('V2 : conflit multi-onglets visible dans le diff, aucune perte de données'
   ).toBeDisabled();
   await dialog.getByRole('button', { name: 'Ne pas appliquer' }).click();
   expect(
-    (await (await page.request.get('/api/state')).json()).tokens['color.brand']
-      .$value,
+    (await (await page.request.get('/api/state')).json()).tokens[
+      'light.primary'
+    ].$value,
   ).toBe('#664422');
   await other.close();
 });
@@ -315,7 +318,7 @@ test('V2 : capacité de session périmée simulée sans rejeu ambigu', async ({
   });
   await page
     .getByRole('combobox', { name: 'Token', exact: true })
-    .selectOption('color.focus');
+    .selectOption('light.ring');
   await page.getByLabel('Valeur du token').fill('#776622');
   await page.getByRole('button', { name: 'Proposer', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeVisible();

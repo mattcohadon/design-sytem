@@ -81,3 +81,15 @@ brouillon ne garantit pas la reprise après fermeture du navigateur. Le brief
 privé s’enregistre explicitement ; un rechargement demandé avant sauvegarde perd
 ses modifications non enregistrées. Pas d’audit WCAG complet, de test Safari/Firefox
 ou de nouvelle qualification cloud Codex pendant cette livraison.
+
+## Design System SortUI
+
+- Les composants maison (bouton, carte, formulaire, navigation) sont remplacés par
+  les 66 composants et 7 blocs de [SortUI](https://sortui.dev) (MIT), copiés dans
+  `app/client/sortui/` avec Tailwind CSS v4 et Base UI.
+- Tokens v2 : 59 couleurs OKLCH par mode clair / sombre, `radius.base`, `font.sans`.
+  L’éditeur filtre par mode, convertit le sélecteur de couleur en OKLCH et contrôle
+  onze paires de contraste en composant l’opacité sur le fond.
+- Catalogue et scénarios rendus en iframe (`?preview=1`), isolés du chrome de l’atelier.
+  Nouveaux scénarios : assistant (blocs chat), accueil assistant, widgets.
+- Migration automatique et archivée des états V1 (voir [TOKENS](TOKENS.md)).

@@ -15,11 +15,11 @@ l’application, seulement pour exécuter les tests Playwright.
 
 ## Démonstration centrale
 
-Changer `color.brand`, montrer que le diff ne modifie pas encore les boutons,
+Changer `light.primary`, montrer que le diff ne modifie pas encore les boutons,
 refuser une fois, puis accepter. Observer réservation et navigation dans l’iframe.
 Choisir 320 px puis 1024 px, réserver une place ou remplir le formulaire fictif.
-Changer ensuite `space.md`, redémarrer le serveur et annuler la seule première
-révision : l’espacement doit rester changé. Exporter puis réimporter un JSON.
+Changer ensuite `radius.base`, redémarrer le serveur et annuler la seule première
+révision : l’arrondi doit rester changé. Exporter puis réimporter un JSON.
 
 Le DS d’exemple n’est pas la source Figma personnelle d’un étudiant. L’atelier ne
 requiert pas une connexion Figma opérationnelle le premier matin.
