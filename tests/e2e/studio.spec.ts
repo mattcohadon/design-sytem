@@ -366,6 +366,12 @@ test('navigation : filtre de la sidebar, page composant, suivant, mode manuel de
   page,
 }) => {
   await page.goto('/');
+  // Barre latérale ouverte : la barre Claude reste centrée sur la fenêtre (1600 px).
+  const bar = await page
+    .locator('form')
+    .filter({ has: page.getByLabel('Votre demande') })
+    .boundingBox();
+  expect(Math.abs(bar!.x + bar!.width / 2 - 800)).toBeLessThan(2);
   await page.getByLabel('Filtrer les composants').fill('dialog');
   await page.getByRole('link', { name: 'Dialog', exact: true }).click();
   await expect(page).toHaveURL(/#\/composants\/dialog$/);

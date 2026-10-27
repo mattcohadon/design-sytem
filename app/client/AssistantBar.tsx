@@ -10,6 +10,7 @@ import {
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { Button } from '@/components/ui/button';
 import { Message, MessageContent } from '@/components/ui/message';
+import { useSidebar } from '@/components/ui/sidebar';
 import {
   NativeSelect,
   NativeSelectOption,
@@ -34,11 +35,21 @@ interface Props {
 /** Barre d'assistant flottante, centrée en bas : propose des tokens, jamais d'écriture directe. */
 export function AssistantBar(p: Props) {
   const [hidden, setHidden] = useState(false);
+  const { state, isMobile } = useSidebar();
+  // Barre latérale ouverte : on décale la barre de la moitié de sa largeur pour la centrer
+  // sur la fenêtre et non sur le contenu. Sous 1100 px elle recouvrirait la navigation.
+  const onWindow = !isMobile && state === 'expanded';
   const manual = p.agent === 'manual';
   const name = p.agent === 'claude' ? 'Claude' : 'Codex';
   const unavailable = !manual && p.info && !p.info.available;
   return (
-    <div className="pointer-events-none sticky bottom-4 z-30 mt-auto flex justify-center px-4 pt-6">
+    <div
+      className={`pointer-events-none sticky bottom-4 z-30 mt-auto flex justify-center px-4 pt-6 transition-transform duration-200 ${
+        onWindow
+          ? 'min-[1100px]:-translate-x-[calc(var(--sidebar-width)/2)] min-[1100px]:[&>div]:max-w-[min(42rem,calc(100vw_-_2*var(--sidebar-width)_-_2rem))]'
+          : ''
+      }`}
+    >
       <div className="pointer-events-auto grid w-full max-w-2xl gap-2">
         {!hidden && p.chat.length > 0 && (
           <div className="grid max-h-[40svh] gap-2 overflow-auto rounded-2xl border bg-popover p-3 text-popover-foreground shadow-popover">
