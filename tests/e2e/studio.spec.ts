@@ -361,3 +361,28 @@ test('V2 : clavier, mobile 375 px et absence de stockage navigateur', async ({
     await page.locator('body').evaluate((el) => el.scrollWidth <= innerWidth),
   ).toBe(true);
 });
+
+test('navigation : filtre de la sidebar, page composant, suivant, raccourci de la barre Claude', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByLabel('Filtrer les composants').fill('dialog');
+  await page.getByRole('link', { name: 'Dialog', exact: true }).click();
+  await expect(page).toHaveURL(/#\/composants\/dialog$/);
+  await expect(
+    page.getByRole('heading', { name: 'Dialog', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.frameLocator('iframe[title="Composant Dialog"]').getByRole('button', {
+      name: 'Modifier le profil',
+    }),
+  ).toBeVisible();
+  await page.getByRole('link', { name: 'Composant suivant' }).click();
+  await expect(page).toHaveURL(/#\/composants\/alert-dialog$/);
+  await page.keyboard.press('Control+k');
+  await expect(page.getByLabel('Votre demande')).toBeFocused();
+  await page
+    .getByRole('combobox', { name: 'Mode de travail' })
+    .selectOption('manual');
+  await expect(page.getByLabel('Votre demande')).toBeDisabled();
+});

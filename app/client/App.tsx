@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  ChevronLeftIcon,
   ChevronRightIcon,
   DownloadIcon,
   RefreshCwIcon,
@@ -46,6 +47,7 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
+  SidebarInput,
   SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
@@ -235,6 +237,8 @@ export default function App() {
     () => routeOf(location.hash) ?? { kind: 'tokens' },
   );
   const [tab, setTab] = useState<'page' | 'preview'>('page');
+  const [navQuery, setNavQuery] = useState('');
+  const [syncing, setSyncing] = useState(false);
   const [message, setMessage] = useState('');
   const [chat, setChat] = useState<
     { role: 'user' | 'assistant'; text: string }[]
@@ -260,6 +264,13 @@ export default function App() {
     addEventListener('hashchange', sync);
     return () => removeEventListener('hashchange', sync);
   }, []);
+  useEffect(() => {
+    const item =
+      route.kind === 'component'
+        ? manifest.flatMap((f) => f.items).find((i) => i.id === route.id)
+        : undefined;
+    document.title = `${item?.title ?? 'Tokens'} · DS-Studio`;
+  }, [route]);
   useEffect(() => {
     if (agent !== 'manual')
       request<Bootstrap['agents']>('agents')
@@ -386,6 +397,19 @@ export default function App() {
           .flatMap((f) => f.items.map((i) => ({ ...i, family: f.title })))
           .find((i) => i.id === route.id)
       : undefined;
+  const q = navQuery.trim().toLowerCase();
+  const filtered = manifest
+    .map((f) => ({
+      ...f,
+      items: q
+        ? f.items.filter(
+            (i) => i.title.toLowerCase().includes(q) || i.id.includes(q),
+          )
+        : f.items,
+    }))
+    .filter((f) => f.items.length);
+  const pages = manifest.flatMap((f) => f.items);
+  const at = found ? pages.findIndex((i) => i.id === found.id) : -1;
   const editor = (
     <div className="grid gap-4 rounded-2xl border bg-card p-4 text-card-foreground shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -630,6 +654,14 @@ export default function App() {
           <SidebarGroup>
             <SidebarGroupLabel>Design System</SidebarGroupLabel>
             <SidebarGroupContent>
+              <SidebarInput
+                type="search"
+                aria-label="Filtrer les composants"
+                placeholder={`Filtrer les ${pages.length} pages…`}
+                value={navQuery}
+                onChange={(e) => setNavQuery(e.target.value)}
+                className="mb-2"
+              />
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton
@@ -639,10 +671,13 @@ export default function App() {
                     <PaletteIcon /> Tokens
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                {manifest.map((family) => (
+                {filtered.map((family) => (
                   <SidebarMenuItem key={family.id}>
                     <Collapsible
-                      defaultOpen={family.items.some((i) => i.id === found?.id)}
+                      key={q ? 'filtre' : 'normal'}
+                      defaultOpen={
+                        !!q || family.items.some((i) => i.id === found?.id)
+                      }
                     >
                       <CollapsibleTrigger className="group/family flex h-8 w-full items-center gap-2 rounded-lg px-2 text-left text-sm outline-none hover:bg-fill-1 focus-visible:ring-2 focus-visible:ring-ring/30">
                         <ChevronRightIcon className="size-4 text-muted-foreground transition-transform group-aria-expanded/family:rotate-90" />
@@ -668,6 +703,11 @@ export default function App() {
                     </Collapsible>
                   </SidebarMenuItem>
                 ))}
+                {q && !filtered.length && (
+                  <p className="px-2 py-1 text-xs text-muted-foreground">
+                    Aucune page.
+                  </p>
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -770,19 +810,29 @@ export default function App() {
                   ? 'Lire les variables Figma et proposer les différences'
                   : 'Figma non configuré : npm run figma:setup'
               }
+              disabled={syncing}
               onClick={() =>
                 void perform(async () => {
-                  const result = await request<{ proposal: Proposal | null }>(
-                    'figma-sync',
-                    { revision: state.revision },
-                  );
-                  if (result.proposal) setProposal(result.proposal);
-                  else setNotice('Figma et DS-Studio sont déjà identiques.');
+                  setSyncing(true);
+                  try {
+                    const result = await request<{
+                      proposal: Proposal | null;
+                    }>('figma-sync', { revision: state.revision });
+                    if (result.proposal) setProposal(result.proposal);
+                    else setNotice('Figma et DS-Studio sont déjà identiques.');
+                  } finally {
+                    setSyncing(false);
+                  }
                 })
               }
             >
-              <RefreshCwIcon data-icon="inline-start" />
-              <span className="max-sm:sr-only">Sync Figma</span>
+              <RefreshCwIcon
+                data-icon="inline-start"
+                className={syncing ? 'animate-spin' : undefined}
+              />
+              <span className="max-sm:sr-only">
+                {syncing ? 'Lecture de Figma…' : 'Sync Figma'}
+              </span>
             </Button>
             <Button
               variant="outline"
@@ -940,13 +990,48 @@ export default function App() {
                       : 'SortUI · 66 composants, 7 blocs, sources locales'}
                   </p>
                 </div>
-                <Badge variant="outline" className="tabular-nums">
-                  r{state.revision}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  {found && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="icon-sm"
+                        aria-label="Composant précédent"
+                        disabled={at <= 0}
+                        render={
+                          at > 0 ? (
+                            <a href={`#/composants/${pages[at - 1].id}`} />
+                          ) : undefined
+                        }
+                      >
+                        <ChevronLeftIcon />
+                      </Button>
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {at + 1} / {pages.length}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon-sm"
+                        aria-label="Composant suivant"
+                        disabled={at >= pages.length - 1}
+                        render={
+                          at < pages.length - 1 ? (
+                            <a href={`#/composants/${pages[at + 1].id}`} />
+                          ) : undefined
+                        }
+                      >
+                        <ChevronRightIcon />
+                      </Button>
+                    </>
+                  )}
+                  <Badge variant="outline" className="tabular-nums">
+                    r{state.revision}
+                  </Badge>
+                </div>
               </div>
               {found ? (
                 <iframe
-                  className="catalogue-frame h-[min(900px,calc(100svh-14rem))] w-full rounded-2xl border bg-background"
+                  className="catalogue-frame h-[min(640px,calc(100svh-14rem))] w-full rounded-2xl border bg-background"
                   title={`Composant ${found.title}`}
                   src={frameSrc}
                 />
