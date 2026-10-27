@@ -38,7 +38,9 @@ flowchart LR
 | `scripts/launcher.mjs`        | Panneau local sans dépendance, préparation npm confirmée    |
 | `launcher/` et entrées OS     | Interface légère, découverte Node et guide hors ligne       |
 | `app/client/App.tsx`          | Orchestration des trois panneaux, diff et historique        |
-| `app/client/DesignSystem.tsx` | Composants et scénarios partagés, interactions natives      |
+| `app/client/sortui/`          | 66 composants et 7 blocs SortUI (shadcn/ui, Base UI)        |
+| `app/client/preview/`         | Catalogue, scénarios, tokens posés sur `<html>` en iframe   |
+| `app/server/migrate.ts`       | Migration explicite des états V1 vers les tokens SortUI     |
 | `connectors/agents`           | Fournisseurs indépendants, résultat normalisé sans mutation |
 | `connectors/figma`            | Contrat non implémenté, aucune route distante exposée       |
 

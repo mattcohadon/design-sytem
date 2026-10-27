@@ -3,7 +3,8 @@
 Un atelier **web local** pour explorer, modifier et faire évoluer un Design System.
 Ce starter pédagogique est conçu pour devenir **votre outil**, pas pour dicter vos
 choix. Trois panneaux : assistant facultatif, catalogue de composants et viewport
-responsive interactif. Exemple fictif fourni : **Lisière**.
+responsive interactif. Le Design System fourni est **SortUI** (66 composants
+shadcn/ui et 7 blocs, licence MIT), montré sur un scénario fictif : **Lisière**.
 
 **Le mode manuel fonctionne sans compte IA, sans Figma et sans Internet après installation.**
 Une IA cloud nécessite un compte, Internet et du quota. Ce n’est pas un modèle local.
@@ -84,7 +85,8 @@ contenant des espaces est accepté. N’utilisez ni `sudo` ni installation de se
 
 ## Votre première boucle, en deux minutes
 
-1. Dans **Design System**, choisissez `color.brand`, remplacez la valeur par `#8A3B20`.
+1. Dans **Design System**, choisissez `light.primary`, remplacez la valeur par `#8A3B20`
+   (ou `oklch(0.5 0.13 40)`).
 2. Cliquez **Proposer**. Le diff montre l’ancienne et la nouvelle valeur, sans écriture.
 3. Cliquez **Valider et enregistrer**. Boutons, réservation et navigation changent dans les deux vues.
 4. Testez la réservation, puis les viewports 320, 375, 430 et 1024 px (défilement horizontal si nécessaire).
@@ -148,7 +150,7 @@ Inspirez-vous des deux skills fournis, sans copier vos identifiants ou vos conve
 | Fonction                                                            | État et portée                                                                                     |
 | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | Édition manuelle, diff, commit, persistance et annulation sélective | **TESTED**, Linux, API + navigateur + redémarrage processus                                        |
-| Catalogue et viewport responsive, formulaire et navigation          | **TESTED**, Chromium sous Linux                                                                    |
+| Catalogue SortUI (66 composants, 7 blocs), clair / sombre           | **TESTED**, e2e Chromium macOS (10/10) + revue manuelle des 73 démos                               |
 | Import/export JSON local                                            | **TESTED**, API + navigateur                                                                       |
 | Chat Codex, JSON proposé avant acceptation                          | **TESTED**, CLI 0.164.0, compte enseignant disponible pendant la qualification ; quota non garanti |
 | Claude Code / Gemini dans l’application                             | **NOT IMPLEMENTED**, adaptateurs indisponibles et contrat documenté                                |

@@ -84,12 +84,12 @@ try {
   let post = await session();
   const p = await post('proposals', {
     revision: 0,
-    changes: [{ key: 'color.brand', value: '#8A3B20' }],
+    changes: [{ key: 'light.primary', value: '#8A3B20' }],
   });
   await post('commit', { id: p.id });
   assert.equal(
     JSON.parse(await readFile(path.join(data, 'state.json'), 'utf8')).tokens[
-      'color.brand'
+      'light.primary'
     ].$value,
     '#8A3B20',
   );
@@ -109,7 +109,7 @@ try {
   post = await session();
   const state = await (await fetch(origin + '/api/state')).json();
   assert.equal(state.revision, 1);
-  assert.equal(state.tokens['color.brand'].$value, '#8A3B20');
+  assert.equal(state.tokens['light.primary'].$value, '#8A3B20');
   const undo = await post('undo', { revision: 1, id: p.id });
   await post('commit', { id: undo.id });
   if (process.argv.includes('--with-codex')) {
@@ -126,7 +126,7 @@ try {
       await page
         .getByLabel('Votre demande', { exact: true })
         .fill(
-          'Propose exactement color.brand = #8A3B20. Ne change aucun autre token.',
+          'Propose exactement light.primary = #8A3B20. Ne change aucun autre token.',
         );
       await page
         .getByRole('button', { name: 'Envoyer à Codex', exact: true })
@@ -144,7 +144,7 @@ try {
         .click();
       await dialog.waitFor({ state: 'hidden' });
       const updated = await (await fetch(origin + '/api/state')).json();
-      assert.equal(updated.tokens['color.brand'].$value, '#8A3B20');
+      assert.equal(updated.tokens['light.primary'].$value, '#8A3B20');
       const button = page
         .locator('.ds-panel')
         .getByRole('button', { name: 'Action principale', exact: true });

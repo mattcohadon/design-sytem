@@ -29,7 +29,7 @@ test(
     const store = new Store(process.argv[1], JSON.parse(await readFile(new URL(${JSON.stringify(seedUrl)}), 'utf8')));
     await store.init();
     for (let i = 0; i < 2000; i++) {
-      await store.commit(store.propose(i, [{ key: 'space.sm', value: i % 2 ? 9 : 10 }]).id);
+      await store.commit(store.propose(i, [{ key: 'radius.base', value: i % 2 ? 9 : 11 }]).id);
       if (i === 4) process.send?.('ready');
     }
     setInterval(() => {}, 1000);

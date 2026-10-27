@@ -20,12 +20,12 @@ const context = {
 };
 console.log(await agent.status());
 const reply = await agent.reply(
-  'Propose exactement color.brand = #8A3B20. Explique en une phrase. Ne change aucun autre token.',
+  'Propose exactement light.primary = #8A3B20. Explique en une phrase. Ne change aucun autre token.',
   context,
 );
 if (
   reply.changes.length !== 1 ||
-  reply.changes[0].key !== 'color.brand' ||
+  reply.changes[0].key !== 'light.primary' ||
   reply.changes[0].value !== '#8A3B20'
 )
   throw new Error('Proposition différente du scénario attendu.');

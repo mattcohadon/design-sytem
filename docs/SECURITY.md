@@ -64,6 +64,10 @@ pas une preuve mathématique d’absence de secret. Relire le contenu indexé ; 
 `.gitignore` n’efface aucun secret déjà présent dans l’historique. Si un secret a
 été publié, le révoquer par les moyens officiels, pas seulement supprimer le fichier.
 
+La politique CSP autorise `'wasm-unsafe-eval'` : le composant Diff de SortUI colore
+le code avec shiki, dont le moteur est en WebAssembly servi localement. `eval()`
+JavaScript reste interdit et aucun script distant n’est chargé.
+
 Les skills sont des instructions, pas un contrôle d’accès. Le Codex qui développe
 le projet dans un terminal a ses permissions propres, distinctes du profil embarqué.
 

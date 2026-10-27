@@ -3,6 +3,8 @@ export interface Bootstrap {
   csrf: string;
   figma: { label: string; connected: boolean };
   agents: { id: string; available: boolean; detail: string }[];
+  /** Archive de l’état V1 si la migration vers les tokens SortUI vient d’avoir lieu. */
+  migratedFrom: string | null;
 }
 let csrf = '';
 export async function request<T>(

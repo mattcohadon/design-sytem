@@ -5,10 +5,11 @@ description: Auditer la cohérence et les interactions des composants DS-Studio 
 
 # Auditer les composants partagés
 
-La source des deux vues est `app/client/DesignSystem.tsx`. Le chrome de l’atelier
-n’appartient pas au DS ; un changement de marque ne doit pas recolorer ses contrôles.
-Dans `styles.css`, vérifier les règles `.ds` et leurs variables issues de `tokenCss`.
-Ne pas remplacer des usages par des valeurs hexadécimales isolées.
+Les composants viennent de `app/client/sortui/` (SortUI, MIT) ; le catalogue et
+les scénarios sont dans `app/client/preview/`, rendus en iframe avec `sortui.css`.
+Le chrome de l’atelier (`styles.css`) n’appartient pas au DS ; un changement de
+marque ne doit pas recolorer ses contrôles. Vérifier les modes clair et sombre.
+Ne pas remplacer des classes de tokens par des couleurs isolées.
 
 Tester les boutons normal/survol/focus/désactivé, le formulaire avec erreur et
 confirmation locale, ainsi que la navigation. Les inscriptions sont fictives :

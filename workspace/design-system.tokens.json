@@ -1,74 +1,482 @@
 {
-  "color.brand": {
+  "light.background": {
     "$type": "color",
-    "$value": "#3154C4"
+    "$value": "oklch(0.9925 0 0)"
   },
-  "color.brandHover": {
+  "light.foreground": {
     "$type": "color",
-    "$value": "#243F99"
+    "$value": "oklch(0.145 0 0)"
   },
-  "color.onBrand": {
+  "light.card": {
     "$type": "color",
-    "$value": "#FFFFFF"
+    "$value": "oklch(1 0 0)"
   },
-  "color.surface": {
+  "light.card-foreground": {
     "$type": "color",
-    "$value": "#FFFFFF"
+    "$value": "oklch(0.145 0 0)"
   },
-  "color.canvas": {
+  "light.popover": {
     "$type": "color",
-    "$value": "#F3F5FA"
+    "$value": "oklch(1 0 0)"
   },
-  "color.text": {
+  "light.popover-foreground": {
     "$type": "color",
-    "$value": "#19243D"
+    "$value": "oklch(0.145 0 0)"
   },
-  "color.muted": {
+  "light.primary": {
     "$type": "color",
-    "$value": "#536078"
+    "$value": "oklch(0.585 0.233 277.117)"
   },
-  "color.border": {
+  "light.primary-foreground": {
     "$type": "color",
-    "$value": "#BCC5D6"
+    "$value": "oklch(1 0 0)"
   },
-  "color.danger": {
+  "light.secondary": {
     "$type": "color",
-    "$value": "#B4233E"
+    "$value": "oklch(0.97 0 0)"
   },
-  "color.success": {
+  "light.secondary-foreground": {
     "$type": "color",
-    "$value": "#18734B"
+    "$value": "oklch(0.145 0 0)"
   },
-  "color.focus": {
+  "light.muted": {
     "$type": "color",
-    "$value": "#7856C8"
+    "$value": "oklch(0.97 0 0)"
   },
-  "font.family": {
-    "$type": "fontFamily",
-    "$value": "system-ui"
+  "light.muted-foreground": {
+    "$type": "color",
+    "$value": "oklch(0.4975 0 0)"
   },
-  "font.body": {
-    "$type": "dimension",
-    "$value": 16
+  "light.accent": {
+    "$type": "color",
+    "$value": "oklch(0.556 0 0 / 8%)"
   },
-  "font.heading": {
-    "$type": "dimension",
-    "$value": 28
+  "light.accent-foreground": {
+    "$type": "color",
+    "$value": "oklch(0.145 0 0)"
   },
-  "space.sm": {
-    "$type": "dimension",
-    "$value": 8
+  "light.destructive": {
+    "$type": "color",
+    "$value": "oklch(0.637 0.237 25.331)"
   },
-  "space.md": {
-    "$type": "dimension",
-    "$value": 16
+  "light.destructive-foreground": {
+    "$type": "color",
+    "$value": "oklch(0.505 0.213 27.518)"
   },
-  "space.lg": {
-    "$type": "dimension",
-    "$value": 24
+  "light.border": {
+    "$type": "color",
+    "$value": "oklch(0.145 0 0 / 10%)"
   },
-  "radius.control": {
+  "light.input": {
+    "$type": "color",
+    "$value": "oklch(0.145 0 0 / 10%)"
+  },
+  "light.ring": {
+    "$type": "color",
+    "$value": "oklch(0.708 0 0)"
+  },
+  "light.chart-1": {
+    "$type": "color",
+    "$value": "oklch(0.865 0.127 207.078)"
+  },
+  "light.chart-2": {
+    "$type": "color",
+    "$value": "oklch(0.673 0.182 276.935)"
+  },
+  "light.chart-3": {
+    "$type": "color",
+    "$value": "oklch(0.837 0.128 66.29)"
+  },
+  "light.chart-4": {
+    "$type": "color",
+    "$value": "oklch(0.765 0.177 163.223)"
+  },
+  "light.chart-5": {
+    "$type": "color",
+    "$value": "oklch(0.511 0.096 186.391)"
+  },
+  "light.chart-6": {
+    "$type": "color",
+    "$value": "oklch(0.97 0 0)"
+  },
+  "light.chart-7": {
+    "$type": "color",
+    "$value": "oklch(0.718 0.202 349.761)"
+  },
+  "light.chart-8": {
+    "$type": "color",
+    "$value": "oklch(0.811 0.111 293.571)"
+  },
+  "light.chart-9": {
+    "$type": "color",
+    "$value": "oklch(0.841 0.238 128.85)"
+  },
+  "light.chart-10": {
+    "$type": "color",
+    "$value": "oklch(0.5 0.134 242.749)"
+  },
+  "light.sidebar": {
+    "$type": "color",
+    "$value": "oklch(0.985 0 0)"
+  },
+  "light.sidebar-foreground": {
+    "$type": "color",
+    "$value": "oklch(0.145 0 0)"
+  },
+  "light.sidebar-primary": {
+    "$type": "color",
+    "$value": "oklch(0.585 0.233 277.117)"
+  },
+  "light.sidebar-primary-foreground": {
+    "$type": "color",
+    "$value": "oklch(1 0 0)"
+  },
+  "light.sidebar-accent": {
+    "$type": "color",
+    "$value": "oklch(0.556 0 0 / 8%)"
+  },
+  "light.sidebar-accent-foreground": {
+    "$type": "color",
+    "$value": "oklch(0.145 0 0)"
+  },
+  "light.sidebar-border": {
+    "$type": "color",
+    "$value": "oklch(0.145 0 0 / 10%)"
+  },
+  "light.sidebar-ring": {
+    "$type": "color",
+    "$value": "oklch(0.708 0 0)"
+  },
+  "light.fill-1": {
+    "$type": "color",
+    "$value": "oklch(0.556 0 0 / 5%)"
+  },
+  "light.fill-2": {
+    "$type": "color",
+    "$value": "oklch(0.556 0 0 / 8%)"
+  },
+  "light.fill-3": {
+    "$type": "color",
+    "$value": "oklch(0.556 0 0 / 12%)"
+  },
+  "light.fill-4": {
+    "$type": "color",
+    "$value": "oklch(0.556 0 0 / 16%)"
+  },
+  "light.field": {
+    "$type": "color",
+    "$value": "oklch(0.556 0 0 / 2.5%)"
+  },
+  "light.raised": {
+    "$type": "color",
+    "$value": "oklch(1 0 0)"
+  },
+  "light.control": {
+    "$type": "color",
+    "$value": "oklch(1 0 0)"
+  },
+  "light.control-hover": {
+    "$type": "color",
+    "$value": "oklch(0.9925 0 0)"
+  },
+  "light.control-border": {
+    "$type": "color",
+    "$value": "oklch(0.145 0 0 / 10%)"
+  },
+  "light.field-border": {
+    "$type": "color",
+    "$value": "oklch(0.145 0 0 / 10%)"
+  },
+  "light.syntax-foreground": {
+    "$type": "color",
+    "$value": "oklch(0.145 0 0)"
+  },
+  "light.syntax-comment": {
+    "$type": "color",
+    "$value": "oklch(0.4975 0 0)"
+  },
+  "light.syntax-keyword": {
+    "$type": "color",
+    "$value": "oklch(0.577 0.245 27.325)"
+  },
+  "light.syntax-string": {
+    "$type": "color",
+    "$value": "oklch(0.282 0.091 267.935)"
+  },
+  "light.syntax-constant": {
+    "$type": "color",
+    "$value": "oklch(0.488 0.243 264.376)"
+  },
+  "light.syntax-function": {
+    "$type": "color",
+    "$value": "oklch(0.432 0.232 292.759)"
+  },
+  "light.syntax-variable": {
+    "$type": "color",
+    "$value": "oklch(0.666 0.179 58.318)"
+  },
+  "light.syntax-tag": {
+    "$type": "color",
+    "$value": "oklch(0.527 0.154 150.069)"
+  },
+  "light.syntax-added": {
+    "$type": "color",
+    "$value": "oklch(0.723 0.219 149.579 / 8%)"
+  },
+  "light.syntax-removed": {
+    "$type": "color",
+    "$value": "oklch(0.637 0.237 25.331 / 8%)"
+  },
+  "light.syntax-added-word": {
+    "$type": "color",
+    "$value": "oklch(0.723 0.219 149.579 / 20%)"
+  },
+  "light.syntax-removed-word": {
+    "$type": "color",
+    "$value": "oklch(0.637 0.237 25.331 / 20%)"
+  },
+  "dark.background": {
+    "$type": "color",
+    "$value": "oklch(0.145 0 0)"
+  },
+  "dark.foreground": {
+    "$type": "color",
+    "$value": "oklch(0.985 0 0)"
+  },
+  "dark.card": {
+    "$type": "color",
+    "$value": "oklch(0.205 0 0)"
+  },
+  "dark.card-foreground": {
+    "$type": "color",
+    "$value": "oklch(0.985 0 0)"
+  },
+  "dark.popover": {
+    "$type": "color",
+    "$value": "oklch(0.237 0 0)"
+  },
+  "dark.popover-foreground": {
+    "$type": "color",
+    "$value": "oklch(0.985 0 0)"
+  },
+  "dark.primary": {
+    "$type": "color",
+    "$value": "oklch(0.585 0.233 277.117)"
+  },
+  "dark.primary-foreground": {
+    "$type": "color",
+    "$value": "oklch(1 0 0)"
+  },
+  "dark.secondary": {
+    "$type": "color",
+    "$value": "oklch(0.182 0 0)"
+  },
+  "dark.secondary-foreground": {
+    "$type": "color",
+    "$value": "oklch(0.985 0 0)"
+  },
+  "dark.muted": {
+    "$type": "color",
+    "$value": "oklch(0.205 0 0)"
+  },
+  "dark.muted-foreground": {
+    "$type": "color",
+    "$value": "oklch(0.708 0 0)"
+  },
+  "dark.accent": {
+    "$type": "color",
+    "$value": "oklch(1 0 0 / 10%)"
+  },
+  "dark.accent-foreground": {
+    "$type": "color",
+    "$value": "oklch(0.985 0 0)"
+  },
+  "dark.destructive": {
+    "$type": "color",
+    "$value": "oklch(0.637 0.237 25.331)"
+  },
+  "dark.destructive-foreground": {
+    "$type": "color",
+    "$value": "oklch(0.704 0.191 22.216)"
+  },
+  "dark.border": {
+    "$type": "color",
+    "$value": "oklch(1 0 0 / 10%)"
+  },
+  "dark.input": {
+    "$type": "color",
+    "$value": "oklch(1 0 0 / 10%)"
+  },
+  "dark.ring": {
+    "$type": "color",
+    "$value": "oklch(0.556 0 0)"
+  },
+  "dark.chart-1": {
+    "$type": "color",
+    "$value": "oklch(0.865 0.127 207.078)"
+  },
+  "dark.chart-2": {
+    "$type": "color",
+    "$value": "oklch(0.673 0.182 276.935)"
+  },
+  "dark.chart-3": {
+    "$type": "color",
+    "$value": "oklch(0.837 0.128 66.29)"
+  },
+  "dark.chart-4": {
+    "$type": "color",
+    "$value": "oklch(0.765 0.177 163.223)"
+  },
+  "dark.chart-5": {
+    "$type": "color",
+    "$value": "oklch(0.511 0.096 186.391)"
+  },
+  "dark.chart-6": {
+    "$type": "color",
+    "$value": "oklch(0.371 0 0)"
+  },
+  "dark.chart-7": {
+    "$type": "color",
+    "$value": "oklch(0.718 0.202 349.761)"
+  },
+  "dark.chart-8": {
+    "$type": "color",
+    "$value": "oklch(0.811 0.111 293.571)"
+  },
+  "dark.chart-9": {
+    "$type": "color",
+    "$value": "oklch(0.841 0.238 128.85)"
+  },
+  "dark.chart-10": {
+    "$type": "color",
+    "$value": "oklch(0.5 0.134 242.749)"
+  },
+  "dark.sidebar": {
+    "$type": "color",
+    "$value": "oklch(0.205 0 0)"
+  },
+  "dark.sidebar-foreground": {
+    "$type": "color",
+    "$value": "oklch(0.985 0 0)"
+  },
+  "dark.sidebar-primary": {
+    "$type": "color",
+    "$value": "oklch(0.585 0.233 277.117)"
+  },
+  "dark.sidebar-primary-foreground": {
+    "$type": "color",
+    "$value": "oklch(1 0 0)"
+  },
+  "dark.sidebar-accent": {
+    "$type": "color",
+    "$value": "oklch(1 0 0 / 10%)"
+  },
+  "dark.sidebar-accent-foreground": {
+    "$type": "color",
+    "$value": "oklch(0.985 0 0)"
+  },
+  "dark.sidebar-border": {
+    "$type": "color",
+    "$value": "oklch(1 0 0 / 10%)"
+  },
+  "dark.sidebar-ring": {
+    "$type": "color",
+    "$value": "oklch(0.556 0 0)"
+  },
+  "dark.fill-1": {
+    "$type": "color",
+    "$value": "oklch(1 0 0 / 5%)"
+  },
+  "dark.fill-2": {
+    "$type": "color",
+    "$value": "oklch(1 0 0 / 10%)"
+  },
+  "dark.fill-3": {
+    "$type": "color",
+    "$value": "oklch(1 0 0 / 14%)"
+  },
+  "dark.fill-4": {
+    "$type": "color",
+    "$value": "oklch(1 0 0 / 18%)"
+  },
+  "dark.field": {
+    "$type": "color",
+    "$value": "oklch(1 0 0 / 2.5%)"
+  },
+  "dark.raised": {
+    "$type": "color",
+    "$value": "oklch(1 0 0 / 10%)"
+  },
+  "dark.control": {
+    "$type": "color",
+    "$value": "oklch(0.237 0 0)"
+  },
+  "dark.control-hover": {
+    "$type": "color",
+    "$value": "oklch(0.269 0 0)"
+  },
+  "dark.control-border": {
+    "$type": "color",
+    "$value": "oklch(1 0 0 / 10%)"
+  },
+  "dark.field-border": {
+    "$type": "color",
+    "$value": "oklch(1 0 0 / 15%)"
+  },
+  "dark.syntax-foreground": {
+    "$type": "color",
+    "$value": "oklch(0.985 0 0)"
+  },
+  "dark.syntax-comment": {
+    "$type": "color",
+    "$value": "oklch(0.708 0 0)"
+  },
+  "dark.syntax-keyword": {
+    "$type": "color",
+    "$value": "oklch(0.704 0.191 22.216)"
+  },
+  "dark.syntax-string": {
+    "$type": "color",
+    "$value": "oklch(0.882 0.059 254.128)"
+  },
+  "dark.syntax-constant": {
+    "$type": "color",
+    "$value": "oklch(0.707 0.165 254.624)"
+  },
+  "dark.syntax-function": {
+    "$type": "color",
+    "$value": "oklch(0.702 0.183 293.541)"
+  },
+  "dark.syntax-variable": {
+    "$type": "color",
+    "$value": "oklch(0.837 0.128 66.29)"
+  },
+  "dark.syntax-tag": {
+    "$type": "color",
+    "$value": "oklch(0.871 0.15 154.449)"
+  },
+  "dark.syntax-added": {
+    "$type": "color",
+    "$value": "oklch(0.723 0.219 149.579 / 15%)"
+  },
+  "dark.syntax-removed": {
+    "$type": "color",
+    "$value": "oklch(0.637 0.237 25.331 / 10%)"
+  },
+  "dark.syntax-added-word": {
+    "$type": "color",
+    "$value": "oklch(0.723 0.219 149.579 / 30%)"
+  },
+  "dark.syntax-removed-word": {
+    "$type": "color",
+    "$value": "oklch(0.637 0.237 25.331 / 30%)"
+  },
+  "radius.base": {
     "$type": "dimension",
     "$value": 10
+  },
+  "font.sans": {
+    "$type": "fontFamily",
+    "$value": "system-ui"
   }
 }

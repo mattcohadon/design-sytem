@@ -69,7 +69,7 @@ test('API manuelle complète sans IA ni Figma, export égal au disque', async (t
   assert.equal(boot.figma.connected, false);
   const proposed = await post('proposals', {
     revision: 0,
-    changes: [{ key: 'color.brand', value: '#112233' }],
+    changes: [{ key: 'light.primary', value: '#112233' }],
   });
   assert.equal(proposed.status, 200);
   const p = await proposed.json();
@@ -77,21 +77,22 @@ test('API manuelle complète sans IA ni Figma, export égal au disque', async (t
   const accepted = await post('commit', { id: p.id });
   assert.equal(accepted.status, 200);
   assert.equal(
-    (await (await fetch(origin + '/api/export')).json())['color.brand'].$value,
+    (await (await fetch(origin + '/api/export')).json())['light.primary']
+      .$value,
     '#112233',
   );
   const undo = await (await post('undo', { revision: 1, id: p.id })).json();
   assert.equal((await post('commit', { id: undo.id })).status, 200);
   assert.equal(
-    store.snapshot().tokens['color.brand'].$value,
-    seed['color.brand'].$value,
+    store.snapshot().tokens['light.primary'].$value,
+    seed['light.primary'].$value,
   );
 });
 test('CSRF, origine étrangère, rebinding Host et périmètre refusés', async (t) => {
   const { origin, post, store } = await fixture(t);
   const body = {
     revision: 0,
-    changes: [{ key: 'color.brand', value: '#112233' }],
+    changes: [{ key: 'light.primary', value: '#112233' }],
   };
   assert.equal(
     (await post('proposals', body, { 'X-DS-Studio': '' })).status,

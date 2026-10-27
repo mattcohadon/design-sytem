@@ -14,6 +14,7 @@ import {
   type TokenKey,
   type TokenValue,
 } from '../shared/model.js';
+import { migrateV1, v1StateSchema } from './migrate.js';
 
 export class StudioError extends Error {
   constructor(
@@ -28,6 +29,8 @@ export class Store {
   private digest = '';
   private queue: Promise<unknown> = Promise.resolve();
   private proposals = new Map<string, Proposal>();
+  /** Nom de l’archive V1 si l’état vient d’être migré au démarrage. */
+  migratedFrom: string | null = null;
   readonly file: string;
   constructor(
     readonly directory: string,
@@ -42,8 +45,21 @@ export class Store {
       throw new StudioError('Dossier de données symbolique refusé.', 500);
     try {
       const raw = await readPrivate(this.file);
-      this.state = parseStoredState(raw);
-      this.digest = this.hash(raw);
+      if (JSON.parse(raw)?.version === 1) {
+        // Migration explicite : l’original V1 est archivé avant toute écriture V2.
+        const v1 = v1StateSchema.parse(JSON.parse(raw));
+        const archive = path.join(
+          this.directory,
+          `state-v1-preserved-${randomUUID()}.json`,
+        );
+        await atomicWrite(archive, raw);
+        this.state = migrateV1(v1, this.seed);
+        await this.write(this.state);
+        this.migratedFrom = path.basename(archive);
+      } else {
+        this.state = parseStoredState(raw);
+        this.digest = this.hash(raw);
+      }
     } catch (e) {
       if ((e as NodeJS.ErrnoException).code !== 'ENOENT')
         throw new StudioError(
@@ -51,7 +67,7 @@ export class Store {
           500,
         );
       this.state = {
-        version: 1,
+        version: 2,
         revision: 0,
         tokens: structuredClone(this.seed),
         history: [],
@@ -196,7 +212,11 @@ export async function restorePrevious(directory: string) {
   const previous = await readPrivate(
     path.join(directory, 'state.previous.json'),
   );
-  const state = parseStoredState(previous);
+  // Une copie V1 reste restaurable : elle sera migrée au prochain démarrage.
+  const state =
+    JSON.parse(previous)?.version === 1
+      ? v1StateSchema.parse(JSON.parse(previous))
+      : parseStoredState(previous);
   const file = path.join(directory, 'state.json');
   const original = await readPrivate(file);
   const archive = path.join(directory, `state-preserved-${randomUUID()}.json`);
