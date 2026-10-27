@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   ChevronRightIcon,
   DownloadIcon,
+  RefreshCwIcon,
   HistoryIcon,
   SearchIcon,
   SwatchBookIcon,
@@ -115,6 +116,7 @@ const sourceLabels: Record<Proposal['source'], string> = {
   manual: 'Manuel',
   codex: 'Codex',
   claude: 'Claude',
+  figma: 'Figma',
   import: 'Import',
   undo: 'Annulation',
   migration: 'Migration',
@@ -587,6 +589,27 @@ export default function App() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              title={
+                boot?.figma.connected
+                  ? 'Lire les variables Figma et proposer les différences'
+                  : 'Figma non configuré : npm run figma:setup'
+              }
+              onClick={() =>
+                void perform(async () => {
+                  const result = await request<{ proposal: Proposal | null }>(
+                    'figma-sync',
+                    { revision: state.revision },
+                  );
+                  if (result.proposal) setProposal(result.proposal);
+                  else setNotice('Figma et DS-Studio sont déjà identiques.');
+                })
+              }
+            >
+              <RefreshCwIcon data-icon="inline-start" />
+              <span className="max-sm:sr-only">Sync Figma</span>
+            </Button>
             <Button
               variant="outline"
               onClick={() => void perform(exportTokens)}

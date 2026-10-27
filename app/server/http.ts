@@ -12,6 +12,12 @@ import { unvalidatedAdapter } from '../../connectors/agents/unvalidated.js';
 import { ClaudeAdapter } from '../../connectors/agents/claude.js';
 import type { AgentAdapter } from '../../connectors/agents/types.js';
 import { figmaStatus } from '../../connectors/figma/contract.js';
+import {
+  fetchFigmaVariables,
+  figmaChanges,
+  loadFigmaConfig,
+  type FigmaVariablesResponse,
+} from '../../connectors/figma/variables.js';
 import type { RecordInfo } from '../../scripts/runtime.mjs';
 
 export async function createStudioServer(options: {
@@ -19,6 +25,8 @@ export async function createStudioServer(options: {
   store: Store;
   agent?: AgentAdapter;
   claude?: AgentAdapter;
+  /** Tests : remplace l'appel REST Figma. */
+  figmaFetch?: () => Promise<FigmaVariablesResponse>;
   dev?: boolean;
   control?: { record: RecordInfo; stop: () => void };
 }) {
@@ -95,7 +103,13 @@ export async function createStudioServer(options: {
           if (url.pathname === '/api/bootstrap')
             return send(200, {
               csrf,
-              figma: figmaStatus,
+              figma: (await loadFigmaConfig(store.directory))
+                ? {
+                    connected: true,
+                    label: 'Figma : lecture des variables',
+                    writeEnabled: false,
+                  }
+                : figmaStatus,
               agents: [],
               migratedFrom: store.migratedFrom,
             });
@@ -150,6 +164,30 @@ export async function createStudioServer(options: {
         if (url.pathname === '/api/proposals') {
           const b = proposeSchema.parse(body);
           return send(200, store.propose(b.revision, b.changes));
+        }
+        if (url.pathname === '/api/figma-sync') {
+          const b = z
+            .object({ revision: z.number().int().nonnegative() })
+            .strict()
+            .parse(body);
+          const config = await loadFigmaConfig(store.directory);
+          if (!config && !options.figmaFetch)
+            throw new StudioError(
+              'Figma non configuré : lancez « npm run figma:setup » dans le dossier du projet, puis redémarrez DS-Studio.',
+            );
+          const data = options.figmaFetch
+            ? await options.figmaFetch()
+            : await fetchFigmaVariables(config!);
+          const { changes, ignored } = figmaChanges(
+            store.snapshot().tokens,
+            data,
+          );
+          return send(200, {
+            proposal: changes.length
+              ? store.propose(b.revision, changes, 'figma')
+              : null,
+            ignored,
+          });
         }
         if (url.pathname === '/api/import') {
           const b = z
@@ -323,7 +361,7 @@ function urlSafeMessage(error: unknown) {
   // Les erreurs agent sont rédigées dans l'adaptateur, jamais de stderr brut ni de stack.
   const message = (error as Error).message ?? '';
   if (
-    /^(CLI |Codex |Claude Code |Claude a tenté|Réponse Claude|Version non|Échec Codex|Échec Claude|Délai CLI|Demande interrompue|Le CLI|Réponse CLI|claude non|gemini non|Impossible de démarrer)/.test(
+    /^(Figma |Collections |Alias Figma|font\/sans |CLI |Codex |Claude Code |Claude a tenté|Réponse Claude|Version non|Échec Codex|Échec Claude|Délai CLI|Demande interrompue|Le CLI|Réponse CLI|claude non|gemini non|Impossible de démarrer)/.test(
       message,
     )
   )

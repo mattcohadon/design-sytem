@@ -9,6 +9,7 @@ import { Store } from '../app/server/store.js';
 import { tokensSchema } from '../app/shared/model.js';
 import { createStudioServer } from '../app/server/http.js';
 import type { AgentAdapter } from '../connectors/agents/types.js';
+import type { FigmaVariablesResponse } from '../connectors/figma/variables.js';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const seed = tokensSchema.parse(
   JSON.parse(
@@ -32,6 +33,7 @@ async function fixture(
   t: { after: (fn: () => Promise<void>) => void },
   dev = false,
   claude: AgentAdapter = offlineClaude,
+  figmaFetch?: () => Promise<FigmaVariablesResponse>,
 ) {
   const directory = await mkdtemp(path.join(tmpdir(), 'ds-http-'));
   const store = new Store(directory, seed);
@@ -41,6 +43,7 @@ async function fixture(
     store,
     dev,
     claude,
+    figmaFetch,
     agent: {
       id: 'codex',
       async status() {
@@ -285,4 +288,41 @@ test('Claude : proposition sur plusieurs tokens, source « claude », rien sans 
   const commit = await post('commit', { id: proposal.id });
   assert.equal(commit.status, 200);
   assert.equal(store.snapshot().history[0].source, 'claude');
+});
+
+test('Sync Figma : non configuré refusé ; différence proposée avec la source « figma »', async (t) => {
+  const unconfigured = await fixture(t);
+  const refused = await unconfigured.post('figma-sync', { revision: 0 });
+  assert.equal(refused.status, 400);
+  assert.match((await refused.json()).error, /figma:setup/);
+  const { post, store } = await fixture(t, false, offlineClaude, async () => ({
+    meta: {
+      variableCollections: {
+        c: {
+          name: 'DS-Studio · Couleurs',
+          modes: [{ modeId: 'l', name: 'Light' }],
+        },
+        b: {
+          name: 'DS-Studio · Base',
+          modes: [{ modeId: 'v', name: 'Value' }],
+        },
+      },
+      variables: {
+        r: {
+          name: 'radius/base',
+          variableCollectionId: 'b',
+          resolvedType: 'FLOAT',
+          valuesByMode: { v: 14 },
+        },
+      },
+    },
+  }));
+  const response = await post('figma-sync', { revision: 0 });
+  assert.equal(response.status, 200);
+  const { proposal } = await response.json();
+  assert.equal(proposal.source, 'figma');
+  assert.deepEqual(proposal.patches, [
+    { key: 'radius.base', before: 10, after: 14 },
+  ]);
+  assert.equal(store.snapshot().revision, 0);
 });
