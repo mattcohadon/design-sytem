@@ -60,6 +60,7 @@ import { Changelog } from './Changelog.js';
 import { Hero } from './Hero.js';
 import { NextPage, type NextTarget } from './NextPage.js';
 import { isNew, NewTag } from './NewTag.js';
+import { ComponentDocs } from './ComponentDocs.js';
 import { HomeBar, Landing } from './Landing.js';
 import { OnThisPage } from './OnThisPage.js';
 import { Search } from './Search.js';
@@ -1059,6 +1060,11 @@ export default function App() {
                         className="catalogue-frame h-[min(640px,calc(100svh-14rem))] w-full rounded-2xl border bg-background"
                         title={`Composant ${found.title}`}
                         src={frameSrc}
+                      />
+                      <ComponentDocs
+                        id={found.id}
+                        title={found.title}
+                        scope={scope}
                       />
                       <FigmaSpec id={found.id} />
                     </>
