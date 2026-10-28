@@ -67,6 +67,7 @@ import { OnThisPage } from './OnThisPage.js';
 import { Search } from './Search.js';
 import { inScope, useComponentTokens } from './useComponentTokens.js';
 import { manifest } from './preview/manifest.js';
+import pkg from '../../package.json';
 import { useTokenDraft } from './useTokenDraft.js';
 import { announceChange, useDesignState } from './useDesignState.js';
 import {
@@ -812,7 +813,9 @@ export default function App() {
           >
             <SwatchBookIcon className="size-4" />
             <h1 className="text-sm font-medium tracking-tight">Stride UI</h1>
-            <span className="text-xs text-muted-foreground italic">v2.0.4</span>
+            <span className="text-xs text-muted-foreground italic">
+              v{pkg.version}
+            </span>
           </a>
           <div className="ml-auto">
             <Search components={components} blocks={blocks} />
