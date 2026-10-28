@@ -1,11 +1,12 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { CheckIcon, CopyIcon } from 'lucide-react';
+import { CheckIcon, CopyIcon, XIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CodeBlock, copy } from './CodeBlock.js';
 import { extractExample, parseSpec, type Spec } from './codeExtract.js';
 import { docContent } from './docContent.js';
 import { docDetails } from './docDetails.js';
+import { dosDonts } from './dosDonts.js';
 import type { ComponentScope } from './useComponentTokens.js';
 import { manifest } from './preview/manifest.js';
 
@@ -126,6 +127,7 @@ export function ComponentDocs({
   }, [id]);
   const doc = docContent[id];
   const details = docDetails[id];
+  const cases = dosDonts[id];
   // Le contenu d'un autre composant ne doit jamais s'afficher le temps du chargement.
   const loaded = data?.id === id ? data : undefined;
   const spec = loaded?.spec;
@@ -254,6 +256,40 @@ export function ComponentDocs({
                 ))}
               </tbody>
             </table>
+          </div>
+        </Section>
+      )}
+      {cases && (
+        <Section title="À faire et à éviter">
+          <div className="grid gap-4">
+            {cases.map((k) => (
+              <div key={k.when} className="grid gap-2">
+                <h4 className="text-sm font-medium">{k.when}</h4>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <p className="flex gap-2 rounded-xl border p-3 text-sm">
+                    <CheckIcon aria-hidden className="mt-0.5 size-4 shrink-0" />
+                    <span>
+                      <span className="mb-0.5 block text-xs font-medium text-muted-foreground">
+                        À faire
+                      </span>
+                      {k.do}
+                    </span>
+                  </p>
+                  <p className="flex gap-2 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm">
+                    <XIcon
+                      aria-hidden
+                      className="mt-0.5 size-4 shrink-0 text-destructive-foreground"
+                    />
+                    <span>
+                      <span className="mb-0.5 block text-xs font-medium text-muted-foreground">
+                        À éviter
+                      </span>
+                      {k.dont}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </Section>
       )}

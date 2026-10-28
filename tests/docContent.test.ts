@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { parseSpec } from '../app/client/codeExtract.js';
 import { docContent } from '../app/client/docContent.js';
+import { dosDonts } from '../app/client/dosDonts.js';
 import { docDetails } from '../app/client/docDetails.js';
 import { manifest } from '../app/client/preview/manifest.js';
 
@@ -24,4 +25,14 @@ test('les sous-composants documentés existent dans le code du composant', () =>
     for (const part of Object.keys(details.parts))
       assert.ok(exported.has(part), `${id} n'exporte pas ${part}`);
   }
+});
+
+test('chaque page a au moins deux cas « à faire / à éviter » complets', () => {
+  for (const id of ids) {
+    assert.ok((dosDonts[id]?.length ?? 0) >= 2, `cas manquants : ${id}`);
+    for (const k of dosDonts[id])
+      assert.ok(k.when && k.do && k.dont, `cas incomplet : ${id}`);
+  }
+  for (const id of Object.keys(dosDonts))
+    assert.ok(ids.includes(id), `cas pour une page inconnue : ${id}`);
 });

@@ -604,6 +604,7 @@ test('page composant : description, exemple copiable et spécifications lues dan
     'Installation',
     'Exemple',
     'Spécifications',
+    'À faire et à éviter',
     'Code source',
   ])
     await expect(main.getByRole('heading', { name, level: 3 })).toBeVisible();
