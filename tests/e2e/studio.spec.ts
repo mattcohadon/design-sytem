@@ -424,7 +424,16 @@ test('sur cette page : sur une page courte, la progression traverse chaque secti
   );
   expect(max).toBeGreaterThan(100);
   for (let step = 0; step <= 40; step++) {
-    await page.evaluate((y) => scrollTo(0, y), (max * step) / 40);
+    await page.evaluate(
+      async (y) => {
+        scrollTo(0, y);
+        // Deux images : la mesure se fait dans requestAnimationFrame, puis React met à jour.
+        await new Promise((r) =>
+          requestAnimationFrame(() => requestAnimationFrame(r)),
+        );
+      },
+      (max * step) / 40,
+    );
     const index = await toc.evaluate((nav) =>
       [...nav.querySelectorAll('a')].findIndex(
         (a) => a.getAttribute('aria-current') === 'location',
