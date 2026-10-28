@@ -318,6 +318,12 @@ test('exemple de landing : page de vente intégrée à l’atelier, aux couleurs
     .click();
   await expect(frame.getByText(/aucun moyen de paiement/)).toBeVisible();
   await expect(
+    frame.getByRole('link', { name: 'Aller au contenu' }),
+  ).toHaveCount(1);
+  await expect(
+    frame.getByRole('link', { name: 'Voir la démo' }),
+  ).toHaveAttribute('href', '#apercu');
+  await expect(
     page.getByRole('link', { name: 'Ouvrir en plein écran' }),
   ).toHaveAttribute('href', /view=landing/);
 });

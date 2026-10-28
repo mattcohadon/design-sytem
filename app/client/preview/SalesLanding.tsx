@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   ArrowRightIcon,
   BellIcon,
@@ -113,12 +114,22 @@ const clients = [
 ];
 
 export function SalesLanding() {
+  // Ouverte en plein écran, la page porte son propre titre et non celui de l'atelier.
+  useEffect(() => {
+    document.title = 'Orbite · Comprenez vos clients';
+  }, []);
   return (
     <div className="min-h-svh bg-background text-foreground">
+      <a
+        href="#top"
+        className="sr-only z-50 rounded-lg bg-background px-3 py-2 text-sm font-medium shadow-md focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+      >
+        Aller au contenu
+      </a>
       <header className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <a
           href="#top"
-          className="flex items-center gap-2 text-sm font-semibold tracking-tight"
+          className="-mx-1 flex items-center gap-2 px-1 py-2 text-sm font-semibold tracking-tight rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
         >
           <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <SparklesIcon className="size-4" />
@@ -129,49 +140,91 @@ export function SalesLanding() {
           aria-label="Principal"
           className="hidden items-center gap-6 text-sm text-muted-foreground md:flex"
         >
-          <a href="#fonctionnalites" className="hover:text-foreground">
+          <a
+            href="#fonctionnalites"
+            className="rounded-md px-1 py-2 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
+          >
             Fonctionnalités
           </a>
-          <a href="#tarifs" className="hover:text-foreground">
+          <a
+            href="#tarifs"
+            className="rounded-md px-1 py-2 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
+          >
             Tarifs
           </a>
-          <a href="#faq" className="hover:text-foreground">
+          <a
+            href="#faq"
+            className="rounded-md px-1 py-2 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
+          >
             Questions
           </a>
         </nav>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm">
-            Se connecter
-          </Button>
-          <Button size="sm">Essai gratuit</Button>
+          <Button variant="ghost">Se connecter</Button>
+          <Button>Essai gratuit</Button>
         </div>
       </header>
+      <nav
+        aria-label="Sections"
+        className="flex justify-center gap-6 pb-2 text-sm text-muted-foreground md:hidden"
+      >
+        {[
+          ['#fonctionnalites', 'Fonctionnalités'],
+          ['#tarifs', 'Tarifs'],
+          ['#faq', 'Questions'],
+        ].map(([href, label]) => (
+          <a
+            key={href}
+            href={href}
+            className="rounded-md px-1 py-2 outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
 
-      <main id="top">
-        <section className="mx-auto grid max-w-3xl justify-items-center gap-6 px-6 pt-16 pb-12 text-center">
-          <Badge variant="secondary">Nouveau · Tableaux de bord partagés</Badge>
-          <h1 className="text-4xl font-medium tracking-tight text-balance sm:text-6xl">
-            Comprenez vos clients avant qu’ils ne partent
-          </h1>
-          <p className="max-w-xl text-base text-muted-foreground sm:text-lg">
-            Orbite transforme l’usage de votre produit en décisions claires. Une
-            seule vue pour suivre la rétention, repérer les blocages et agir à
-            temps.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Button size="lg">
-              Démarrer gratuitement <ArrowRightIcon data-icon="inline-end" />
-            </Button>
-            <Button size="lg" variant="outline">
-              Voir la démo
-            </Button>
+      <main id="top" tabIndex={-1} className="outline-none">
+        <section className="relative isolate overflow-hidden">
+          <svg
+            aria-hidden
+            viewBox="0 0 1440 520"
+            preserveAspectRatio="xMidYMin slice"
+            fill="none"
+            stroke="currentColor"
+            className="absolute inset-0 -z-10 size-full text-border [mask-image:linear-gradient(to_bottom,black_30%,transparent)]"
+          >
+            <circle cx="720" cy="760" r="480" />
+            <circle cx="720" cy="760" r="640" />
+            <circle cx="720" cy="760" r="800" />
+          </svg>
+          <div className="mx-auto grid max-w-3xl justify-items-center gap-6 px-6 pt-16 pb-12 text-center">
+            <Badge variant="secondary">
+              Nouveau · Tableaux de bord partagés
+            </Badge>
+            <h1 className="text-4xl font-medium tracking-tight text-balance sm:text-6xl">
+              Comprenez vos clients avant qu’ils ne partent
+            </h1>
+            <p className="max-w-xl text-base text-muted-foreground sm:text-lg">
+              Orbite transforme l’usage de votre produit en décisions claires.
+              Une seule vue pour suivre la rétention, repérer les blocages et
+              agir à temps.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <Button size="lg">
+                Démarrer gratuitement <ArrowRightIcon data-icon="inline-end" />
+              </Button>
+              <Button size="lg" variant="outline" render={<a href="#apercu" />}>
+                Voir la démo
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              14 jours gratuits · sans carte bancaire
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            14 jours gratuits · sans carte bancaire
-          </p>
         </section>
 
         <section
+          id="apercu"
           aria-label="Aperçu du produit"
           className="mx-auto grid max-w-6xl gap-4 px-6 pb-16 md:grid-cols-3"
         >
@@ -379,13 +432,22 @@ export function SalesLanding() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-sm text-muted-foreground">
           <p>© 2026 Orbite · Exemple de page, contenu fictif.</p>
           <nav aria-label="Pied de page" className="flex gap-5">
-            <a href="#fonctionnalites" className="hover:text-foreground">
+            <a
+              href="#fonctionnalites"
+              className="rounded-md px-1 py-2 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
+            >
               Fonctionnalités
             </a>
-            <a href="#tarifs" className="hover:text-foreground">
+            <a
+              href="#tarifs"
+              className="rounded-md px-1 py-2 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
+            >
               Tarifs
             </a>
-            <a href="#faq" className="hover:text-foreground">
+            <a
+              href="#faq"
+              className="rounded-md px-1 py-2 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
+            >
               Questions
             </a>
           </nav>
