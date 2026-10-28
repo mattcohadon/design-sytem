@@ -234,3 +234,12 @@ test('navigation : filtre de la sidebar, page composant, suivant, mode manuel de
     page.getByRole('link', { name: 'Sonner (toast)', exact: true }),
   ).toBeInViewport();
 });
+
+test('page composant : spécification Figma issue du snapshot', async ({
+  page,
+}) => {
+  await page.goto('/#/composants/button');
+  const spec = page.getByRole('region', { name: 'Spécification Figma' });
+  await expect(spec).toContainText('Variant');
+  await expect(spec).toContainText('Destructive');
+});

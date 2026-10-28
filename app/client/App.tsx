@@ -62,6 +62,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { AssistantBar } from './AssistantBar.js';
+import { FigmaSpec } from './FigmaSpec.js';
 import { manifest } from './preview/manifest.js';
 import { useTokenDraft } from './useTokenDraft.js';
 import { announceChange, useDesignState } from './useDesignState.js';
@@ -953,11 +954,14 @@ export default function App() {
                 </div>
               </div>
               {found ? (
-                <iframe
-                  className="catalogue-frame h-[min(640px,calc(100svh-14rem))] w-full rounded-2xl border bg-background"
-                  title={`Composant ${found.title}`}
-                  src={frameSrc}
-                />
+                <>
+                  <iframe
+                    className="catalogue-frame h-[min(640px,calc(100svh-14rem))] w-full rounded-2xl border bg-background"
+                    title={`Composant ${found.title}`}
+                    src={frameSrc}
+                  />
+                  <FigmaSpec id={found.id} />
+                </>
               ) : (
                 <>
                   {editor}
