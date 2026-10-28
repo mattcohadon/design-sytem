@@ -515,7 +515,7 @@ test('sur cette page : pas de transition avec la préférence de mouvement rédu
   await expect(
     page.getByRole('navigation', { name: 'Sur cette page' }),
   ).toBeVisible();
-  await page.evaluate(() => scrollTo(0, 200));
+  await page.evaluate(() => scrollTo(0, 500));
   const bar = page.locator(
     'nav[aria-label="Sur cette page"] a[aria-current="location"] [data-progress]',
   );
