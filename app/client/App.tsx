@@ -60,6 +60,8 @@ import { Changelog } from './Changelog.js';
 import { Hero } from './Hero.js';
 import { NextPage, type NextTarget } from './NextPage.js';
 import { isNew, NewTag } from './NewTag.js';
+import { ComponentDocs, CopyExampleButton } from './ComponentDocs.js';
+import { PreviewFrame } from './PreviewFrame.js';
 import { HomeBar, Landing } from './Landing.js';
 import { OnThisPage } from './OnThisPage.js';
 import { Search } from './Search.js';
@@ -122,6 +124,26 @@ const routeOf = (hash: string): Route | null =>
                   id: decodeURIComponent(hash.slice(componentPrefix.length)),
                 }
               : null;
+// Composants dont l'usage ouvre un menu ou une fenêtre : l'aperçu garde de la place pour l'afficher.
+const roomy = new Set([
+  'alert-dialog',
+  'dialog',
+  'sheet',
+  'drawer',
+  'popover',
+  'hover-card',
+  'tooltip',
+  'dropdown-menu',
+  'context-menu',
+  'command',
+  'select',
+  'combobox',
+  'navigation-menu',
+  'menubar',
+  'sonner',
+  'calendar',
+]);
+
 const modeLabels: Record<Mode, string> = { light: 'Clair', dark: 'Sombre' };
 // Damier sous la couleur : beaucoup de tokens SortUI ont une opacité.
 const checker =
@@ -929,8 +951,9 @@ export default function App() {
                   aria-labelledby="ds-title"
                   className="grid min-w-0 gap-4"
                 >
-                  <div className="flex flex-wrap items-center justify-end gap-3">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-3">
+                    {found && <CopyExampleButton id={found.id} />}
+                    <div className="ml-auto flex items-center gap-2">
                       {found && (
                         <>
                           <Button
@@ -1055,10 +1078,15 @@ export default function App() {
                   {found ? (
                     <>
                       <h3 className="sr-only">Aperçu</h3>
-                      <iframe
-                        className="catalogue-frame h-[min(640px,calc(100svh-14rem))] w-full rounded-2xl border bg-background"
+                      <PreviewFrame
                         title={`Composant ${found.title}`}
                         src={frameSrc}
+                        minHeight={roomy.has(found.id) ? 400 : 160}
+                      />
+                      <ComponentDocs
+                        id={found.id}
+                        title={found.title}
+                        scope={scope}
                       />
                       <FigmaSpec id={found.id} />
                     </>

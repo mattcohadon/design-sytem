@@ -591,3 +591,41 @@ test('nouvelle page : le titre et l’accroche se révèlent en décalé (Texts 
       .evaluate((el) => getComputedStyle(el).animationName),
   ).toBe('none');
 });
+
+test('page composant : description, exemple copiable et spécifications lues dans le code', async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/#/composants/button');
+  const main = page.getByRole('main');
+  for (const name of [
+    'Description',
+    'Installation',
+    'Exemple',
+    'Spécifications',
+    'À faire et à éviter',
+    'Code source',
+  ])
+    await expect(main.getByRole('heading', { name, level: 3 })).toBeVisible();
+  // Variantes lues dans le cva du composant, valeur par défaut marquée.
+  const specs = main.getByRole('region', { name: 'Spécifications' });
+  await expect(specs).toContainText('Variante · variant');
+  await expect(specs).toContainText('default (défaut)');
+  await expect(specs).toContainText('destructive');
+  // Le bouton copie le code de l'exemple.
+  const example = main.getByRole('region', { name: 'Exemple' });
+  await example.getByRole('button', { name: /Copier/ }).click();
+  await expect(example.getByRole('button', { name: /Copié/ })).toBeVisible();
+  const clip = await page.evaluate(() => navigator.clipboard.readText());
+  expect(clip).toContain("import { Button } from '@/components/ui/button';");
+  expect(clip).toContain('<Button variant="outline">Contour</Button>');
+  // Une page sans exemple extractible n'invente rien : un autre composant a le sien.
+  await page.goto('/#/composants/dialog');
+  await expect(main.getByRole('region', { name: 'Exemple' })).toContainText(
+    'Dialog',
+  );
+  await expect(main.getByRole('region', { name: 'Exemple' })).not.toContainText(
+    'variant="outline">Contour',
+  );
+});
