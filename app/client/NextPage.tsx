@@ -8,24 +8,45 @@ export interface NextTarget {
 
 // Distance de défilement « en trop » (px de molette ; glissé tactile ×1,5) pour ouvrir la page suivante.
 const THRESHOLD = 1000;
+// Part de l'écart restant rattrapée à chaque image : plus petit = plus doux.
+const FOLLOW = 0.14;
 const atBottom = () =>
   innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
 
 /**
- * Fin de page : continuer à défiler en bas fait monter un demi-cercle depuis le bord inférieur de
+ * Fin de page : continuer à défiler en bas fait monter un demi-cercle gris depuis le bord inférieur de
  * l'écran ; quand il est plein, la page suivante s'ouvre. Le lien reste cliquable et atteignable au clavier.
+ * Le demi-cercle est animé hors de React (une écriture de style par image) pour rester fluide.
  */
 export function NextPage({ next }: { next: NextTarget }) {
-  const [pull, setPull] = useState(0);
+  const [active, setActive] = useState(false);
   const [leaving, setLeaving] = useState(false);
-  const state = useRef({ pull: 0, locked: false, lastWheel: 0, touchY: 0 });
+  const circle = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const s = state.current;
-    s.pull = 0;
+    const s = { pull: 0, locked: false, lastWheel: 0, touchY: 0 };
+    const view = { target: 0, shown: 0, frame: 0 };
     let reset = 0;
+    const paint = () => {
+      view.frame = 0;
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      view.shown = reduce
+        ? view.target
+        : view.shown + (view.target - view.shown) * FOLLOW;
+      if (Math.abs(view.target - view.shown) < 0.002) view.shown = view.target;
+      if (circle.current)
+        circle.current.style.transform = `translate3d(-50%, 50%, 0) scale(${view.shown})`;
+      if (view.shown !== view.target) view.frame = requestAnimationFrame(paint);
+    };
+    const move = (ratio: number) => {
+      view.target = ratio;
+      if (circle.current)
+        circle.current.dataset.pull = String(Math.round(ratio * 100));
+      view.frame ||= requestAnimationFrame(paint);
+    };
     const set = (value: number) => {
       s.pull = Math.max(0, Math.min(value, THRESHOLD));
-      setPull(s.pull);
+      move(s.pull / THRESHOLD);
+      setActive(s.pull > 0);
       clearTimeout(reset);
       // Sans nouveau geste, le demi-cercle redescend.
       if (s.pull > 0 && s.pull < THRESHOLD)
@@ -35,12 +56,13 @@ export function NextPage({ next }: { next: NextTarget }) {
       s.locked = true;
       s.pull = 0;
       // Le demi-cercle reste plein le temps de l'ouverture, puis s'efface en fondu.
-      setPull(THRESHOLD);
+      move(1);
       setLeaving(true);
       location.hash = next.href;
       reset = window.setTimeout(() => {
         setLeaving(false);
-        setPull(0);
+        setActive(false);
+        move(0);
       }, 500);
     };
     const ignored = (target: EventTarget | null) =>
@@ -85,16 +107,13 @@ export function NextPage({ next }: { next: NextTarget }) {
     addEventListener('touchend', onTouchEnd, { passive: true });
     return () => {
       clearTimeout(reset);
+      cancelAnimationFrame(view.frame);
       removeEventListener('wheel', onWheel);
       removeEventListener('touchstart', onTouchStart);
       removeEventListener('touchmove', onTouchMove);
       removeEventListener('touchend', onTouchEnd);
     };
   }, [next.href]);
-  const active = pull > 0;
-  const ratio = pull / THRESHOLD;
-  // Rayon final : le demi-cercle couvre l'écran en largeur comme en hauteur.
-  const radius = Math.ceil(Math.hypot(innerWidth / 2, innerHeight) * 1.05);
   return (
     <>
       <a
@@ -121,16 +140,19 @@ export function NextPage({ next }: { next: NextTarget }) {
         </span>
       </a>
       {createPortal(
+        // Cercle centré sur le bord inférieur : seule sa moitié haute est visible. Son diamètre est
+        // borné (moitié de la hauteur d'écran au plus) : il ne recouvre jamais toute la page.
+        // « multiply » laisse le texte lisible par-dessus le gris.
         <div
+          ref={circle}
           aria-hidden
-          data-pull={Math.round(ratio * 100)}
-          className="pointer-events-none fixed bottom-0 left-1/2 z-20 rounded-full bg-primary/15 ring-1 ring-primary/25 transition-[transform,opacity] ease-out motion-reduce:transition-none"
+          data-pull="0"
+          className="pointer-events-none fixed bottom-0 left-1/2 z-20 rounded-full bg-[#ededed] mix-blend-multiply transition-opacity ease-out will-change-transform motion-reduce:transition-none dark:bg-white/10 dark:mix-blend-normal"
           style={{
-            width: radius * 2,
-            height: radius * 2,
-            // Centré sur le bord inférieur : seule la moitié haute est visible, c'est le demi-cercle.
-            transform: `translate(-50%, 50%) scale(${ratio})`,
-            opacity: leaving ? 0 : active ? 1 : 0,
+            width: 'min(100svh, 90vw, 960px)',
+            height: 'min(100svh, 90vw, 960px)',
+            transform: 'translate3d(-50%, 50%, 0) scale(0)',
+            opacity: active || leaving ? (leaving ? 0 : 1) : 0,
             transitionDuration: leaving ? '450ms' : '250ms',
           }}
         />,
