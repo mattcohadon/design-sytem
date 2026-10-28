@@ -275,6 +275,14 @@ export default function App() {
   const scope = useComponentTokens(
     route.kind === 'component' ? route.id : undefined,
   );
+  useEffect(() => {
+    if (!showTokens) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowTokens(false);
+    };
+    addEventListener('keydown', onKey);
+    return () => removeEventListener('keydown', onKey);
+  }, [showTokens]);
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains('dark'),
   );
@@ -636,7 +644,7 @@ export default function App() {
   );
   const frameSrc = `/?${iframeQuery}&view=component&id=${found?.id ?? 'button'}`;
   const navLink = (active: boolean) =>
-    `block rounded-lg px-2.5 py-1.5 text-sm hover:bg-fill-1 ${
+    `block rounded-lg px-2.5 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/30 hover:bg-fill-1 ${
       active ? 'bg-fill-2 font-medium' : 'text-foreground/80'
     }`;
   const navTitle = 'px-2.5 pb-1 text-xs text-muted-foreground';
@@ -724,7 +732,10 @@ export default function App() {
               {navList}
             </SheetContent>
           </Sheet>
-          <a href="#/" className="flex items-center gap-2">
+          <a
+            href="#/"
+            className="-mx-1.5 flex items-center gap-2 rounded-lg px-1.5 py-2 outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+          >
             <SwatchBookIcon className="size-4" />
             <h1 className="text-sm font-medium tracking-tight">Stride UI</h1>
           </a>
@@ -741,7 +752,7 @@ export default function App() {
                 key={kind}
                 href={href}
                 aria-current={route.kind === kind ? 'page' : undefined}
-                className={`rounded-lg px-2.5 py-1 transition-colors ${extra} ${
+                className={`rounded-lg px-2.5 py-1.5 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/30 ${extra} ${
                   route.kind === kind
                     ? 'bg-fill-2 font-medium text-foreground'
                     : 'text-muted-foreground hover:text-foreground'
@@ -762,6 +773,11 @@ export default function App() {
               const next = !dark;
               document.documentElement.classList.toggle('dark', next);
               setDark(next);
+              try {
+                localStorage.setItem('stride-theme', next ? 'dark' : 'light');
+              } catch {
+                /* Facultatif : sans stockage, le thème suit le système. */
+              }
               const m: Mode = next ? 'dark' : 'light';
               setMode(m);
               if (tokenMode(key))
@@ -1015,6 +1031,7 @@ export default function App() {
                 </div>
                 {found ? (
                   <>
+                    <h3 className="sr-only">Aperçu</h3>
                     <iframe
                       className="catalogue-frame h-[min(640px,calc(100svh-14rem))] w-full rounded-2xl border bg-background"
                       title={`Composant ${found.title}`}

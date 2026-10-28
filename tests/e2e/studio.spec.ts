@@ -277,3 +277,23 @@ test('pages Bienvenue et Démarrage dans la navigation flottante', async ({
     page.getByRole('button', { name: 'Ouvrir la navigation' }),
   ).toBeHidden();
 });
+
+test('accessibilité : anneau de focus, Échap ferme les tokens, thème mémorisé', async ({
+  page,
+}) => {
+  await page.goto('/#/composants/alert');
+  const link = page.getByRole('link', { name: 'Tokens', exact: true }).first();
+  await link.focus();
+  await expect(link).toHaveCSS('box-shadow', /rgba?\(|oklch/);
+  await page.getByRole('button', { name: 'Tokens', exact: true }).click();
+  await expect(
+    page.getByRole('complementary', { name: 'Éditeur de tokens' }),
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(
+    page.getByRole('complementary', { name: 'Éditeur de tokens' }),
+  ).toHaveCount(0);
+  await page.getByRole('button', { name: 'Passer au thème sombre' }).click();
+  await page.reload();
+  await expect(page.locator('html')).toHaveClass(/dark/);
+});
