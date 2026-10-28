@@ -18,6 +18,9 @@ export const slug = (name: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 
+/** Date de la dernière synchro Figma (absente d'un ancien snapshot). */
+export const syncedAt = (snapshot as { syncedAt?: string }).syncedAt;
+
 /** Identifiants de pages qui existent aussi dans la bibliothèque Figma. */
 export const figmaIds = new Set(
   (snapshot.componentSets as FigmaSet[]).map((x) => slug(x.name)),

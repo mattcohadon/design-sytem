@@ -1,8 +1,12 @@
 import { Badge } from '@/components/ui/badge';
-import { figmaIds } from './FigmaSpec.js';
+import { figmaIds, syncedAt } from './FigmaSpec.js';
 
-/** Un composant est « nouveau » dès qu'il vient de la bibliothèque Figma (snapshot de la synchro). */
-export const isNew = (id: string) => figmaIds.has(id);
+const NEW_DAYS = 30;
+
+/** Un composant est « nouveau » s'il vient de la bibliothèque Figma, jusqu'à 30 jours après la synchro. */
+export const isNew = (id: string) =>
+  figmaIds.has(id) &&
+  (!syncedAt || Date.now() - Date.parse(syncedAt) < NEW_DAYS * 864e5);
 
 export function NewTag() {
   return (

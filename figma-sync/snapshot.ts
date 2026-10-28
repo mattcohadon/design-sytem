@@ -21,6 +21,8 @@ export interface SnapshotStyle extends SnapshotComponent {
 }
 export interface Snapshot {
   fileKey: string;
+  /** Date de la synchro : le tag « New » expire 30 jours après. */
+  syncedAt?: string;
   components: SnapshotComponent[];
   componentSets: SnapshotSet[];
   styles: SnapshotStyle[];
@@ -133,7 +135,13 @@ export async function buildSnapshot(
       type: s.style_type,
     }))
     .sort(byKey);
-  return { fileKey, components, componentSets, styles: styleList };
+  return {
+    fileKey,
+    syncedAt: new Date().toISOString(),
+    components,
+    componentSets,
+    styles: styleList,
+  };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
