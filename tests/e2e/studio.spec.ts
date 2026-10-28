@@ -390,15 +390,43 @@ test('sur cette page : la barre de progression suit le défilement puis passe à
       await current.locator('[data-progress]').getAttribute('data-progress'),
     );
   // Dans la première section : la barre est derrière « Composants » et avance.
-  await page.evaluate(() => scrollTo(0, 500));
+  await page.evaluate(() => scrollTo(0, 200));
   await expect(current).toContainText('Composants');
   const first = await progress();
   expect(first).toBeGreaterThan(0);
-  await page.evaluate(() => scrollTo(0, 800));
+  await page.evaluate(() => scrollTo(0, 400));
   await expect.poll(progress).toBeGreaterThan(first);
   // Tout en bas : la barre est passée sur « Blocs », pleine.
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
   await expect(current).toContainText('Blocs');
   await expect.poll(progress).toBe(1);
   await expect(toc.locator('[data-progress]')).toHaveCount(1);
+});
+
+test('sur cette page : sur une page courte, la progression traverse chaque section sans en sauter', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1600, height: 560 });
+  await page.goto('/#/demarrage');
+  const toc = page.getByRole('navigation', { name: 'Sur cette page' });
+  await expect(toc).toBeVisible();
+  const total = await toc.getByRole('link').count();
+  expect(total).toBe(5);
+  const visited: number[] = [];
+  const max = await page.evaluate(
+    () => document.documentElement.scrollHeight - innerHeight,
+  );
+  expect(max).toBeGreaterThan(100);
+  for (let step = 0; step <= 40; step++) {
+    await page.evaluate((y) => scrollTo(0, y), (max * step) / 40);
+    const index = await toc.evaluate((nav) =>
+      [...nav.querySelectorAll('a')].findIndex(
+        (a) => a.getAttribute('aria-current') === 'location',
+      ),
+    );
+    if (visited.at(-1) !== index) visited.push(index);
+  }
+  // Chaque section est traversée dans l'ordre, y compris la dernière, sans saut de 1 à 5.
+  const real = visited.filter((i) => i >= 0);
+  expect(real).toEqual([0, 1, 2, 3, 4]);
 });

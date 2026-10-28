@@ -39,30 +39,36 @@ export function OnThisPage({ routeKey }: { routeKey: string }) {
     let frame = 0;
     const measure = () => {
       frame = 0;
-      const tops = entries.map(
-        (e) => document.getElementById(e.id)?.getBoundingClientRect().top ?? 0,
+      const maxScroll = document.documentElement.scrollHeight - innerHeight;
+      if (maxScroll <= 0) {
+        setActive((cur) =>
+          cur.index === -1 ? cur : { index: -1, progress: 0 },
+        );
+        return;
+      }
+      // Position de défilement à laquelle le titre de chaque section atteint la ligne de lecture.
+      const n = entries.length;
+      const starts = entries.map(
+        (e) =>
+          scrollY +
+          (document.getElementById(e.id)?.getBoundingClientRect().top ?? 0) -
+          READING_LINE,
       );
+      // Sur une page courte, les dernières sections ne seraient jamais atteintes : on répartit
+      // toute la plage de défilement entre les sections, pour une progression régulière.
+      const share = (maxScroll * (n - 1)) / n;
+      const k = starts[n - 1] > share ? share / Math.max(starts[n - 1], 1) : 1;
+      const marks = [...starts.map((v) => Math.max(v, 0) * k), maxScroll];
       let index = -1;
-      tops.forEach((top, i) => {
-        if (top <= READING_LINE) index = i;
-      });
+      for (let i = 0; i < n; i++) if (scrollY >= marks[i] - 1) index = i;
       let next: Active = { index, progress: 0 };
       if (index >= 0) {
-        // La dernière section s'étend jusqu'au bas du contenu principal.
-        const end =
-          index + 1 < tops.length
-            ? tops[index + 1]
-            : (document.querySelector('main')?.getBoundingClientRect().bottom ??
-              tops[index]);
-        const span = Math.max(end - tops[index], 1);
+        const span = Math.max(marks[index + 1] - marks[index], 1);
         next.progress = Math.min(
           1,
-          Math.max(0, (READING_LINE - tops[index]) / span),
+          Math.max(0, (scrollY - marks[index]) / span),
         );
       }
-      // En bas de page, une dernière section courte ne remonterait jamais jusqu'à la ligne.
-      if (innerHeight + scrollY >= document.documentElement.scrollHeight - 2)
-        next = { index: entries.length - 1, progress: 1 };
       next.progress = Math.round(next.progress * 200) / 200;
       setActive((cur) =>
         cur.index === next.index && cur.progress === next.progress ? cur : next,
