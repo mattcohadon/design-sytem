@@ -15,7 +15,7 @@ function Page({
         <h2
           id="ds-title"
           tabIndex={-1}
-          className="font-serif text-5xl tracking-tight outline-none"
+          className="text-3xl font-medium tracking-tight outline-none"
         >
           {title}
         </h2>
@@ -27,7 +27,7 @@ function Page({
 }
 
 const H = ({ children }: { children: ReactNode }) => (
-  <h3 className="font-serif text-2xl tracking-tight">{children}</h3>
+  <h3 className="text-lg font-medium tracking-tight">{children}</h3>
 );
 const List = ({ items }: { items: ReactNode[] }) => (
   <ul className="grid gap-2 pl-5 [&>li]:list-disc [&>li]:marker:text-muted-foreground">
@@ -140,7 +140,7 @@ npm start`}</Code>
       <section className="grid gap-3">
         <H>5. Annuler ou exporter</H>
         <p>
-          L’onglet « Historique » annule une révision précise sans toucher aux
+          La page « Changelog » annule une révision précise sans toucher aux
           autres. « Exporter les tokens » et « Importer un JSON » servent à
           passer vos tokens à une autre application.
         </p>

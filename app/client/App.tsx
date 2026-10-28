@@ -5,6 +5,10 @@ import {
   DownloadIcon,
   RefreshCwIcon,
   HistoryIcon,
+  MoonIcon,
+  SunIcon,
+  XIcon,
+  MenuIcon,
   SearchIcon,
   PaletteIcon,
   SwatchBookIcon,
@@ -23,6 +27,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Field, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 
 import {
   InputGroup,
@@ -35,23 +46,6 @@ import {
 } from '@/components/ui/native-select';
 import { Separator } from '@/components/ui/separator';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInput,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-  useSidebar,
-} from '@/components/ui/sidebar';
-import {
   Table,
   TableBody,
   TableCell,
@@ -59,12 +53,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { AssistantBar } from './AssistantBar.js';
 import { FigmaSpec } from './FigmaSpec.js';
 import { GetStarted, Welcome } from './Docs.js';
 import { Landing } from './Landing.js';
+import { OnThisPage } from './OnThisPage.js';
+import { inScope, useComponentTokens } from './useComponentTokens.js';
 import { manifest } from './preview/manifest.js';
 import { useTokenDraft } from './useTokenDraft.js';
 import { announceChange, useDesignState } from './useDesignState.js';
@@ -95,6 +90,7 @@ type Route =
   | { kind: 'home' }
   | { kind: 'welcome' }
   | { kind: 'start' }
+  | { kind: 'history' }
   | { kind: 'tokens' }
   | { kind: 'component'; id: string };
 const componentPrefix = '#/composants/';
@@ -102,6 +98,7 @@ const pageLabels: Partial<Record<Route['kind'], string>> = {
   home: 'Composants',
   welcome: 'Bienvenue',
   start: 'Démarrage',
+  history: 'Changelog',
 };
 /** Seuls #/, #/tokens et #/composants/<id> sont des pages ; #ds-title (lien d’évitement) est ignoré. */
 const routeOf = (hash: string): Route | null =>
@@ -109,26 +106,18 @@ const routeOf = (hash: string): Route | null =>
     ? { kind: 'home' }
     : hash === '#/bienvenue'
       ? { kind: 'welcome' }
-      : hash === '#/demarrage'
-        ? { kind: 'start' }
-        : hash === '#/tokens'
-          ? { kind: 'tokens' }
-          : hash.startsWith(componentPrefix)
-            ? {
-                kind: 'component',
-                id: decodeURIComponent(hash.slice(componentPrefix.length)),
-              }
-            : null;
-/** Referme le panneau mobile après un clic de navigation. */
-function CloseOnNavigate({ routeKey }: { routeKey: string }) {
-  const { setOpenMobile } = useSidebar();
-  useEffect(() => {
-    setOpenMobile(false);
-  }, [routeKey, setOpenMobile]);
-  return null;
-}
-/** Ligne de navigation façon doc shadcn : 30 px, 0,8 rem, medium, pastille grise si active. */
-const navItem = 'h-[30px] text-[0.8rem] font-medium';
+      : hash === '#/changelog'
+        ? { kind: 'history' }
+        : hash === '#/demarrage'
+          ? { kind: 'start' }
+          : hash === '#/tokens'
+            ? { kind: 'tokens' }
+            : hash.startsWith(componentPrefix)
+              ? {
+                  kind: 'component',
+                  id: decodeURIComponent(hash.slice(componentPrefix.length)),
+                }
+              : null;
 const modeLabels: Record<Mode, string> = { light: 'Clair', dark: 'Sombre' };
 // Damier sous la couleur : beaucoup de tokens SortUI ont une opacité.
 const checker =
@@ -233,7 +222,7 @@ export default function App() {
   const [route, setRoute] = useState<Route>(
     () => routeOf(location.hash) ?? { kind: 'home' },
   );
-  const [tab, setTab] = useState<'page' | 'history'>('page');
+  const [menu, setMenu] = useState(false);
   const [showTokens, setShowTokens] = useState(false);
   const [navQuery, setNavQuery] = useState('');
   const [syncing, setSyncing] = useState(false);
@@ -256,7 +245,7 @@ export default function App() {
       const next = routeOf(location.hash);
       if (!next) return;
       setRoute(next);
-      setTab('page');
+      setMenu(false);
       window.scrollTo(0, 0);
     };
     addEventListener('hashchange', sync);
@@ -266,9 +255,7 @@ export default function App() {
   const ready = !!state;
   useEffect(() => {
     document
-      .querySelector(
-        '[data-sidebar="menu-button"][data-active]:not([data-active="false"])',
-      )
+      .querySelector('nav[aria-label="Navigation"] a[aria-current="page"]')
       ?.scrollIntoView({ block: 'nearest' });
   }, [route, ready]);
   useEffect(() => {
@@ -276,7 +263,7 @@ export default function App() {
       route.kind === 'component'
         ? manifest.flatMap((f) => f.items).find((i) => i.id === route.id)
         : undefined;
-    document.title = `${item?.title ?? pageLabels[route.kind] ?? 'Tokens'} · DS-Studio`;
+    document.title = `${item?.title ?? pageLabels[route.kind] ?? 'Tokens'} · Stride UI`;
   }, [route]);
   useEffect(() => {
     if (agent !== 'manual')
@@ -285,6 +272,21 @@ export default function App() {
         .catch((e) => setError(e.message));
   }, [agent]);
   const current = state?.tokens[key].$value;
+  const scope = useComponentTokens(
+    route.kind === 'component' ? route.id : undefined,
+  );
+  const [dark, setDark] = useState(() =>
+    document.documentElement.classList.contains('dark'),
+  );
+  // Sur une page composant, l'éditeur ne propose que ses tokens : on choisit le premier.
+  useEffect(() => {
+    if (scope && !inScope(scope, key)) {
+      const first = tokenKeys.find(
+        (k) => (tokenMode(k) ?? mode) === mode && inScope(scope, k),
+      );
+      if (first) setKey(first);
+    }
+  }, [scope]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const clearError = () => {
     setError('');
@@ -391,8 +393,11 @@ export default function App() {
       : undefined;
   const query = search.trim().toLowerCase();
   // Sans recherche, seuls les tokens du mode affiché sont listés.
-  const matchingKeys = tokenKeys.filter((k) =>
-    query ? k.toLowerCase().includes(query) : (tokenMode(k) ?? mode) === mode,
+  const matchingKeys = tokenKeys.filter(
+    (k) =>
+      (query
+        ? k.toLowerCase().includes(query)
+        : (tokenMode(k) ?? mode) === mode) && inScope(scope, k),
   );
   const pickerHex =
     token.$type === 'color' ? (toHex(draft) ?? toHex(String(current))) : null;
@@ -420,12 +425,12 @@ export default function App() {
   const pages = [...components, ...blocks];
   const at = found ? pages.findIndex((i) => i.id === found.id) : -1;
   const editor = (
-    <div className="grid gap-4 rounded-2xl border bg-card p-4 text-card-foreground shadow-card">
+    <div className="grid gap-4 rounded-2xl border bg-card p-4 text-card-foreground">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-sm font-medium">
           Tokens sémantiques{' '}
           <span className="font-normal text-muted-foreground tabular-nums">
-            · {tokenKeys.length}
+            · {scope ? matchingKeys.length : tokenKeys.length}
           </span>
         </h3>
         <ToggleGroup
@@ -630,427 +635,447 @@ export default function App() {
     </div>
   );
   const frameSrc = `/?${iframeQuery}&view=component&id=${found?.id ?? 'button'}`;
+  const navLink = (active: boolean) =>
+    `block rounded-lg px-2.5 py-1.5 text-sm hover:bg-fill-1 ${
+      active ? 'bg-fill-2 font-medium' : 'text-foreground/80'
+    }`;
+  const navTitle = 'px-2.5 pb-1 text-xs text-muted-foreground';
+  const navList = (
+    <nav aria-label="Navigation" className="grid gap-5">
+      <div className="grid gap-0.5">
+        <p className={navTitle}>Premiers pas</p>
+        {[
+          ['welcome', '#/bienvenue', 'Bienvenue'],
+          ['start', '#/demarrage', 'Démarrage'],
+          ['home', '#/', 'Composants'],
+          ['tokens', '#/tokens', 'Tokens'],
+        ].map(([kind, href, label]) => (
+          <a
+            key={kind}
+            href={href}
+            aria-current={route.kind === kind ? 'page' : undefined}
+            className={navLink(route.kind === kind)}
+          >
+            {label}
+          </a>
+        ))}
+      </div>
+      <Input
+        type="search"
+        aria-label="Filtrer les composants"
+        placeholder={`Filtrer les ${pages.length} pages…`}
+        value={navQuery}
+        onChange={(e) => setNavQuery(e.target.value)}
+      />
+      {[
+        { title: 'Composants', items: components.filter(match) },
+        { title: 'Blocs', items: blocks.filter(match) },
+      ]
+        .filter((g) => g.items.length)
+        .map((group) => (
+          <div key={group.title} className="grid gap-0.5">
+            <p className={navTitle}>{group.title}</p>
+            {group.items.map((item) => (
+              <a
+                key={item.id}
+                href={`#/composants/${item.id}`}
+                aria-current={item.id === found?.id ? 'page' : undefined}
+                className={navLink(item.id === found?.id)}
+              >
+                {item.title}
+              </a>
+            ))}
+          </div>
+        ))}
+      {q && !components.some(match) && !blocks.some(match) && (
+        <p className="px-2.5 text-xs text-muted-foreground">Aucune page.</p>
+      )}
+      <p className="grid gap-0.5 px-2.5 text-2xs text-muted-foreground">
+        <span>Local · V2</span>
+        <span>{boot?.figma.label ?? 'Figma non connecté'}</span>
+      </p>
+    </nav>
+  );
   return (
-    <SidebarProvider>
-      <CloseOnNavigate routeKey={found?.id ?? 'tokens'} />
+    <div className="flex min-h-svh flex-col bg-background">
       <a
         href="#ds-title"
         className="sr-only z-50 rounded-lg bg-background px-3 py-2 text-sm font-medium shadow-md focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
       >
-        Aller aux tokens
+        Aller au contenu
       </a>
-      <Sidebar variant="floating">
-        <SidebarHeader className="gap-3 p-3">
-          <div className="flex items-center gap-2.5">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <SwatchBookIcon className="size-4" />
-            </span>
-            <div className="grid leading-tight">
-              <strong className="text-sm font-semibold">DS-Studio</strong>
-              <span className="text-xs text-muted-foreground">
-                Atelier de Design System
-              </span>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            <Badge variant="secondary">Local · V2</Badge>
-            <Badge variant="outline">
-              {boot?.figma.label ?? 'Figma non connecté'}
-            </Badge>
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel className="h-8 text-xs">
-              Premiers pas
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    isActive={route.kind === 'welcome'}
-                    className={navItem}
-                    render={<a href="#/bienvenue" />}
-                  >
-                    Bienvenue
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    isActive={route.kind === 'start'}
-                    className={navItem}
-                    render={<a href="#/demarrage" />}
-                  >
-                    Démarrage
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    isActive={route.kind === 'home'}
-                    className={navItem}
-                    render={<a href="#/" />}
-                  >
-                    Composants
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    isActive={route.kind === 'tokens'}
-                    className={navItem}
-                    render={<a href="#/tokens" />}
-                  >
-                    <PaletteIcon /> Tokens
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarInput
-                type="search"
-                aria-label="Filtrer les composants"
-                placeholder={`Filtrer les ${pages.length} pages…`}
-                value={navQuery}
-                onChange={(e) => setNavQuery(e.target.value)}
-              />
-            </SidebarGroupContent>
-          </SidebarGroup>
-          {[
-            { title: 'Composants', items: components.filter(match) },
-            { title: 'Blocs', items: blocks.filter(match) },
-          ]
-            .filter((g) => g.items.length)
-            .map((group) => (
-              <SidebarGroup key={group.title}>
-                <SidebarGroupLabel className="h-8 text-xs">
-                  {group.title}
-                </SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {group.items.map((item) => (
-                      <SidebarMenuItem key={item.id}>
-                        <SidebarMenuButton
-                          isActive={item.id === found?.id}
-                          className={navItem}
-                          render={<a href={`#/composants/${item.id}`} />}
-                        >
-                          <span>{item.title}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
+      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur">
+        <div className="mx-auto flex h-12 w-full max-w-7xl items-center gap-3 px-6">
+          <Sheet open={menu} onOpenChange={setMenu}>
+            <SheetTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  className="lg:hidden"
+                  aria-label="Ouvrir la navigation"
+                />
+              }
+            >
+              <MenuIcon />
+            </SheetTrigger>
+            <SheetContent side="left" className="w-72 overflow-auto p-4">
+              <SheetTitle className="sr-only">Navigation</SheetTitle>
+              {navList}
+            </SheetContent>
+          </Sheet>
+          <a href="#/" className="flex items-center gap-2">
+            <SwatchBookIcon className="size-4" />
+            <h1 className="text-sm font-medium tracking-tight">Stride UI</h1>
+          </a>
+          <nav
+            aria-label="Principal"
+            className="ml-auto flex items-center gap-0.5 text-sm"
+          >
+            {[
+              ['home', '#/', 'Composants', 'max-sm:hidden'],
+              ['tokens', '#/tokens', 'Tokens', 'max-sm:hidden'],
+              ['history', '#/changelog', `Changelog · ${state.revision}`, ''],
+            ].map(([kind, href, label, extra]) => (
+              <a
+                key={kind}
+                href={href}
+                aria-current={route.kind === kind ? 'page' : undefined}
+                className={`rounded-lg px-2.5 py-1 transition-colors ${extra} ${
+                  route.kind === kind
+                    ? 'bg-fill-2 font-medium text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {label}
+              </a>
             ))}
-          {q && !components.some(match) && !blocks.some(match) && (
-            <p className="px-4 py-1 text-xs text-muted-foreground">
-              Aucune page.
-            </p>
-          )}
-        </SidebarContent>
-        <SidebarFooter className="p-3 text-2xs text-muted-foreground">
-          DS-Studio V2 · JSON local → validation → composants SortUI
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset className="min-w-0">
-        <header className="sticky top-0 z-20 flex flex-wrap items-center gap-x-3 gap-y-2 border-b bg-background/90 px-4 py-2.5 backdrop-blur">
-          {/* Sur ordinateur la navigation reste ouverte ; le bouton ne sert qu'au panneau mobile. */}
-          <SidebarTrigger className="-ml-1 md:hidden" />
-          <Separator orientation="vertical" className="h-5 md:hidden" />
-          <div className="mr-auto grid min-w-0">
-            <h1 className="text-base font-semibold tracking-tight">
-              Une source. Toutes les vues.
-            </h1>
-            <p className="truncate text-xs text-muted-foreground max-sm:hidden">
-              Explorez, proposez, validez. Construisez ensuite votre propre
-              outil.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              title={
-                boot?.figma.connected
-                  ? 'Lire les variables Figma et proposer les différences'
-                  : 'Figma non configuré : npm run figma:setup'
-              }
-              disabled={syncing}
-              onClick={() =>
-                void perform(async () => {
-                  setSyncing(true);
-                  try {
-                    const result = await request<{
-                      proposal: Proposal | null;
-                    }>('figma-sync', { revision: state.revision });
-                    if (result.proposal) setProposal(result.proposal);
-                    else setNotice('Figma et DS-Studio sont déjà identiques.');
-                  } finally {
-                    setSyncing(false);
-                  }
-                })
-              }
-            >
-              <RefreshCwIcon
-                data-icon="inline-start"
-                className={syncing ? 'animate-spin' : undefined}
-              />
-              <span className="max-sm:sr-only">
-                {syncing ? 'Lecture de Figma…' : 'Sync Figma'}
-              </span>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => void perform(exportTokens)}
-            >
-              <DownloadIcon data-icon="inline-start" />
-              <span className="max-sm:sr-only">Exporter les tokens</span>
-            </Button>
-            <label className={buttonVariants({ variant: 'outline' })}>
-              <UploadIcon data-icon="inline-start" />
-              <span className="max-sm:sr-only">Importer un JSON</span>
-              <input
-                type="file"
-                className="sr-only"
-                accept=".json,application/json"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  e.target.value = '';
-                  if (file)
-                    void perform(async () => {
-                      if (file.size > 128000)
-                        throw new Error(
-                          'Fichier trop volumineux (128 Ko maximum).',
-                        );
-                      const tokens = JSON.parse(await file.text());
-                      setProposal(
-                        await request('import', {
-                          revision: state.revision,
-                          tokens,
-                        }),
-                      );
-                    });
-                }}
-              />
-            </label>
-          </div>
-          <Tabs
-            className="w-full overflow-x-auto"
-            value={tab}
-            onValueChange={(v) => setTab(v as typeof tab)}
+          </nav>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={
+              dark ? 'Passer au thème clair' : 'Passer au thème sombre'
+            }
+            aria-pressed={dark}
+            onClick={() => {
+              const next = !dark;
+              document.documentElement.classList.toggle('dark', next);
+              setDark(next);
+              const m: Mode = next ? 'dark' : 'light';
+              setMode(m);
+              if (tokenMode(key))
+                setKey(`${m}.${key.split('.')[1]}` as TokenKey);
+            }}
           >
-            <TabsList>
-              <TabsTrigger value="page">
-                {found ? 'Composant' : (pageLabels[route.kind] ?? 'Tokens')}
-              </TabsTrigger>
-              <TabsTrigger value="history">
-                <HistoryIcon className="size-3.5" />
-                Historique · {state.revision}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-          {/* Dans l’en-tête collant : visible quel que soit le défilement. */}
-          <div className="grid w-full gap-2 empty:hidden" aria-live="polite">
-            {(error || stateError) && !proposal && (
-              <Alert variant="destructive">
-                <AlertDescription>{error || stateError}</AlertDescription>
-              </Alert>
-            )}
-            {notice && (
-              <p role="status" className="text-xs text-muted-foreground">
-                {notice}
-              </p>
-            )}
-          </div>
-        </header>
-        <div className="grid gap-3 px-4 pt-4 empty:hidden">
-          {boot?.migratedFrom && (
-            <Alert role="status">
-              <AlertTitle>Tokens V1 migrés vers SortUI</AlertTitle>
-              <AlertDescription>
-                Original conservé dans .ds-studio/{boot.migratedFrom}.
-              </AlertDescription>
-            </Alert>
-          )}
+            {dark ? <SunIcon /> : <MoonIcon />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Exporter les tokens"
+            title="Exporter les tokens"
+            onClick={() => void perform(exportTokens)}
+          >
+            <DownloadIcon />
+          </Button>
         </div>
-        {tab === 'history' ? (
-          <section
-            aria-label="Historique des changements"
-            className="mx-auto grid w-full max-w-2xl gap-3 p-4"
-          >
-            <h2 className="text-lg font-semibold tracking-tight">Historique</h2>
-            <p className="text-xs text-muted-foreground">
-              Annuler une révision n’écrase pas les autres tokens. L’annulation
-              s’enregistre elle aussi.
-            </p>
-            {!state.history.length && (
-              <p className="text-xs">
-                Aucun changement enregistré. Chaque validation apparaîtra ici,
-                annulable une à une.
+      </header>
+      <div className="grid gap-3 px-4 empty:hidden" aria-live="polite">
+        {(error || stateError) && !proposal && (
+          <Alert variant="destructive">
+            <AlertDescription>{error || stateError}</AlertDescription>
+          </Alert>
+        )}
+        {notice && (
+          <p role="status" className="text-xs text-muted-foreground">
+            {notice}
+          </p>
+        )}
+        {boot?.migratedFrom && (
+          <Alert role="status">
+            <AlertTitle>Tokens V1 migrés vers SortUI</AlertTitle>
+            <AlertDescription>
+              Original conservé dans .ds-studio/{boot.migratedFrom}.
+            </AlertDescription>
+          </Alert>
+        )}
+      </div>
+      <div className="mx-auto grid w-full max-w-7xl flex-1 gap-8 px-4 lg:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)_11rem]">
+        <aside className="sticky top-12 hidden max-h-[calc(100svh-3rem)] self-start overflow-auto border-r py-6 pr-4 lg:block">
+          {navList}
+        </aside>
+        <main className="min-w-0">
+          {route.kind === 'history' ? (
+            <section
+              aria-label="Changelog"
+              className="mx-auto grid w-full max-w-2xl gap-3 p-4"
+            >
+              <h2
+                id="ds-title"
+                tabIndex={-1}
+                className="text-3xl font-medium tracking-tight outline-none"
+              >
+                Changelog
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Annuler une révision n’écrase pas les autres tokens.
+                L’annulation s’enregistre elle aussi.
               </p>
-            )}
-            <ol className="grid gap-1.5">
-              {[...state.history].reverse().map((event) => (
-                <li
-                  key={event.id}
-                  className="grid gap-1 rounded-lg border p-2 text-xs"
-                >
-                  <div className="flex items-baseline justify-between gap-2">
-                    <strong className="font-medium">
-                      Révision {event.revision}
-                    </strong>
-                    <Badge variant="outline">
-                      {sourceLabels[event.source]}
+              {!state.history.length && (
+                <p className="text-xs">
+                  Aucun changement enregistré. Chaque validation apparaîtra ici,
+                  annulable une à une.
+                </p>
+              )}
+              <ol className="grid gap-1.5">
+                {[...state.history].reverse().map((event) => (
+                  <li
+                    key={event.id}
+                    className="grid gap-1 rounded-lg border p-2 text-xs"
+                  >
+                    <div className="flex items-baseline justify-between gap-2">
+                      <strong className="font-medium">
+                        Révision {event.revision}
+                      </strong>
+                      <Badge variant="outline">
+                        {sourceLabels[event.source]}
+                      </Badge>
+                    </div>
+                    <time className="text-muted-foreground tabular-nums">
+                      {new Date(event.date).toLocaleString('fr-FR')}
+                    </time>
+                    <p className="font-mono text-2xs break-all text-muted-foreground">
+                      {event.patches.map((p) => p.key).join(', ')}
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      className="w-fit"
+                      onClick={() =>
+                        void perform(async () =>
+                          setProposal(
+                            await request('undo', {
+                              revision: state.revision,
+                              id: event.id,
+                            }),
+                          ),
+                        )
+                      }
+                    >
+                      <Undo2Icon data-icon="inline-start" />
+                      Annuler la révision {event.revision}
+                    </Button>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ) : route.kind === 'welcome' ? (
+            <Welcome />
+          ) : route.kind === 'start' ? (
+            <GetStarted />
+          ) : route.kind === 'home' ? (
+            <Landing components={components} blocks={blocks} />
+          ) : (
+            <div className={'grid gap-6 p-4'}>
+              <section
+                aria-labelledby="ds-title"
+                className="grid min-w-0 gap-4"
+              >
+                <div className="flex items-baseline justify-between gap-3">
+                  <div>
+                    <h2
+                      id="ds-title"
+                      tabIndex={-1}
+                      className="text-3xl font-medium tracking-tight outline-none"
+                    >
+                      {found?.title ?? 'Design System'}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      {found
+                        ? found.family
+                        : 'SortUI · 66 composants, 7 blocs, sources locales'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {found && (
+                      <>
+                        <Button
+                          variant={showTokens ? 'secondary' : 'outline'}
+                          size="sm"
+                          aria-pressed={showTokens}
+                          onClick={() => setShowTokens(!showTokens)}
+                        >
+                          <PaletteIcon data-icon="inline-start" />
+                          Tokens
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon-sm"
+                          aria-label="Composant précédent"
+                          disabled={at <= 0}
+                          render={
+                            at > 0 ? (
+                              <a href={`#/composants/${pages[at - 1].id}`} />
+                            ) : undefined
+                          }
+                        >
+                          <ChevronLeftIcon />
+                        </Button>
+                        <span className="text-xs text-muted-foreground tabular-nums">
+                          {at + 1} / {pages.length}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="icon-sm"
+                          aria-label="Composant suivant"
+                          disabled={at >= pages.length - 1}
+                          render={
+                            at < pages.length - 1 ? (
+                              <a href={`#/composants/${pages[at + 1].id}`} />
+                            ) : undefined
+                          }
+                        >
+                          <ChevronRightIcon />
+                        </Button>
+                      </>
+                    )}
+                    {!found && route.kind === 'tokens' && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          title={
+                            boot?.figma.connected
+                              ? 'Lire les variables Figma et proposer les différences'
+                              : 'Figma non configuré : npm run figma:setup'
+                          }
+                          disabled={syncing}
+                          onClick={() =>
+                            void perform(async () => {
+                              setSyncing(true);
+                              try {
+                                const result = await request<{
+                                  proposal: Proposal | null;
+                                }>('figma-sync', { revision: state.revision });
+                                if (result.proposal)
+                                  setProposal(result.proposal);
+                                else
+                                  setNotice(
+                                    'Figma et DS-Studio sont déjà identiques.',
+                                  );
+                              } finally {
+                                setSyncing(false);
+                              }
+                            })
+                          }
+                        >
+                          <RefreshCwIcon
+                            data-icon="inline-start"
+                            className={syncing ? 'animate-spin' : undefined}
+                          />
+                          <span className="max-sm:sr-only">
+                            {syncing ? 'Lecture de Figma…' : 'Sync Figma'}
+                          </span>
+                        </Button>
+                        <label className={buttonVariants({ variant: 'ghost' })}>
+                          <UploadIcon data-icon="inline-start" />
+                          <span className="max-sm:sr-only">
+                            Importer un JSON
+                          </span>
+                          <input
+                            type="file"
+                            className="sr-only"
+                            accept=".json,application/json"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              e.target.value = '';
+                              if (file)
+                                void perform(async () => {
+                                  if (file.size > 128000)
+                                    throw new Error(
+                                      'Fichier trop volumineux (128 Ko maximum).',
+                                    );
+                                  const tokens = JSON.parse(await file.text());
+                                  setProposal(
+                                    await request('import', {
+                                      revision: state.revision,
+                                      tokens,
+                                    }),
+                                  );
+                                });
+                            }}
+                          />
+                        </label>
+                      </>
+                    )}
+                    <Badge variant="outline" className="tabular-nums">
+                      r{state.revision}
                     </Badge>
                   </div>
-                  <time className="text-muted-foreground tabular-nums">
-                    {new Date(event.date).toLocaleString('fr-FR')}
-                  </time>
-                  <p className="font-mono text-2xs break-all text-muted-foreground">
-                    {event.patches.map((p) => p.key).join(', ')}
-                  </p>
+                </div>
+                {found ? (
+                  <>
+                    <iframe
+                      className="catalogue-frame h-[min(640px,calc(100svh-14rem))] w-full rounded-2xl border bg-background"
+                      title={`Composant ${found.title}`}
+                      src={frameSrc}
+                    />
+                    <FigmaSpec id={found.id} />
+                  </>
+                ) : (
+                  <>
+                    {editor}
+                    <iframe
+                      className="catalogue-frame h-64 w-full rounded-2xl border bg-background"
+                      title="Aperçu en direct"
+                      src={frameSrc}
+                    />
+                  </>
+                )}
+              </section>
+              {found && showTokens && (
+                <aside
+                  aria-label="Éditeur de tokens"
+                  className="fixed inset-x-2 top-14 bottom-20 z-40 grid content-start gap-2 overflow-auto rounded-2xl border bg-background p-2 shadow-lg sm:inset-x-auto sm:right-4 sm:w-[26rem]"
+                >
                   <Button
                     variant="ghost"
-                    size="xs"
-                    className="w-fit"
-                    onClick={() =>
-                      void perform(async () =>
-                        setProposal(
-                          await request('undo', {
-                            revision: state.revision,
-                            id: event.id,
-                          }),
-                        ),
-                      )
-                    }
+                    size="icon-xs"
+                    className="justify-self-end"
+                    aria-label="Fermer les tokens"
+                    onClick={() => setShowTokens(false)}
                   >
-                    <Undo2Icon data-icon="inline-start" />
-                    Annuler la révision {event.revision}
+                    <XIcon />
                   </Button>
-                </li>
-              ))}
-            </ol>
-          </section>
-        ) : route.kind === 'welcome' ? (
-          <Welcome />
-        ) : route.kind === 'start' ? (
-          <GetStarted />
-        ) : route.kind === 'home' ? (
-          <Landing components={components} blocks={blocks} />
-        ) : (
-          <div
-            className={
-              found && showTokens
-                ? 'grid items-start gap-6 p-4 xl:grid-cols-[minmax(0,1fr)_26rem]'
-                : 'grid gap-6 p-4'
-            }
-          >
-            <section aria-labelledby="ds-title" className="grid min-w-0 gap-4">
-              <div className="flex items-baseline justify-between gap-3">
-                <div>
-                  <h2
-                    id="ds-title"
-                    tabIndex={-1}
-                    className="text-lg font-semibold tracking-tight outline-none"
-                  >
-                    {found?.title ?? 'Design System'}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">
-                    {found
-                      ? found.family
-                      : 'SortUI · 66 composants, 7 blocs, sources locales'}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {found && (
-                    <>
-                      <Button
-                        variant={showTokens ? 'secondary' : 'outline'}
-                        size="sm"
-                        aria-pressed={showTokens}
-                        onClick={() => setShowTokens(!showTokens)}
-                      >
-                        <PaletteIcon data-icon="inline-start" />
-                        Tokens
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon-sm"
-                        aria-label="Composant précédent"
-                        disabled={at <= 0}
-                        render={
-                          at > 0 ? (
-                            <a href={`#/composants/${pages[at - 1].id}`} />
-                          ) : undefined
-                        }
-                      >
-                        <ChevronLeftIcon />
-                      </Button>
-                      <span className="text-xs text-muted-foreground tabular-nums">
-                        {at + 1} / {pages.length}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="icon-sm"
-                        aria-label="Composant suivant"
-                        disabled={at >= pages.length - 1}
-                        render={
-                          at < pages.length - 1 ? (
-                            <a href={`#/composants/${pages[at + 1].id}`} />
-                          ) : undefined
-                        }
-                      >
-                        <ChevronRightIcon />
-                      </Button>
-                    </>
+                  {scope && (
+                    <p className="px-2 text-xs text-muted-foreground">
+                      Seuls les tokens utilisés par ce composant sont listés.
+                    </p>
                   )}
-                  <Badge variant="outline" className="tabular-nums">
-                    r{state.revision}
-                  </Badge>
-                </div>
-              </div>
-              {found ? (
-                <>
-                  <iframe
-                    className="catalogue-frame h-[min(640px,calc(100svh-14rem))] w-full rounded-2xl border bg-background"
-                    title={`Composant ${found.title}`}
-                    src={frameSrc}
-                  />
-                  <FigmaSpec id={found.id} />
-                </>
-              ) : (
-                <>
                   {editor}
-                  <iframe
-                    className="catalogue-frame h-64 w-full rounded-2xl border bg-background"
-                    title="Aperçu en direct"
-                    src={frameSrc}
-                  />
-                </>
+                </aside>
               )}
-            </section>
-            {found && showTokens && (
-              <aside className="grid gap-4 xl:sticky xl:top-20 xl:max-h-[calc(100svh-6rem)] xl:overflow-auto">
-                {editor}
-              </aside>
-            )}
-          </div>
-        )}
-        <AssistantBar
-          agent={agent}
-          onAgent={(a) => {
-            setAgent(a);
-            setChat([]);
-          }}
-          info={selectedAgent}
-          message={message}
-          onMessage={setMessage}
-          chat={chat}
-          thinking={thinking}
-          onSend={() => void sendMessage()}
-          onStop={() => controller.current?.abort()}
-        />
-      </SidebarInset>
+            </div>
+          )}
+        </main>
+        <aside className="sticky top-12 hidden self-start py-6 xl:block">
+          <OnThisPage routeKey={`${route.kind}${found?.id ?? ''}`} />
+        </aside>
+      </div>
+      <AssistantBar
+        agent={agent}
+        onAgent={(a) => {
+          setAgent(a);
+          setChat([]);
+        }}
+        info={selectedAgent}
+        message={message}
+        onMessage={setMessage}
+        chat={chat}
+        thinking={thinking}
+        onSend={() => void sendMessage()}
+        onStop={() => controller.current?.abort()}
+      />{' '}
       <Dialog
         open={!!proposal}
         onOpenChange={(open) => {
@@ -1136,6 +1161,6 @@ export default function App() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
+    </div>
   );
 }

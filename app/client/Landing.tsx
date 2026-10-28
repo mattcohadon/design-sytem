@@ -16,7 +16,7 @@ function Grid({ title, items }: { title: string; items: Item[] }) {
           <li key={item.id}>
             <a
               href={`#/composants/${item.id}`}
-              className="flex h-14 items-center justify-between gap-2 rounded-2xl border bg-card px-4 text-sm text-card-foreground shadow-card outline-none hover:bg-fill-1 focus-visible:ring-2 focus-visible:ring-ring/30"
+              className="flex h-12 items-center justify-between gap-2 rounded-xl border bg-card px-4 text-sm text-card-foreground outline-none transition-colors hover:bg-fill-1 focus-visible:ring-2 focus-visible:ring-ring/30"
             >
               <span className="truncate">{item.title}</span>
               <span className="flex shrink-0 items-center gap-2">
@@ -52,7 +52,7 @@ export function Landing({
         <h2
           id="ds-title"
           tabIndex={-1}
-          className="font-serif text-5xl tracking-tight outline-none"
+          className="text-3xl font-medium tracking-tight outline-none"
         >
           Composants
         </h2>
