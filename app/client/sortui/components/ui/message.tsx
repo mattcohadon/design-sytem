@@ -1,3 +1,4 @@
+// Stride UI · brand new design system, built on SortUI
 import * as React from "react"
 import { cn } from "cn"
 

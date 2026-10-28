@@ -1,3 +1,4 @@
+// Stride UI · brand new design system, built on SortUI
 import type { SimpleIcon as SimpleIconData } from "simple-icons"
 import { cn } from "cn"
 

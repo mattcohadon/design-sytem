@@ -1,3 +1,4 @@
+// Stride UI · brand new design system, built on SortUI
 "use client"
 
 import { Toggle as TogglePrimitive } from "@base-ui/react/toggle"

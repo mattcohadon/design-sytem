@@ -1,3 +1,4 @@
+// Stride UI · brand new design system, built on SortUI
 import { NavigationMenu as NavigationMenuPrimitive } from "@base-ui/react/navigation-menu"
 import { cva } from "class-variance-authority"
 import { cn } from "cn"

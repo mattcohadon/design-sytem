@@ -1,3 +1,4 @@
+// Stride UI · brand new design system, built on SortUI
 "use client"
 
 import { Collapsible as CollapsiblePrimitive } from "@base-ui/react/collapsible"

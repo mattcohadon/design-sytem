@@ -1,3 +1,4 @@
+// Stride UI · brand new design system, built on SortUI
 "use client"
 
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox"

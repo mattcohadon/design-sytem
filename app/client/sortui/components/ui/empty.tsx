@@ -1,3 +1,4 @@
+// Stride UI · brand new design system, built on SortUI
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 

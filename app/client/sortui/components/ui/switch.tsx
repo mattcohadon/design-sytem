@@ -1,3 +1,4 @@
+// Stride UI · brand new design system, built on SortUI
 "use client"
 
 import { Switch as SwitchPrimitive } from "@base-ui/react/switch"

@@ -1,3 +1,4 @@
+// Stride UI · brand new design system, built on SortUI
 "use client"
 
 import { Separator as SeparatorPrimitive } from "@base-ui/react/separator"

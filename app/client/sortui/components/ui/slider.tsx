@@ -1,3 +1,4 @@
+// Stride UI · brand new design system, built on SortUI
 import { Slider as SliderPrimitive } from "@base-ui/react/slider"
 import { cn } from "cn"
 
