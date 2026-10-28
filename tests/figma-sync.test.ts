@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildSnapshot, type Fetcher } from '../figma-sync/snapshot.js';
 import { diffSnapshots } from '../figma-sync/diff.js';
+import { appendEntry } from '../figma-sync/changelog.js';
 
 const json = (
   body: unknown,
@@ -106,4 +107,18 @@ test('diff : vide, création, renommage et suppression cassants', async () => {
     'deleted',
   );
   assert.ok(d.changes.every((c) => c.breaking));
+});
+
+test('changelog : une entrée par diff non vide, rien si vide', async () => {
+  const a = await buildSnapshot('t', 'k', fake);
+  const created = diffSnapshots(null, a);
+  const log = appendEntry([], created, '2026-01-01T00:00:00.000Z');
+  assert.equal(log.length, 1);
+  assert.equal(log[0].date, '2026-01-01T00:00:00.000Z');
+  assert.equal(log[0].changes.length, created.changes.length);
+  assert.equal(
+    log[0].changes.every((c) => c.action === 'created'),
+    true,
+  );
+  assert.deepEqual(appendEntry(log, diffSnapshots(a, a)), log);
 });

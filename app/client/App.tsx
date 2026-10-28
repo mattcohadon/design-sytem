@@ -56,6 +56,7 @@ import { AssistantBar } from './AssistantBar.js';
 import { FigmaSpec } from './FigmaSpec.js';
 import { GetStarted, Welcome } from './Docs.js';
 import { Changelog } from './Changelog.js';
+import { FigmaChangelog } from './FigmaChangelog.js';
 import { Hero } from './Hero.js';
 import { NextPage, type NextTarget } from './NextPage.js';
 import { isNew, NewTag } from './NewTag.js';
@@ -969,6 +970,7 @@ export default function App() {
                     )
                   }
                 />
+                <FigmaChangelog />
               </section>
             ) : route.kind === 'welcome' ? (
               <Welcome />
