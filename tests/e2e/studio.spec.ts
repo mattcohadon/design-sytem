@@ -483,9 +483,7 @@ test('fin de page : continuer à défiler remplit la barre puis ouvre la page su
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
   await page.mouse.move(800, 600);
   await page.mouse.wheel(0, 150);
-  await expect(link).toContainText(
-    'Continuez à scroller pour passer à « Démarrage »',
-  );
+  await expect(link).toContainText('Continuez à scroller pour passer');
   const pulled = async () =>
     Number(await page.locator('[data-pull]').getAttribute('data-pull'));
   // La barre se remplit (le rendu suit le geste d'un instant).

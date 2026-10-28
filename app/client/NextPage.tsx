@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 export interface NextTarget {
   href: string;
@@ -21,7 +21,6 @@ const atBottom = () =>
  * La barre est animée hors de React (une écriture de style par image) pour rester fluide.
  */
 export function NextPage({ next }: { next: NextTarget }) {
-  const [active, setActive] = useState(false);
   const bar = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     const s = { pull: 0, touchY: 0 };
@@ -46,7 +45,6 @@ export function NextPage({ next }: { next: NextTarget }) {
     const set = (value: number) => {
       s.pull = Math.max(0, Math.min(value, THRESHOLD));
       move(s.pull / THRESHOLD);
-      setActive(s.pull > 0);
       clearTimeout(reset);
       // Sans nouveau geste, la barre redescend.
       if (s.pull > 0 && s.pull < THRESHOLD)
@@ -114,21 +112,7 @@ export function NextPage({ next }: { next: NextTarget }) {
         href={next.href}
         className="mt-16 mb-28 grid justify-items-center gap-2 rounded-lg px-6 py-4 text-center outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
       >
-        {/* Les deux messages se superposent et se fondent l'un dans l'autre. */}
-        <span className="grid text-xs text-muted-foreground">
-          <span
-            className="col-start-1 row-start-1 transition-opacity duration-300 motion-reduce:transition-none"
-            style={{ opacity: active ? 0 : 1 }}
-          >
-            Page suivante
-          </span>
-          <span
-            className="col-start-1 row-start-1 transition-opacity duration-300 motion-reduce:transition-none"
-            style={{ opacity: active ? 1 : 0 }}
-          >
-            Continuez à scroller pour passer à «&nbsp;{next.label}&nbsp;»
-          </span>
-        </span>
+        <span className="text-xs text-muted-foreground">Page suivante</span>
         <span className="text-lg font-medium tracking-tight">
           {next.label} →
         </span>
@@ -143,6 +127,9 @@ export function NextPage({ next }: { next: NextTarget }) {
             className="block h-full w-full origin-left rounded-full bg-primary will-change-transform"
             style={{ transform: 'scaleX(0)' }}
           />
+        </span>
+        <span className="text-xs text-muted-foreground">
+          Continuez à scroller pour passer
         </span>
       </a>
     </>
