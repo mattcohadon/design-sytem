@@ -3,7 +3,6 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   DownloadIcon,
-  RefreshCwIcon,
   HistoryIcon,
   MoonIcon,
   SunIcon,
@@ -67,6 +66,8 @@ import { OnThisPage } from './OnThisPage.js';
 import { Search } from './Search.js';
 import { inScope, useComponentTokens } from './useComponentTokens.js';
 import { manifest } from './preview/manifest.js';
+import { siGithub } from 'simple-icons';
+import { SimpleIcon } from '@/components/ui/simple-icon';
 import pkg from '../../package.json';
 import { useTokenDraft } from './useTokenDraft.js';
 import { announceChange, useDesignState } from './useDesignState.js';
@@ -252,7 +253,6 @@ export default function App() {
   const [menu, setMenu] = useState(false);
   const [showTokens, setShowTokens] = useState(false);
   const [navQuery, setNavQuery] = useState('');
-  const [syncing, setSyncing] = useState(false);
   const [message, setMessage] = useState('');
   const [chat, setChat] = useState<
     { role: 'user' | 'assistant'; text: string }[]
@@ -864,6 +864,22 @@ export default function App() {
           <Button
             variant="ghost"
             size="icon-sm"
+            className="max-sm:hidden"
+            aria-label="Composants sur GitHub"
+            title="Composants sur GitHub"
+            render={
+              <a
+                href="https://github.com/mattcohadon/design-sytem/tree/main/app/client/sortui/components/ui"
+                target="_blank"
+                rel="noopener noreferrer"
+              />
+            }
+          >
+            <SimpleIcon icon={siGithub} className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
             aria-label={
               dark ? 'Passer au thème clair' : 'Passer au thème sombre'
             }
@@ -1013,43 +1029,6 @@ export default function App() {
                       )}
                       {!found && route.kind === 'tokens' && (
                         <>
-                          <Button
-                            variant="ghost"
-                            title={
-                              boot?.figma.connected
-                                ? 'Lire les variables Figma et proposer les différences'
-                                : 'Figma non configuré : npm run figma:setup'
-                            }
-                            disabled={syncing}
-                            onClick={() =>
-                              void perform(async () => {
-                                setSyncing(true);
-                                try {
-                                  const result = await request<{
-                                    proposal: Proposal | null;
-                                  }>('figma-sync', {
-                                    revision: state.revision,
-                                  });
-                                  if (result.proposal)
-                                    setProposal(result.proposal);
-                                  else
-                                    setNotice(
-                                      'Figma et DS-Studio sont déjà identiques.',
-                                    );
-                                } finally {
-                                  setSyncing(false);
-                                }
-                              })
-                            }
-                          >
-                            <RefreshCwIcon
-                              data-icon="inline-start"
-                              className={syncing ? 'animate-spin' : undefined}
-                            />
-                            <span className="max-sm:sr-only">
-                              {syncing ? 'Lecture de Figma…' : 'Sync Figma'}
-                            </span>
-                          </Button>
                           <label
                             className={buttonVariants({ variant: 'ghost' })}
                           >
