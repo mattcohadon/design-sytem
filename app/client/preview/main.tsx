@@ -17,6 +17,9 @@ const params = new URLSearchParams(location.search);
 const view = params.get('view') ?? 'scenario';
 const scenario = params.get('scenario') ?? 'cards';
 const component = params.get('id') ?? '';
+const thumb = params.get('thumb') === '1';
+// Une vignette ne doit jamais faire défiler l'atelier : certaines démos (cmdk) appellent scrollIntoView au montage.
+if (thumb) Element.prototype.scrollIntoView = () => {};
 const requested = params.get('mode');
 const mode: Mode = modes.includes(requested as Mode)
   ? (requested as Mode)
@@ -39,7 +42,7 @@ function Preview() {
           <SalesLanding />
         </Suspense>
       ) : view === 'component' ? (
-        <ComponentView id={component} />
+        <ComponentView id={component} thumb={thumb} />
       ) : (
         <Scenario scenario={scenario} />
       )}
