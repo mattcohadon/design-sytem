@@ -60,6 +60,7 @@ import { GetStarted, Welcome } from './Docs.js';
 import { Hero } from './Hero.js';
 import { Landing } from './Landing.js';
 import { OnThisPage } from './OnThisPage.js';
+import { Search } from './Search.js';
 import { inScope, useComponentTokens } from './useComponentTokens.js';
 import { manifest } from './preview/manifest.js';
 import { useTokenDraft } from './useTokenDraft.js';
@@ -92,7 +93,6 @@ type Route =
   | { kind: 'welcome' }
   | { kind: 'start' }
   | { kind: 'history' }
-  | { kind: 'example' }
   | { kind: 'tokens' }
   | { kind: 'component'; id: string };
 const componentPrefix = '#/composants/';
@@ -101,7 +101,6 @@ const pageLabels: Partial<Record<Route['kind'], string>> = {
   welcome: 'Bienvenue',
   start: 'Démarrage',
   history: 'Changelog',
-  example: 'Exemple de landing',
 };
 /** Seuls #/, #/tokens et #/composants/<id> sont des pages ; #ds-title (lien d’évitement) est ignoré. */
 const routeOf = (hash: string): Route | null =>
@@ -109,20 +108,18 @@ const routeOf = (hash: string): Route | null =>
     ? { kind: 'home' }
     : hash === '#/bienvenue'
       ? { kind: 'welcome' }
-      : hash === '#/exemple'
-        ? { kind: 'example' }
-        : hash === '#/changelog'
-          ? { kind: 'history' }
-          : hash === '#/demarrage'
-            ? { kind: 'start' }
-            : hash === '#/tokens'
-              ? { kind: 'tokens' }
-              : hash.startsWith(componentPrefix)
-                ? {
-                    kind: 'component',
-                    id: decodeURIComponent(hash.slice(componentPrefix.length)),
-                  }
-                : null;
+      : hash === '#/changelog'
+        ? { kind: 'history' }
+        : hash === '#/demarrage'
+          ? { kind: 'start' }
+          : hash === '#/tokens'
+            ? { kind: 'tokens' }
+            : hash.startsWith(componentPrefix)
+              ? {
+                  kind: 'component',
+                  id: decodeURIComponent(hash.slice(componentPrefix.length)),
+                }
+              : null;
 const modeLabels: Record<Mode, string> = { light: 'Clair', dark: 'Sombre' };
 // Damier sous la couleur : beaucoup de tokens SortUI ont une opacité.
 const checker =
@@ -662,7 +659,6 @@ export default function App() {
           ['start', '#/demarrage', 'Démarrage'],
           ['home', '#/', 'Composants'],
           ['tokens', '#/tokens', 'Tokens'],
-          ['example', '#/exemple', 'Exemple de landing'],
         ].map(([kind, href, label]) => (
           <a
             key={kind}
@@ -726,10 +722,6 @@ export default function App() {
             title: 'Démarrage',
             lead: 'De l’installation à votre premier changement de token validé, en cinq étapes.',
           },
-          example: {
-            title: 'Exemple de landing',
-            lead: 'Une page de vente complète, construite avec les composants et les tokens de ce design system, pour un client fictif.',
-          },
           history: {
             title: 'Changelog',
             lead: 'Annuler une révision n’écrase pas les autres tokens. L’annulation s’enregistre elle aussi.',
@@ -776,9 +768,12 @@ export default function App() {
             <SwatchBookIcon className="size-4" />
             <h1 className="text-sm font-medium tracking-tight">Stride UI</h1>
           </a>
+          <div className="ml-auto">
+            <Search components={components} blocks={blocks} />
+          </div>
           <nav
             aria-label="Principal"
-            className="ml-auto flex items-center gap-0.5 text-sm"
+            className="flex items-center gap-0.5 text-sm"
           >
             {[
               ['home', '#/', 'Composants', 'max-sm:hidden'],
@@ -795,7 +790,14 @@ export default function App() {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {label}
+                {kind === 'history' && (
+                  <HistoryIcon className="size-4 sm:hidden" aria-hidden />
+                )}
+                <span
+                  className={kind === 'history' ? 'max-sm:sr-only' : undefined}
+                >
+                  {label}
+                </span>
               </a>
             ))}
           </nav>
@@ -913,28 +915,6 @@ export default function App() {
                 ))}
               </ol>
             </section>
-          ) : route.kind === 'example' ? (
-            <div className="grid gap-3 py-8">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs text-muted-foreground">
-                  Contenu fictif. La page utilise vos tokens : modifiez-les,
-                  puis revenez ici.
-                </p>
-                <a
-                  href={`/?${iframeQuery}&view=landing`}
-                  target="_blank"
-                  rel="noopener"
-                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
-                >
-                  Ouvrir en plein écran
-                </a>
-              </div>
-              <iframe
-                title="Exemple de landing"
-                className="landing-frame h-[min(900px,calc(100svh-8rem))] w-full rounded-2xl border bg-background"
-                src={`/?${iframeQuery}&view=landing`}
-              />
-            </div>
           ) : route.kind === 'welcome' ? (
             <Welcome />
           ) : route.kind === 'start' ? (

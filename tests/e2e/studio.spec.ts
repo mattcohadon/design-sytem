@@ -298,32 +298,50 @@ test('accessibilité : anneau de focus, Échap ferme les tokens, thème mémoris
   await expect(page.locator('html')).toHaveClass(/dark/);
 });
 
-test('exemple de landing : page de vente intégrée à l’atelier, aux couleurs des tokens', async ({
+test('landing d’exemple : page à part, accessible par son adresse', async ({
   page,
 }) => {
-  await page.goto('/#/exemple');
+  await page.goto('/?preview=1&mode=light&view=landing');
   await expect(
-    page.getByRole('heading', { name: 'Exemple de landing', level: 2 }),
+    page.getByRole('heading', { level: 1, name: /Comprenez vos clients/ }),
   ).toBeVisible();
-  const frame = page.frameLocator('iframe[title="Exemple de landing"]');
+  await expect(page).toHaveTitle(/Orbite/);
   await expect(
-    frame.getByRole('heading', { level: 1, name: /Comprenez vos clients/ }),
-  ).toBeVisible();
-  // La couleur suit les tokens enregistrés (d'autres tests les modifient) : on vérifie qu'elle est posée.
-  await expect(
-    frame.getByRole('button', { name: 'Démarrer gratuitement' }).first(),
+    page.getByRole('button', { name: 'Démarrer gratuitement' }).first(),
   ).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
-  await frame
+  await page
     .getByRole('button', { name: /carte bancaire pour essayer/ })
     .click();
-  await expect(frame.getByText(/aucun moyen de paiement/)).toBeVisible();
+  await expect(page.getByText(/aucun moyen de paiement/)).toBeVisible();
   await expect(
-    frame.getByRole('link', { name: 'Aller au contenu' }),
+    page.getByRole('link', { name: 'Aller au contenu' }),
   ).toHaveCount(1);
   await expect(
-    frame.getByRole('link', { name: 'Voir la démo' }),
+    page.getByRole('link', { name: 'Voir la démo' }),
   ).toHaveAttribute('href', '#apercu');
+  // Elle ne figure plus dans la navigation de la documentation.
+  await page.goto('/');
   await expect(
-    page.getByRole('link', { name: 'Ouvrir en plein écran' }),
-  ).toHaveAttribute('href', /view=landing/);
+    page.getByRole('link', { name: /Exemple de landing/ }),
+  ).toHaveCount(0);
+});
+
+test('recherche : palette Cmd/Ctrl+K et bouton de la barre du haut', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Rechercher' }).click();
+  await page
+    .getByPlaceholder('Rechercher une page, un composant…')
+    .fill('alert dia');
+  await page.getByRole('option', { name: 'Alert Dialog' }).click();
+  await expect(page).toHaveURL(/#\/composants\/alert-dialog$/);
+  await page.keyboard.press('Control+k');
+  await expect(
+    page.getByPlaceholder('Rechercher une page, un composant…'),
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(
+    page.getByPlaceholder('Rechercher une page, un composant…'),
+  ).toHaveCount(0);
 });
