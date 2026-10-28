@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { CodeBlock } from './CodeBlock.js';
 import { extractExample, parseSpec, type Spec } from './codeExtract.js';
 import { docContent } from './docContent.js';
+import { docDetails } from './docDetails.js';
 import type { ComponentScope } from './useComponentTokens.js';
 import { manifest } from './preview/manifest.js';
 
@@ -115,6 +116,7 @@ export function ComponentDocs({
     };
   }, [id]);
   const doc = docContent[id];
+  const details = docDetails[id];
   // Le contenu d'un autre composant ne doit jamais s'afficher le temps du chargement.
   const loaded = data?.id === id ? data : undefined;
   const spec = loaded?.spec;
@@ -166,6 +168,17 @@ export function ComponentDocs({
           <CodeBlock code={loaded.example} label={`${id}-exemple.tsx`} />
         </Section>
       )}
+      {details?.parts && (
+        <Section title="Anatomie">
+          <dl className="rounded-xl border px-4 py-1">
+            {Object.entries(details.parts).map(([part, role]) => (
+              <Row key={part} name={part}>
+                {role}
+              </Row>
+            ))}
+          </dl>
+        </Section>
+      )}
       <Section title="Spécifications">
         <dl className="rounded-xl border px-4 py-1">
           {spec?.variants.map((v) => (
@@ -181,7 +194,7 @@ export function ComponentDocs({
               ))}
             </Row>
           ))}
-          {spec && spec.parts.length > 0 && (
+          {spec && spec.parts.length > 0 && !details?.parts && (
             <Row name="Sous-composants">
               {spec.parts.map((p) => (
                 <code key={p} className="font-mono">
@@ -209,6 +222,41 @@ export function ComponentDocs({
           )}
         </dl>
       </Section>
+      {details?.props && (
+        <Section title="Propriétés">
+          <div className="overflow-auto rounded-xl border">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 font-medium">Nom</th>
+                  <th className="px-3 py-2 font-medium">Type</th>
+                  <th className="px-3 py-2 font-medium">Rôle</th>
+                </tr>
+              </thead>
+              <tbody>
+                {details.props.map(([name, type, desc]) => (
+                  <tr key={name} className="border-t align-top">
+                    <td className="px-3 py-2 font-mono">{name}</td>
+                    <td className="px-3 py-2 font-mono text-muted-foreground">
+                      {type}
+                    </td>
+                    <td className="px-3 py-2">{desc}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+      )}
+      {details?.tips && (
+        <Section title="Bonnes pratiques">
+          <ul className="grid max-w-3xl gap-2 pl-5 text-sm [&>li]:list-disc [&>li]:marker:text-muted-foreground">
+            {details.tips.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+        </Section>
+      )}
       {loaded && loaded.files.length > 0 && (
         <Section title="Code source">
           {loaded.files.map((f) => (

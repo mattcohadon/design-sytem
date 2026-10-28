@@ -7,6 +7,14 @@ export interface DocContent {
   a11y: string;
 }
 
+/** Détails facultatifs : rôle des sous-composants, propriétés clés et bonnes pratiques. */
+export interface DocDetails {
+  parts?: Record<string, string>;
+  /** [nom, type, description] : seulement les propriétés qui comptent, pas toute l'API. */
+  props?: [string, string, string][];
+  tips?: string[];
+}
+
 export const docContent: Record<string, DocContent> = {
   button: {
     summary:
@@ -339,8 +347,12 @@ export const docContent: Record<string, DocContent> = {
     a11y: 'Rôle progressbar avec valeur courante, minimum et maximum.',
   },
   'usage-bar': {
-    summary: 'Barre qui montre la part consommée d’un quota.',
-    use: ['Stockage, crédits, limites d’un forfait'],
+    summary:
+      'Barre segmentée qui répartit la consommation d’un quota entre plusieurs catégories, avec légende.',
+    use: [
+      'Stockage, crédits, limites d’un forfait',
+      'Montrer ce qui consomme le quota',
+    ],
     avoid: ['Une progression de tâche : utiliser Progress'],
     a11y: 'Donner la valeur en texte à côté, la barre seule ne suffit pas.',
   },
@@ -351,10 +363,14 @@ export const docContent: Record<string, DocContent> = {
     a11y: 'Prévoir un résumé textuel ou un tableau équivalent ; les séries ne se distinguent pas par la couleur seule.',
   },
   marker: {
-    summary: 'Repère visuel ponctuel sur un contenu, comme une annotation.',
-    use: ['Signaler un point d’intérêt'],
-    avoid: ['Un statut : utiliser Badge'],
-    a11y: 'Décoratif : ajouter un libellé accessible si le repère porte un sens.',
+    summary:
+      'Repère intercalé dans un fil : événement système, séparateur de date ou de section, avec icône facultative.',
+    use: [
+      'Marquer « Aujourd’hui » ou « Conversation archivée » dans une discussion',
+      'Séparer des sections d’un fil',
+    ],
+    avoid: ['Un statut sur un élément : utiliser Badge', 'Un titre de page'],
+    a11y: 'Le texte porte le sens ; l’icône est décorative. Pour une date, préférer un titre de niveau approprié.',
   },
   sonner: {
     summary: 'Notifications temporaires (toasts) empilées en bord d’écran.',
