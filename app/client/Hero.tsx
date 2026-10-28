@@ -22,7 +22,7 @@ export function Hero({
             'radial-gradient(ellipse 85% 135% at 50% -25%, color-mix(in srgb, var(--hero-blue) var(--hero-strength, 55%), transparent) 0%, var(--hero-mid) 80%, var(--background) 100%)',
         }}
       />
-      <div className="t-texts-reveal mx-auto grid max-w-3xl gap-4 px-6 pt-16 pb-24 text-center">
+      <div className="t-texts-reveal mx-auto grid max-w-3xl gap-4 px-6 pt-24 pb-20 text-center">
         <h2
           id="ds-title"
           tabIndex={-1}

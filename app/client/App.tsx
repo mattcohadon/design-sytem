@@ -787,8 +787,8 @@ export default function App() {
       >
         Aller au contenu
       </a>
-      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur">
-        <div className="mx-auto flex h-12 w-full max-w-[90rem] items-center gap-3 px-6">
+      <header className="sticky top-3 z-30 mx-auto mt-3 -mb-15 w-[calc(100%-1.5rem)] max-w-6xl rounded-full border bg-background/75 shadow-sm backdrop-blur-md">
+        <div className="flex h-12 w-full items-center gap-3 px-4">
           <Sheet open={menu} onOpenChange={setMenu}>
             <SheetTrigger
               render={
@@ -921,7 +921,7 @@ export default function App() {
             : 'xl:grid-cols-[13rem_minmax(0,1fr)_11rem]'
         }`}
       >
-        <aside className="sticky top-12 hidden max-h-[calc(100svh-3rem)] self-start overflow-auto border-r py-6 pr-4 lg:block">
+        <aside className="sticky top-20 hidden max-h-[calc(100svh-5rem)] self-start overflow-auto border-r py-6 pr-4 lg:block">
           {navList}
         </aside>
         <main className="min-w-0">
@@ -1134,7 +1134,7 @@ export default function App() {
         </main>
         {/* L'accueil n'a que deux listes, reliées par la barre du bas : pas de sommaire. */}
         <aside
-          className={`sticky top-12 hidden self-start py-6 ${route.kind === 'home' ? '' : 'xl:block'}`}
+          className={`sticky top-20 hidden self-start py-6 ${route.kind === 'home' ? '' : 'xl:block'}`}
         >
           <OnThisPage routeKey={`${route.kind}${found?.id ?? ''}`} />
         </aside>
