@@ -1,11 +1,12 @@
 name: Figma sync
 on:
-  repository_dispatch:
-    types: [figma-publish]
+  # Pas de webhook : on interroge Figma toutes les heures (minute 17, GitHub saute parfois les heures pleines).
+  schedule:
+    - cron: '17 * * * *'
   workflow_dispatch:
 
-# Une publication Figma envoie plusieurs événements : on les traite l'un après l'autre.
-# Le second retrouve la même branche (nom dérivé du snapshot) et la même PR.
+# Deux exécutions simultanées sont mises en file. Le nom de branche dérive du snapshot :
+# le même état de Figma retrouve la même branche et la même PR.
 concurrency:
   group: figma-sync
   cancel-in-progress: false
@@ -33,7 +34,6 @@ jobs:
         env:
           FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
           FIGMA_FILE_KEY: ${{ vars.FIGMA_FILE_KEY }}
-          VARIABLES: ${{ github.event.client_payload.variables }}
         run: |
           old=-
           [ -f figma-sync/snapshot.json ] && old=figma-sync/snapshot.json
@@ -42,9 +42,6 @@ jobs:
           if [ "$result" = EMPTY ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "Aucun changement de composant ou de style : pas de PR." >> "$GITHUB_STEP_SUMMARY"
-            if [ -n "$VARIABLES" ]; then
-              echo "Variables modifiées ($VARIABLES) : valeurs illisibles sans Enterprise, exportez-les à la main." >> "$GITHUB_STEP_SUMMARY"
-            fi
           else
             mv figma-sync/snapshot.new.json figma-sync/snapshot.json
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -71,8 +68,7 @@ jobs:
             - N'écris rien dans figma-sync/snapshot.json, figma-sync/diff.json, figma-sync/diff.md.
             Sortie : écris la description de la PR, en français, dans figma-sync/pr-body.md avec les sections
             « Ce qui change », « Changements cassants », « À relire en priorité », « À reporter dans Figma » (cases à cocher) et « Incertitudes ».
-            Variables modifiées annoncées par Figma (noms seulement) : ${{ github.event.client_payload.variables || 'aucune' }}.
-            Si des variables ont changé, ajoute à « À reporter dans Figma » : exporter les variables à la main.
+            Les valeurs des variables Figma ne sont pas lisibles ici : ne les modifie pas.
       - name: Branche et PR
         if: steps.diff.outputs.changed == 'true'
         env:
