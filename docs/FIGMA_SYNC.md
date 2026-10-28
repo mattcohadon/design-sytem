@@ -16,7 +16,7 @@ sans plan Enterprise : leur export reste manuel.
 
 1. **GitHub → Settings → Actions → General** : cocher « Allow GitHub Actions to create and approve pull requests ».
 2. **Secrets du dépôt** : `FIGMA_TOKEN` (lecture seule : `library_content:read`, `file_content:read`),
-   `ANTHROPIC_API_KEY`. **Variable** du dépôt : `FIGMA_FILE_KEY` (le segment après `/design/` dans l'URL du fichier).
+   `CLAUDE_CODE_OAUTH_TOKEN` (généré avec `claude setup-token`, lié à votre abonnement Claude : la synchro consomme son quota). **Variable** du dépôt : `FIGMA_FILE_KEY` (le segment après `/design/` dans l'URL du fichier).
 3. Facultatif : secret `PR_TOKEN` (jeton fine-grained limité à ce dépôt : Contents et Pull requests en écriture).
    Sans lui, la PR est créée par `GITHUB_TOKEN` et **la CI ne se lance pas dessus** (limite GitHub).
 4. Premier lancement : Actions → « Figma sync » → Run workflow. `figma-sync/snapshot.json` n'existe pas encore, donc tout
