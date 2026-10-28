@@ -57,6 +57,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { AssistantBar } from './AssistantBar.js';
 import { FigmaSpec } from './FigmaSpec.js';
 import { GetStarted, Welcome } from './Docs.js';
+import { Hero } from './Hero.js';
 import { Landing } from './Landing.js';
 import { OnThisPage } from './OnThisPage.js';
 import { inScope, useComponentTokens } from './useComponentTokens.js';
@@ -704,6 +705,33 @@ export default function App() {
       </p>
     </nav>
   );
+  const hero: { title: string; lead: string } | null = found
+    ? { title: found.title, lead: found.family }
+    : (
+        {
+          home: {
+            title: 'Composants',
+            lead: `${components.length} composants et ${blocks.length} blocs SortUI, pilotés par vos tokens. Choisissez-en un pour voir ses exemples et sa spécification Figma.`,
+          },
+          welcome: {
+            title: 'Bienvenue',
+            lead: 'DS-Studio est un atelier local pour explorer et faire évoluer un design system : une seule source de tokens, toutes les vues.',
+          },
+          start: {
+            title: 'Démarrage',
+            lead: 'De l’installation à votre premier changement de token validé, en cinq étapes.',
+          },
+          history: {
+            title: 'Changelog',
+            lead: 'Annuler une révision n’écrase pas les autres tokens. L’annulation s’enregistre elle aussi.',
+          },
+          tokens: {
+            title: 'Tokens',
+            lead: 'Modifiez une valeur, validez : chaque composant se met à jour partout.',
+          },
+          component: null,
+        } as const
+      )[route.kind];
   return (
     <div className="flex min-h-svh flex-col bg-background">
       <a
@@ -817,6 +845,7 @@ export default function App() {
           </Alert>
         )}
       </div>
+      {hero && <Hero title={hero.title} lead={hero.lead} />}
       <div className="mx-auto grid w-full max-w-7xl flex-1 gap-8 px-4 lg:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)_11rem]">
         <aside className="sticky top-12 hidden max-h-[calc(100svh-3rem)] self-start overflow-auto border-r py-6 pr-4 lg:block">
           {navList}
@@ -827,17 +856,6 @@ export default function App() {
               aria-label="Changelog"
               className="mx-auto grid w-full max-w-2xl gap-3 p-4"
             >
-              <h2
-                id="ds-title"
-                tabIndex={-1}
-                className="text-3xl font-medium tracking-tight outline-none"
-              >
-                Changelog
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Annuler une révision n’écrase pas les autres tokens.
-                L’annulation s’enregistre elle aussi.
-              </p>
               {!state.history.length && (
                 <p className="text-xs">
                   Aucun changement enregistré. Chaque validation apparaîtra ici,
@@ -898,21 +916,7 @@ export default function App() {
                 aria-labelledby="ds-title"
                 className="grid min-w-0 gap-4"
               >
-                <div className="flex items-baseline justify-between gap-3">
-                  <div>
-                    <h2
-                      id="ds-title"
-                      tabIndex={-1}
-                      className="text-3xl font-medium tracking-tight outline-none"
-                    >
-                      {found?.title ?? 'Design System'}
-                    </h2>
-                    <p className="text-xs text-muted-foreground">
-                      {found
-                        ? found.family
-                        : 'SortUI · 66 composants, 7 blocs, sources locales'}
-                    </p>
-                  </div>
+                <div className="flex flex-wrap items-center justify-end gap-3">
                   <div className="flex items-center gap-2">
                     {found && (
                       <>

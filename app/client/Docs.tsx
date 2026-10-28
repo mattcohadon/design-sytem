@@ -1,28 +1,8 @@
 import type { ReactNode } from 'react';
 
-function Page({
-  title,
-  lead,
-  children,
-}: {
-  title: string;
-  lead: string;
-  children: ReactNode;
-}) {
+function Page({ children }: { children: ReactNode }) {
   return (
-    <div className="mx-auto grid w-full max-w-3xl gap-8 p-4 py-10">
-      <div className="grid gap-3 text-center">
-        <h2
-          id="ds-title"
-          tabIndex={-1}
-          className="text-3xl font-medium tracking-tight outline-none"
-        >
-          {title}
-        </h2>
-        <p className="mx-auto max-w-xl text-sm text-muted-foreground">{lead}</p>
-      </div>
-      <div className="grid gap-6 text-sm leading-relaxed">{children}</div>
-    </div>
+    <div className="grid gap-6 py-8 text-sm leading-relaxed">{children}</div>
   );
 }
 
@@ -44,10 +24,7 @@ const Code = ({ children }: { children: string }) => (
 
 export function Welcome() {
   return (
-    <Page
-      title="Bienvenue"
-      lead="DS-Studio est un atelier local pour explorer et faire évoluer un design system : une seule source de tokens, toutes les vues."
-    >
+    <Page>
       <section className="grid gap-3">
         <H>Ce que contient l’atelier</H>
         <List
@@ -94,10 +71,7 @@ export function Welcome() {
 
 export function GetStarted() {
   return (
-    <Page
-      title="Démarrage"
-      lead="De l’installation à votre premier changement de token validé, en cinq étapes."
-    >
+    <Page>
       <section className="grid gap-3">
         <H>1. Lancer l’atelier</H>
         <p>Il faut Node 22.12 ou plus récent. Dans le dossier du projet :</p>

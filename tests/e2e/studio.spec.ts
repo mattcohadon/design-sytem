@@ -187,7 +187,7 @@ test('V2 : clavier, mobile 375 px et absence de stockage navigateur', async ({
   ).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(
-    page.getByRole('heading', { name: 'Design System', exact: true }),
+    page.getByRole('heading', { name: 'Tokens', exact: true }),
   ).toBeFocused();
   await page.getByLabel('Valeur du token').fill('#114477');
   await page.getByRole('button', { name: 'Proposer', exact: true }).click();

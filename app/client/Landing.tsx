@@ -47,21 +47,7 @@ export function Landing({
   blocks: Item[];
 }) {
   return (
-    <div className="mx-auto grid w-full max-w-5xl gap-8 p-4 py-10">
-      <div className="grid gap-3 text-center">
-        <h2
-          id="ds-title"
-          tabIndex={-1}
-          className="text-3xl font-medium tracking-tight outline-none"
-        >
-          Composants
-        </h2>
-        <p className="mx-auto max-w-xl text-sm text-muted-foreground">
-          {components.length} composants et {blocks.length} blocs SortUI,
-          pilotés par vos tokens. Choisissez-en un pour voir ses exemples et sa
-          spécification Figma.
-        </p>
-      </div>
+    <div className="grid gap-8 py-8">
       <Grid title="Composants" items={components} />
       <Grid title="Blocs" items={blocks} />
     </div>
