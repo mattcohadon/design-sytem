@@ -45,7 +45,7 @@ jobs:
           else
             mv figma-sync/snapshot.new.json figma-sync/snapshot.json
             echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "branch=figma-sync/$(sha256sum figma-sync/snapshot.json | cut -c1-10)" >> "$GITHUB_OUTPUT"
+            echo "branch=figma-sync-$(sha256sum figma-sync/snapshot.json | cut -c1-10)" >> "$GITHUB_OUTPUT"
           fi
           rm -f figma-sync/snapshot.new.json
         shell: bash
@@ -53,6 +53,8 @@ jobs:
         if: steps.diff.outputs.changed == 'true'
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Évite l'échange OIDC (id-token) qui exige l'app GitHub de Claude : on réutilise le jeton du job.
+          github_token: ${{ github.token }}
           claude_args: |
             --max-turns 40
             --allowedTools "Read,Edit,Write,Glob,Grep,Bash(npm run build:*),Bash(npm test:*),Bash(npx tsc:*)"
