@@ -10,13 +10,18 @@ interface FigmaSet {
   variants: string[];
 }
 
-const slug = (name: string) =>
+export const slug = (name: string) =>
   name
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
+
+/** Identifiants de pages qui existent aussi dans la bibliothèque Figma. */
+export const figmaIds = new Set(
+  (snapshot.componentSets as FigmaSet[]).map((x) => slug(x.name)),
+);
 
 /** Ce que Figma décrit pour ce composant : mis à jour par chaque PR « Figma sync » fusionnée. */
 export function FigmaSpec({ id }: { id: string }) {
