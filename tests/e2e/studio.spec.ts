@@ -377,3 +377,28 @@ test('changelog en frise et tag New sur les composants issus de Figma', async ({
       .getByRole('link', { name: /^Accordion/ }),
   ).not.toContainText('New');
 });
+
+test('sur cette page : la barre de progression suit le défilement puis passe à la section suivante', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const toc = page.getByRole('navigation', { name: 'Sur cette page' });
+  await expect(toc).toBeVisible();
+  const current = toc.locator('a[aria-current="location"]');
+  const progress = async () =>
+    Number(
+      await current.locator('[data-progress]').getAttribute('data-progress'),
+    );
+  // Dans la première section : la barre est derrière « Composants » et avance.
+  await page.evaluate(() => scrollTo(0, 500));
+  await expect(current).toContainText('Composants');
+  const first = await progress();
+  expect(first).toBeGreaterThan(0);
+  await page.evaluate(() => scrollTo(0, 800));
+  await expect.poll(progress).toBeGreaterThan(first);
+  // Tout en bas : la barre est passée sur « Blocs », pleine.
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+  await expect(current).toContainText('Blocs');
+  await expect.poll(progress).toBe(1);
+  await expect(toc.locator('[data-progress]')).toHaveCount(1);
+});
