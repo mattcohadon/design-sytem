@@ -1,7 +1,16 @@
 import type { CSSProperties } from 'react';
+import { NewTag } from './NewTag.js';
 
 /** Bandeau d'ouverture de page : la navigation et le contenu commencent en dessous. */
-export function Hero({ title, lead }: { title: string; lead: string }) {
+export function Hero({
+  title,
+  lead,
+  isNew = false,
+}: {
+  title: string;
+  lead: string;
+  isNew?: boolean;
+}) {
   return (
     <section className="relative isolate overflow-hidden">
       <svg
@@ -24,6 +33,11 @@ export function Hero({ title, lead }: { title: string; lead: string }) {
           style={{ '--t-index': 0 } as CSSProperties}
         >
           {title}
+          {isNew && (
+            <span className="ml-3 align-middle">
+              <NewTag large />
+            </span>
+          )}
         </h2>
         <p
           className="mx-auto max-w-xl text-base text-muted-foreground"

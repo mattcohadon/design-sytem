@@ -911,6 +911,7 @@ export default function App() {
           key={`${route.kind}:${found?.id ?? ''}`}
           title={hero.title}
           lead={hero.lead}
+          isNew={!!found && isNew(found.id)}
         />
       )}
       <div
