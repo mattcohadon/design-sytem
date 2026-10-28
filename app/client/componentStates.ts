@@ -18,6 +18,8 @@ export interface StateEntry {
   selector?: string;
   /** Un seul élément reçoit l'état (le premier) : listes d'onglets, de pages, de jours. */
   first?: boolean;
+  /** Précision affichée sous le titre de la section. */
+  note?: string;
 }
 
 const s = (label: string, ...force: Force[]): StateSpec => ({ label, force });
@@ -59,6 +61,9 @@ const toggle = [
   checked('Coché · désactivé', 'disabled'),
 ];
 
+const trigger =
+  'Ce sont les états du déclencheur : le contenu ouvert se voit dans l’aperçu principal.';
+
 const table: Record<string, StateEntry> = {
   // Actions
   button: e(pointer),
@@ -99,14 +104,14 @@ const table: Record<string, StateEntry> = {
   carousel: e(pointer),
   resizable: e([rest, hover, active, focus]),
   // Surcouches : les états du déclencheur ; le contenu ouvert se voit dans l'aperçu principal.
-  dialog: e(pointer),
-  'alert-dialog': e(pointer),
-  sheet: e(pointer),
-  drawer: e(pointer),
-  popover: e(pointer),
-  'hover-card': e(link),
-  tooltip: e(link),
-  'dropdown-menu': e(pointer),
+  dialog: e(pointer, { note: trigger }),
+  'alert-dialog': e(pointer, { note: trigger }),
+  sheet: e(pointer, { note: trigger }),
+  drawer: e(pointer, { note: trigger }),
+  popover: e(pointer, { note: trigger }),
+  'hover-card': e(link, { note: trigger }),
+  tooltip: e(link, { note: trigger }),
+  'dropdown-menu': e(pointer, { note: trigger }),
   // cmdk sélectionne le premier choix d'office : l'état se voit sur un autre.
   command: e([rest, selected], {
     selector: '[role="option"]:not([data-selected="true"])',
@@ -116,7 +121,7 @@ const table: Record<string, StateEntry> = {
   item: e(link, { first: true }),
   table: e([rest, hover], { selector: 'tbody tr', first: true }),
   'usage-bar': e([rest, hover, focus], { first: true }),
-  sonner: e(pointer),
+  sonner: e(pointer, { note: trigger }),
   // IA
   'ai-chat-composer': e(field),
   attachment: e(pointer),
@@ -131,4 +136,5 @@ const table: Record<string, StateEntry> = {
 export const entryOf = (id: string): StateEntry | undefined => table[id];
 export const statesOf = (id: string): StateSpec[] | undefined =>
   table[id]?.states;
+export const noteOf = (id: string): string | undefined => table[id]?.note;
 export const statefulIds = Object.keys(table);

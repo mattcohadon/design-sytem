@@ -8,7 +8,7 @@ import { docContent } from './docContent.js';
 import { docDetails } from './docDetails.js';
 import { dosDonts } from './dosDonts.js';
 import { PreviewFrame } from './PreviewFrame.js';
-import { statesOf } from './componentStates.js';
+import { noteOf, statesOf } from './componentStates.js';
 import type { ComponentScope } from './useComponentTokens.js';
 import { manifest } from './preview/manifest.js';
 
@@ -269,7 +269,7 @@ export function ComponentDocs({
           <p className="text-sm text-muted-foreground">
             Chaque état est forcé dans l'aperçu : survol, appui, focus clavier,
             désactivé ou invalide, appliqués à tous les éléments interactifs de
-            l'exemple.
+            l'exemple. {noteOf(id)}
           </p>
           <PreviewFrame
             title={`États du composant ${title}`}
