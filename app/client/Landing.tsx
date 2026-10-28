@@ -1,26 +1,87 @@
-import { ChevronRightIcon } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { isNew, NewTag } from './NewTag.js';
 import type { ManifestFamily } from './preview/manifest.js';
 
 type Item = ManifestFamily['items'][number];
 
+/** Thème de l'atelier (classe `dark` sur <html>), suivi pour que les aperçus le reprennent. */
+function useDark() {
+  const read = () => document.documentElement.classList.contains('dark');
+  const [dark, setDark] = useState(read);
+  useEffect(() => {
+    const observer = new MutationObserver(() => setDark(read()));
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+    return () => observer.disconnect();
+  }, []);
+  return dark;
+}
+
+/**
+ * Aperçu réel du composant : l'iframe d'aperçu est montée à l'approche du viewport,
+ * rendue au double de la vignette puis réduite de moitié.
+ */
+function Thumb({
+  id,
+  title,
+  dark,
+}: {
+  id: string;
+  title: string;
+  dark: boolean;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || shown) return;
+    const observer = new IntersectionObserver(
+      (entries) => entries.some((e) => e.isIntersecting) && setShown(true),
+      { rootMargin: '200px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [shown]);
+  return (
+    <div
+      ref={ref}
+      aria-hidden
+      className="relative aspect-[16/10] overflow-hidden rounded-lg border bg-background"
+    >
+      {shown && (
+        <iframe
+          title={`Aperçu ${title}`}
+          src={`/?preview=1&thumb=1&mode=${dark ? 'dark' : 'light'}&view=component&id=${id}`}
+          loading="lazy"
+          scrolling="no"
+          tabIndex={-1}
+          className="pointer-events-none absolute top-0 left-0 h-[200%] w-[200%] origin-top-left scale-50 border-0"
+        />
+      )}
+    </div>
+  );
+}
+
 function Grid({ title, items }: { title: string; items: Item[] }) {
+  const dark = useDark();
   return (
     <section aria-label={title} className="grid gap-3">
       <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
         {title} · {items.length}
       </h3>
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
           <li key={item.id}>
             <a
               href={`#/composants/${item.id}`}
-              className="flex h-12 items-center justify-between gap-2 rounded-xl border bg-card px-4 text-sm text-card-foreground outline-none transition-colors hover:bg-fill-1 focus-visible:ring-2 focus-visible:ring-ring/30"
+              className="grid gap-2 rounded-xl border bg-card p-2 text-sm text-card-foreground outline-none transition-colors hover:bg-fill-1 focus-visible:ring-2 focus-visible:ring-ring/30"
             >
-              <span className="truncate">{item.title}</span>
-              <span className="flex shrink-0 items-center gap-2">
+              <Thumb id={item.id} title={item.title} dark={dark} />
+              <span className="flex items-center justify-between gap-2 px-2 pb-1">
+                <span className="truncate">{item.title}</span>
                 {isNew(item.id) && <NewTag />}
-                <ChevronRightIcon className="size-4 text-muted-foreground" />
               </span>
             </a>
           </li>

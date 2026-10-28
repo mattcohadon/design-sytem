@@ -367,6 +367,8 @@ test('changelog en frise et tag New sur les composants issus de Figma', async ({
     .getByRole('link', { name: /^Button/ })
     .first();
   await expect(card).toContainText('New');
+  // La carte porte un aperçu réel du composant.
+  await expect(card.locator('iframe')).toHaveAttribute('src', /id=button/);
   const tag = card.getByText('New', { exact: true });
   // Pleine arrondi : le rayon dépasse la moitié de la hauteur du tag.
   const [radius, height] = await tag.evaluate((el) => [
