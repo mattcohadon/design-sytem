@@ -1,3 +1,4 @@
+// Stride UI · brand new design system, built on SortUI
 import { cn } from "cn"
 import { Loader2Icon } from "lucide-react"
 

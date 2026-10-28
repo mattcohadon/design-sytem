@@ -1,3 +1,4 @@
+// Stride UI · brand new design system, built on SortUI
 import { cn } from "cn"
 
 function AspectRatio({
