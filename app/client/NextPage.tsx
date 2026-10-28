@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 
 export interface NextTarget {
   href: string;
@@ -10,20 +9,22 @@ export interface NextTarget {
 const THRESHOLD = 1000;
 // Part de l'écart restant rattrapée à chaque image : plus petit = plus doux.
 const FOLLOW = 0.14;
+// Verrou partagé entre les pages : la nouvelle page crée son propre composant, mais l'élan de la
+// molette qui a ouvert la précédente ne doit pas en ouvrir une troisième.
+const gesture = { locked: false, lastWheel: 0 };
 const atBottom = () =>
   innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
 
 /**
- * Fin de page : continuer à défiler en bas fait monter un demi-cercle gris depuis le bord inférieur de
- * l'écran ; quand il est plein, la page suivante s'ouvre. Le lien reste cliquable et atteignable au clavier.
- * Le demi-cercle est animé hors de React (une écriture de style par image) pour rester fluide.
+ * Fin de page : continuer à défiler en bas remplit une barre de progression sous le nom de la page
+ * suivante ; quand elle est pleine, la page s'ouvre. Le lien reste cliquable et atteignable au clavier.
+ * La barre est animée hors de React (une écriture de style par image) pour rester fluide.
  */
 export function NextPage({ next }: { next: NextTarget }) {
   const [active, setActive] = useState(false);
-  const [leaving, setLeaving] = useState(false);
-  const circle = useRef<HTMLDivElement>(null);
+  const bar = useRef<HTMLSpanElement>(null);
   useEffect(() => {
-    const s = { pull: 0, locked: false, lastWheel: 0, touchY: 0 };
+    const s = { pull: 0, touchY: 0 };
     const view = { target: 0, shown: 0, frame: 0 };
     let reset = 0;
     const paint = () => {
@@ -33,14 +34,13 @@ export function NextPage({ next }: { next: NextTarget }) {
         ? view.target
         : view.shown + (view.target - view.shown) * FOLLOW;
       if (Math.abs(view.target - view.shown) < 0.002) view.shown = view.target;
-      if (circle.current)
-        circle.current.style.transform = `translate3d(-50%, 50%, 0) scale(${view.shown})`;
+      if (bar.current) bar.current.style.transform = `scaleX(${view.shown})`;
       if (view.shown !== view.target) view.frame = requestAnimationFrame(paint);
     };
     const move = (ratio: number) => {
       view.target = ratio;
-      if (circle.current)
-        circle.current.dataset.pull = String(Math.round(ratio * 100));
+      if (bar.current)
+        bar.current.dataset.pull = String(Math.round(ratio * 100));
       view.frame ||= requestAnimationFrame(paint);
     };
     const set = (value: number) => {
@@ -48,22 +48,16 @@ export function NextPage({ next }: { next: NextTarget }) {
       move(s.pull / THRESHOLD);
       setActive(s.pull > 0);
       clearTimeout(reset);
-      // Sans nouveau geste, le demi-cercle redescend.
+      // Sans nouveau geste, la barre redescend.
       if (s.pull > 0 && s.pull < THRESHOLD)
         reset = window.setTimeout(() => set(0), 900);
     };
     const advance = () => {
-      s.locked = true;
+      gesture.locked = true;
       s.pull = 0;
-      // Le demi-cercle reste plein le temps de l'ouverture, puis s'efface en fondu.
+      // La barre se remplit jusqu'au bout, puis la page suivante s'ouvre.
       move(1);
-      setLeaving(true);
       location.hash = next.href;
-      reset = window.setTimeout(() => {
-        setLeaving(false);
-        setActive(false);
-        move(0);
-      }, 500);
     };
     const ignored = (target: EventTarget | null) =>
       target instanceof Element &&
@@ -72,11 +66,11 @@ export function NextPage({ next }: { next: NextTarget }) {
       );
     const onWheel = (e: WheelEvent) => {
       const now = Date.now();
-      const pause = now - s.lastWheel;
-      s.lastWheel = now;
+      const pause = now - gesture.lastWheel;
+      gesture.lastWheel = now;
       // Après un changement de page, l'élan de la molette est ignoré jusqu'à un nouveau geste.
-      if (s.locked) {
-        if (pause > 250) s.locked = false;
+      if (gesture.locked) {
+        if (pause > 250) gesture.locked = false;
         else return;
       }
       if (ignored(e.target)) return;
@@ -90,7 +84,7 @@ export function NextPage({ next }: { next: NextTarget }) {
       s.touchY = e.touches[0]?.clientY ?? 0;
     };
     const onTouchMove = (e: TouchEvent) => {
-      if (s.locked || ignored(e.target)) return;
+      if (gesture.locked || ignored(e.target)) return;
       const dy = s.touchY - (e.touches[0]?.clientY ?? s.touchY);
       if (dy > 0 && atBottom()) {
         if (dy * 1.5 >= THRESHOLD) advance();
@@ -98,7 +92,7 @@ export function NextPage({ next }: { next: NextTarget }) {
       }
     };
     const onTouchEnd = () => {
-      s.locked = false;
+      gesture.locked = false;
       if (s.pull < THRESHOLD) set(0);
     };
     addEventListener('wheel', onWheel, { passive: true });
@@ -138,26 +132,19 @@ export function NextPage({ next }: { next: NextTarget }) {
         <span className="text-lg font-medium tracking-tight">
           {next.label} →
         </span>
-      </a>
-      {createPortal(
-        // Cercle centré sur le bord inférieur : seule sa moitié haute est visible. Son diamètre est
-        // borné (moitié de la hauteur d'écran au plus) : il ne recouvre jamais toute la page.
-        // « multiply » laisse le texte lisible par-dessus le gris.
-        <div
-          ref={circle}
+        {/* Piste #EDEDED ; la barre se remplit avec le geste. */}
+        <span
           aria-hidden
-          data-pull="0"
-          className="pointer-events-none fixed bottom-0 left-1/2 z-20 rounded-full bg-[#ededed] mix-blend-multiply transition-opacity ease-out will-change-transform motion-reduce:transition-none dark:bg-white/10 dark:mix-blend-normal"
-          style={{
-            width: 'min(100svh, 90vw, 960px)',
-            height: 'min(100svh, 90vw, 960px)',
-            transform: 'translate3d(-50%, 50%, 0) scale(0)',
-            opacity: active || leaving ? (leaving ? 0 : 1) : 0,
-            transitionDuration: leaving ? '450ms' : '250ms',
-          }}
-        />,
-        document.body,
-      )}
+          className="mt-1 h-1 w-48 overflow-hidden rounded-full bg-[#ededed] dark:bg-white/10"
+        >
+          <span
+            ref={bar}
+            data-pull="0"
+            className="block h-full w-full origin-left rounded-full bg-primary will-change-transform"
+            style={{ transform: 'scaleX(0)' }}
+          />
+        </span>
+      </a>
     </>
   );
 }
