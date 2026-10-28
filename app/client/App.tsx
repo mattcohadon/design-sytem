@@ -60,7 +60,7 @@ import { Changelog } from './Changelog.js';
 import { Hero } from './Hero.js';
 import { NextPage, type NextTarget } from './NextPage.js';
 import { isNew, NewTag } from './NewTag.js';
-import { Landing } from './Landing.js';
+import { HomeBar, Landing } from './Landing.js';
 import { OnThisPage } from './OnThisPage.js';
 import { Search } from './Search.js';
 import { inScope, useComponentTokens } from './useComponentTokens.js';
@@ -765,7 +765,7 @@ export default function App() {
         Aller au contenu
       </a>
       <header className="sticky top-0 z-30 bg-background/90 backdrop-blur">
-        <div className="mx-auto flex h-12 w-full max-w-7xl items-center gap-3 px-6">
+        <div className="mx-auto flex h-12 w-full max-w-[90rem] items-center gap-3 px-6">
           <Sheet open={menu} onOpenChange={setMenu}>
             <SheetTrigger
               render={
@@ -888,7 +888,7 @@ export default function App() {
           lead={hero.lead}
         />
       )}
-      <div className="mx-auto grid w-full max-w-7xl flex-1 gap-8 px-4 lg:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)_11rem]">
+      <div className="mx-auto grid w-full max-w-[90rem] flex-1 gap-8 px-4 lg:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)_11rem]">
         <aside className="sticky top-12 hidden max-h-[calc(100svh-3rem)] self-start overflow-auto border-r py-6 pr-4 lg:block">
           {navList}
         </aside>
@@ -1098,20 +1098,24 @@ export default function App() {
           <OnThisPage routeKey={`${route.kind}${found?.id ?? ''}`} />
         </aside>
       </div>
-      <AssistantBar
-        agent={agent}
-        onAgent={(a) => {
-          setAgent(a);
-          setChat([]);
-        }}
-        info={selectedAgent}
-        message={message}
-        onMessage={setMessage}
-        chat={chat}
-        thinking={thinking}
-        onSend={() => void sendMessage()}
-        onStop={() => controller.current?.abort()}
-      />{' '}
+      {route.kind === 'home' ? (
+        <HomeBar />
+      ) : (
+        <AssistantBar
+          agent={agent}
+          onAgent={(a) => {
+            setAgent(a);
+            setChat([]);
+          }}
+          info={selectedAgent}
+          message={message}
+          onMessage={setMessage}
+          chat={chat}
+          thinking={thinking}
+          onSend={() => void sendMessage()}
+          onStop={() => controller.current?.abort()}
+        />
+      )}{' '}
       <Dialog
         open={!!proposal}
         onOpenChange={(open) => {

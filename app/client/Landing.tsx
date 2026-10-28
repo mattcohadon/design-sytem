@@ -67,11 +67,15 @@ function Thumb({
 function Grid({ title, items }: { title: string; items: Item[] }) {
   const dark = useDark();
   return (
-    <section aria-label={title} className="grid gap-3">
+    <section
+      id={`liste-${title.toLowerCase()}`}
+      aria-label={title}
+      className="scroll-mt-20 grid gap-3"
+    >
       <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
         {title} · {items.length}
       </h3>
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {items.map((item) => (
           <li key={item.id}>
             <a
@@ -103,6 +107,35 @@ export function Landing({
     <div className="grid gap-8 py-8">
       <Grid title="Composants" items={components} />
       <Grid title="Blocs" items={blocks} />
+    </div>
+  );
+}
+
+/** Remplace la barre de l'assistant sur l'accueil : accès direct aux deux listes. */
+export function HomeBar() {
+  return (
+    <div className="pointer-events-none sticky bottom-4 z-30 mt-auto flex justify-center px-4 pt-6">
+      <nav
+        aria-label="Listes"
+        className="pointer-events-auto flex gap-1 rounded-2xl border bg-popover p-1 text-sm shadow-popover"
+      >
+        {['Composants', 'Blocs'].map((name) => (
+          <a
+            key={name}
+            href={`#liste-${name.toLowerCase()}`}
+            onClick={(e) => {
+              // Le routage utilise le hash : on défile sans le changer.
+              e.preventDefault();
+              document
+                .getElementById(`liste-${name.toLowerCase()}`)
+                ?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="rounded-xl px-4 py-2 outline-none transition-colors hover:bg-fill-1 focus-visible:ring-2 focus-visible:ring-ring/30"
+          >
+            {name}
+          </a>
+        ))}
+      </nav>
     </div>
   );
 }

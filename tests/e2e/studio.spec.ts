@@ -216,18 +216,21 @@ test('navigation : filtre de la sidebar, page composant, suivant, mode manuel de
   await expect(
     page.getByRole('region', { name: 'Blocs' }).getByRole('link'),
   ).toHaveCount(7);
-  // Barre latérale ouverte : la barre Claude reste centrée sur la fenêtre (1600 px).
-  const bar = await page
-    .locator('form')
-    .filter({ has: page.getByLabel('Votre demande') })
-    .boundingBox();
-  expect(Math.abs(bar!.x + bar!.width / 2 - 800)).toBeLessThan(2);
+  // Sur l'accueil : pas de barre Claude, mais l'accès aux deux listes.
+  await expect(page.getByLabel('Votre demande')).toHaveCount(0);
+  await expect(page.getByRole('navigation', { name: 'Listes' })).toBeVisible();
   await page.getByLabel('Filtrer les composants').fill('dialog');
   await page
     .getByRole('navigation', { name: 'Navigation' })
     .getByRole('link', { name: 'Dialog', exact: true })
     .click();
   await expect(page).toHaveURL(/#\/composants\/dialog$/);
+  // Barre latérale ouverte : la barre Claude reste centrée sur la fenêtre (1600 px).
+  const bar = await page
+    .locator('form')
+    .filter({ has: page.getByLabel('Votre demande') })
+    .boundingBox();
+  expect(Math.abs(bar!.x + bar!.width / 2 - 800)).toBeLessThan(2);
   await expect(
     page.getByRole('heading', { name: 'Dialog', exact: true }),
   ).toBeVisible();
