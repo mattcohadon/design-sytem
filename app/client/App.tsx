@@ -92,6 +92,7 @@ type Route =
   | { kind: 'welcome' }
   | { kind: 'start' }
   | { kind: 'history' }
+  | { kind: 'example' }
   | { kind: 'tokens' }
   | { kind: 'component'; id: string };
 const componentPrefix = '#/composants/';
@@ -100,6 +101,7 @@ const pageLabels: Partial<Record<Route['kind'], string>> = {
   welcome: 'Bienvenue',
   start: 'Démarrage',
   history: 'Changelog',
+  example: 'Exemple de landing',
 };
 /** Seuls #/, #/tokens et #/composants/<id> sont des pages ; #ds-title (lien d’évitement) est ignoré. */
 const routeOf = (hash: string): Route | null =>
@@ -107,18 +109,20 @@ const routeOf = (hash: string): Route | null =>
     ? { kind: 'home' }
     : hash === '#/bienvenue'
       ? { kind: 'welcome' }
-      : hash === '#/changelog'
-        ? { kind: 'history' }
-        : hash === '#/demarrage'
-          ? { kind: 'start' }
-          : hash === '#/tokens'
-            ? { kind: 'tokens' }
-            : hash.startsWith(componentPrefix)
-              ? {
-                  kind: 'component',
-                  id: decodeURIComponent(hash.slice(componentPrefix.length)),
-                }
-              : null;
+      : hash === '#/exemple'
+        ? { kind: 'example' }
+        : hash === '#/changelog'
+          ? { kind: 'history' }
+          : hash === '#/demarrage'
+            ? { kind: 'start' }
+            : hash === '#/tokens'
+              ? { kind: 'tokens' }
+              : hash.startsWith(componentPrefix)
+                ? {
+                    kind: 'component',
+                    id: decodeURIComponent(hash.slice(componentPrefix.length)),
+                  }
+                : null;
 const modeLabels: Record<Mode, string> = { light: 'Clair', dark: 'Sombre' };
 // Damier sous la couleur : beaucoup de tokens SortUI ont une opacité.
 const checker =
@@ -658,6 +662,7 @@ export default function App() {
           ['start', '#/demarrage', 'Démarrage'],
           ['home', '#/', 'Composants'],
           ['tokens', '#/tokens', 'Tokens'],
+          ['example', '#/exemple', 'Exemple de landing'],
         ].map(([kind, href, label]) => (
           <a
             key={kind}
@@ -720,6 +725,10 @@ export default function App() {
           start: {
             title: 'Démarrage',
             lead: 'De l’installation à votre premier changement de token validé, en cinq étapes.',
+          },
+          example: {
+            title: 'Exemple de landing',
+            lead: 'Une page de vente complète, construite avec les composants et les tokens de ce design system, pour un client fictif.',
           },
           history: {
             title: 'Changelog',
@@ -904,6 +913,28 @@ export default function App() {
                 ))}
               </ol>
             </section>
+          ) : route.kind === 'example' ? (
+            <div className="grid gap-3 py-8">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs text-muted-foreground">
+                  Contenu fictif. La page utilise vos tokens : modifiez-les,
+                  puis revenez ici.
+                </p>
+                <a
+                  href={`/?${iframeQuery}&view=landing`}
+                  target="_blank"
+                  rel="noopener"
+                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                >
+                  Ouvrir en plein écran
+                </a>
+              </div>
+              <iframe
+                title="Exemple de landing"
+                className="landing-frame h-[min(900px,calc(100svh-8rem))] w-full rounded-2xl border bg-background"
+                src={`/?${iframeQuery}&view=landing`}
+              />
+            </div>
           ) : route.kind === 'welcome' ? (
             <Welcome />
           ) : route.kind === 'start' ? (

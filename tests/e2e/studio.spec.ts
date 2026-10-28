@@ -297,3 +297,26 @@ test('accessibilité : anneau de focus, Échap ferme les tokens, thème mémoris
   await page.reload();
   await expect(page.locator('html')).toHaveClass(/dark/);
 });
+
+test('exemple de landing : page de vente intégrée à l’atelier, aux couleurs des tokens', async ({
+  page,
+}) => {
+  await page.goto('/#/exemple');
+  await expect(
+    page.getByRole('heading', { name: 'Exemple de landing', level: 2 }),
+  ).toBeVisible();
+  const frame = page.frameLocator('iframe[title="Exemple de landing"]');
+  await expect(
+    frame.getByRole('heading', { level: 1, name: /Comprenez vos clients/ }),
+  ).toBeVisible();
+  await expect(
+    frame.getByRole('button', { name: 'Démarrer gratuitement' }).first(),
+  ).toHaveCSS('background-color', 'oklch(0.585 0.233 277.117)');
+  await frame
+    .getByRole('button', { name: /carte bancaire pour essayer/ })
+    .click();
+  await expect(frame.getByText(/aucun moyen de paiement/)).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'Ouvrir en plein écran' }),
+  ).toHaveAttribute('href', /view=landing/);
+});

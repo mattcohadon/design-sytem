@@ -3,6 +3,7 @@ import '../sortui.css';
 import { modes, type Mode } from '../../shared/model.js';
 import { useDesignState } from '../useDesignState.js';
 import { Catalogue, ComponentView } from './Catalogue.js';
+import { SalesLanding } from './SalesLanding.js';
 import { Scenario } from './Scenario.js';
 import { SortUIRoot } from './SortUIRoot.js';
 
@@ -28,6 +29,8 @@ function Preview() {
     <SortUIRoot tokens={state.tokens} mode={mode}>
       {view === 'catalogue' ? (
         <Catalogue />
+      ) : view === 'landing' ? (
+        <SalesLanding />
       ) : view === 'component' ? (
         <ComponentView id={component} />
       ) : (
