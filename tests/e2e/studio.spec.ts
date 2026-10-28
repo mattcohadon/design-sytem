@@ -4,9 +4,7 @@ test('boucle centrale réelle : diff, validation, propagation, recharge, annulat
   page,
 }) => {
   await page.goto('/#/tokens');
-  await expect(
-    page.getByRole('heading', { name: 'Une source. Toutes les vues.' }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Stride UI' })).toBeVisible();
   await expect(
     page.getByText('Figma non connecté', { exact: true }),
   ).toBeVisible();
@@ -47,13 +45,16 @@ test('boucle centrale réelle : diff, validation, propagation, recharge, annulat
   await page.getByLabel('Valeur du token').fill('22');
   await page.getByRole('button', { name: 'Proposer', exact: true }).click();
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
-  await page.getByRole('tab', { name: /Historique/ }).click();
+  await page.getByRole('link', { name: /Historique/ }).click();
   await page
     .getByRole('button', { name: 'Annuler la révision 1', exact: true })
     .click();
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
   // On revient de l'onglet Historique à la page Tokens.
-  await page.getByRole('tab', { name: 'Tokens', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Navigation' })
+    .getByRole('link', { name: 'Tokens', exact: true })
+    .click();
   await expect(mainButton).toHaveCSS(
     'background-color',
     'oklch(0.585 0.233 277.117)',
@@ -182,7 +183,7 @@ test('V2 : clavier, mobile 375 px et absence de stockage navigateur', async ({
   await page.getByRole('heading', { name: 'Tokens sémantiques' }).waitFor();
   await page.keyboard.press('Tab');
   await expect(
-    page.getByRole('link', { name: 'Aller aux tokens' }),
+    page.getByRole('link', { name: 'Aller au contenu' }),
   ).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(
@@ -220,7 +221,7 @@ test('navigation : filtre de la sidebar, page composant, suivant, mode manuel de
   expect(Math.abs(bar!.x + bar!.width / 2 - 800)).toBeLessThan(2);
   await page.getByLabel('Filtrer les composants').fill('dialog');
   await page
-    .locator('[data-sidebar="sidebar"]')
+    .getByRole('navigation', { name: 'Navigation' })
     .getByRole('link', { name: 'Dialog', exact: true })
     .click();
   await expect(page).toHaveURL(/#\/composants\/dialog$/);
@@ -262,7 +263,7 @@ test('pages Bienvenue et Démarrage dans la navigation flottante', async ({
   page,
 }) => {
   await page.goto('/');
-  const nav = page.locator('[data-sidebar="sidebar"]');
+  const nav = page.getByRole('navigation', { name: 'Navigation' });
   await nav.getByRole('link', { name: 'Bienvenue', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Bienvenue', level: 2 }),
@@ -273,6 +274,6 @@ test('pages Bienvenue et Démarrage dans la navigation flottante', async ({
   ).toBeVisible();
   // Sur ordinateur la navigation ne se referme pas : aucun bouton pour la masquer.
   await expect(
-    page.getByRole('button', { name: /barre latérale|sidebar/i }),
+    page.getByRole('button', { name: 'Ouvrir la navigation' }),
   ).toBeHidden();
 });
