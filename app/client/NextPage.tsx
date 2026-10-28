@@ -1,39 +1,47 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export interface NextTarget {
   href: string;
   label: string;
 }
 
-// Distance de défilement « en trop » (px de molette ou de glissé) pour ouvrir la page suivante.
-const THRESHOLD = 400;
+// Distance de défilement « en trop » (px de molette ; glissé tactile ×1,5) pour ouvrir la page suivante.
+const THRESHOLD = 1000;
 const atBottom = () =>
   innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
 
 /**
- * Pied de page : continuer à défiler en bas de page remplit une barre, puis ouvre la page suivante.
- * Le lien reste cliquable et atteignable au clavier.
+ * Fin de page : continuer à défiler en bas fait monter un demi-cercle depuis le bord inférieur de
+ * l'écran ; quand il est plein, la page suivante s'ouvre. Le lien reste cliquable et atteignable au clavier.
  */
 export function NextPage({ next }: { next: NextTarget }) {
   const [pull, setPull] = useState(0);
+  const [leaving, setLeaving] = useState(false);
   const state = useRef({ pull: 0, locked: false, lastWheel: 0, touchY: 0 });
   useEffect(() => {
     const s = state.current;
     s.pull = 0;
-    setPull(0);
     let reset = 0;
     const set = (value: number) => {
       s.pull = Math.max(0, Math.min(value, THRESHOLD));
       setPull(s.pull);
       clearTimeout(reset);
-      // Sans nouveau geste, la barre se vide.
+      // Sans nouveau geste, le demi-cercle redescend.
       if (s.pull > 0 && s.pull < THRESHOLD)
-        reset = window.setTimeout(() => set(0), 700);
+        reset = window.setTimeout(() => set(0), 900);
     };
     const advance = () => {
       s.locked = true;
       s.pull = 0;
+      // Le demi-cercle reste plein le temps de l'ouverture, puis s'efface en fondu.
+      setPull(THRESHOLD);
+      setLeaving(true);
       location.hash = next.href;
+      reset = window.setTimeout(() => {
+        setLeaving(false);
+        setPull(0);
+      }, 500);
     };
     const ignored = (target: EventTarget | null) =>
       target instanceof Element &&
@@ -63,8 +71,8 @@ export function NextPage({ next }: { next: NextTarget }) {
       if (s.locked || ignored(e.target)) return;
       const dy = s.touchY - (e.touches[0]?.clientY ?? s.touchY);
       if (dy > 0 && atBottom()) {
-        if (dy * 2 >= THRESHOLD) advance();
-        else set(dy * 2);
+        if (dy * 1.5 >= THRESHOLD) advance();
+        else set(dy * 1.5);
       }
     };
     const onTouchEnd = () => {
@@ -85,41 +93,49 @@ export function NextPage({ next }: { next: NextTarget }) {
   }, [next.href]);
   const active = pull > 0;
   const ratio = pull / THRESHOLD;
+  // Rayon final : le demi-cercle couvre l'écran en largeur comme en hauteur.
+  const radius = Math.ceil(Math.hypot(innerWidth / 2, innerHeight) * 1.05);
   return (
-    <a
-      href={next.href}
-      // Le bloc se soulève légèrement à mesure que l'on tire : le geste a un retour physique.
-      style={{
-        transform: `translateY(${-ratio * 10}px) scale(${1 + ratio * 0.015})`,
-      }}
-      className="group mt-16 mb-28 grid justify-items-center gap-3 rounded-2xl border px-6 py-8 text-center transition-[transform,background-color] duration-300 ease-out outline-none hover:bg-fill-1 focus-visible:ring-2 focus-visible:ring-ring/30 motion-reduce:transition-none"
-    >
-      {/* Les deux messages se superposent et se fondent l'un dans l'autre. */}
-      <span className="grid text-xs text-muted-foreground">
-        <span
-          className="col-start-1 row-start-1 transition-opacity duration-300 motion-reduce:transition-none"
-          style={{ opacity: active ? 0 : 1 }}
-        >
-          Page suivante
-        </span>
-        <span
-          className="col-start-1 row-start-1 transition-opacity duration-300 motion-reduce:transition-none"
-          style={{ opacity: active ? 1 : 0 }}
-        >
-          Continuez à scroller pour passer à «&nbsp;{next.label}&nbsp;»
-        </span>
-      </span>
-      <span className="text-lg font-medium tracking-tight">{next.label} →</span>
-      <span
-        aria-hidden
-        className="h-1 w-48 overflow-hidden rounded-full bg-fill-2"
+    <>
+      <a
+        href={next.href}
+        className="mt-16 mb-28 grid justify-items-center gap-2 rounded-lg px-6 py-4 text-center outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
       >
-        <span
+        {/* Les deux messages se superposent et se fondent l'un dans l'autre. */}
+        <span className="grid text-xs text-muted-foreground">
+          <span
+            className="col-start-1 row-start-1 transition-opacity duration-300 motion-reduce:transition-none"
+            style={{ opacity: active ? 0 : 1 }}
+          >
+            Page suivante
+          </span>
+          <span
+            className="col-start-1 row-start-1 transition-opacity duration-300 motion-reduce:transition-none"
+            style={{ opacity: active ? 1 : 0 }}
+          >
+            Continuez à scroller pour passer à «&nbsp;{next.label}&nbsp;»
+          </span>
+        </span>
+        <span className="text-lg font-medium tracking-tight">
+          {next.label} →
+        </span>
+      </a>
+      {createPortal(
+        <div
+          aria-hidden
           data-pull={Math.round(ratio * 100)}
-          className="block h-full rounded-full bg-primary transition-[width] duration-200 ease-out motion-reduce:transition-none"
-          style={{ width: `${ratio * 100}%` }}
-        />
-      </span>
-    </a>
+          className="pointer-events-none fixed bottom-0 left-1/2 z-20 rounded-full bg-primary/15 ring-1 ring-primary/25 transition-[transform,opacity] ease-out motion-reduce:transition-none"
+          style={{
+            width: radius * 2,
+            height: radius * 2,
+            // Centré sur le bord inférieur : seule la moitié haute est visible, c'est le demi-cercle.
+            transform: `translate(-50%, 50%) scale(${ratio})`,
+            opacity: leaving ? 0 : active ? 1 : 0,
+            transitionDuration: leaving ? '450ms' : '250ms',
+          }}
+        />,
+        document.body,
+      )}
+    </>
   );
 }

@@ -494,10 +494,10 @@ test('fin de page : continuer à défiler remplit la barre puis ouvre la page su
   // Remonter annule le geste : on reste sur la page.
   await page.mouse.wheel(0, -50);
   await expect(page).toHaveURL(/#\/bienvenue$/);
-  for (let i = 0; i < 4; i++) await page.mouse.wheel(0, 120);
+  for (let i = 0; i < 9; i++) await page.mouse.wheel(0, 120);
   await expect(page).toHaveURL(/#\/demarrage$/);
   // L'élan de la molette ne fait pas enchaîner plusieurs pages.
-  for (let i = 0; i < 5; i++) await page.mouse.wheel(0, 120);
+  for (let i = 0; i < 10; i++) await page.mouse.wheel(0, 120);
   await page.waitForTimeout(300);
   await expect(page).toHaveURL(/#\/demarrage$/);
   await expect(
