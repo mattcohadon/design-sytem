@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import '../sortui.css';
 import { modes, type Mode } from '../../shared/model.js';
 import { useDesignState } from '../useDesignState.js';
-import { Catalogue, ComponentView } from './Catalogue.js';
+import { Catalogue, ComponentView, StatesView } from './Catalogue.js';
 import { Scenario } from './Scenario.js';
 import { SortUIRoot } from './SortUIRoot.js';
 
@@ -41,6 +41,8 @@ function Preview() {
         <Suspense fallback={null}>
           <SalesLanding />
         </Suspense>
+      ) : view === 'states' ? (
+        <StatesView id={component} />
       ) : view === 'component' ? (
         <ComponentView id={component} thumb={thumb} />
       ) : (

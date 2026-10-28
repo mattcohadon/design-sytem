@@ -6,6 +6,9 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/input-group';
+import { entryOf, type Force } from '../componentStates.js';
+import { stateDemos } from './stateDemos.js';
+import { applyForced, installForcedStates } from './forcedStates.js';
 import { actions } from './demos/actions.js';
 import { ai } from './demos/ai.js';
 import { display } from './demos/display.js';
@@ -112,6 +115,134 @@ export function ComponentView({
         className={thumb ? undefined : 'mx-auto w-full max-w-4xl p-6'}
       >
         <DemoBoundary>{demo.render()}</DemoBoundary>
+      </div>
+    </section>
+  );
+}
+
+/** Ce qui change visuellement : sert à repérer un état sans style propre (identique au repos). */
+const SIGNATURE = [
+  'backgroundColor',
+  'color',
+  'borderColor',
+  'outlineColor',
+  'boxShadow',
+  'textDecorationLine',
+  'opacity',
+  'transform',
+] as const;
+/** Signature de toute la zone : un état peut changer le style d'un parent (champ désactivé, groupe invalide). */
+const signature = (box: HTMLElement) =>
+  [box, ...Array.from(box.querySelectorAll('*')).slice(0, 400)]
+    .map((el) => {
+      const cs = getComputedStyle(el);
+      return SIGNATURE.map((k) => cs[k]).join('|');
+    })
+    .join('§');
+
+/** Les états d'un composant côte à côte : chacun est forcé par attribut (hover, active, focus, disabled, invalid). */
+export function StatesView({ id }: { id: string }) {
+  const inner = useRef<HTMLDivElement>(null);
+  const boxes = useRef<Map<string, HTMLDivElement>>(new Map());
+  const [same, setSame] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    installForcedStates();
+  }, []);
+  useEffect(() => {
+    const el = inner.current;
+    if (!el || window.parent === window) return;
+    const report = () =>
+      window.parent.postMessage(
+        { type: 'ds-fit', height: el.getBoundingClientRect().height },
+        location.origin,
+      );
+    const observer = new ResizeObserver(report);
+    observer.observe(el);
+    report();
+    return () => observer.disconnect();
+  }, [id]);
+  const entry = entryOf(id);
+  // Un état sans style propre (par exemple « Appui » sur un bouton sans :active) est signalé, pas dupliqué.
+  useEffect(() => {
+    if (!entry) return;
+    const timer = setTimeout(() => {
+      const base = boxes.current.get(entry.states[0].label);
+      if (!base) return;
+      const rest = signature(base);
+      const next = new Set<string>();
+      for (const st of entry.states.slice(1)) {
+        const box = boxes.current.get(st.label);
+        if (box && signature(box) === rest) next.add(st.label);
+      }
+      setSame(next);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [id, entry]);
+  const demo = families.flatMap((f) => f.demos).find((d) => d.id === id);
+  if (!demo || !entry)
+    return (
+      <p role="alert" className="p-6 text-sm">
+        Aucun état pour : {id}
+      </p>
+    );
+  return (
+    <div ref={inner} className="grid gap-6 p-6">
+      {entry.states.map((state) => (
+        <StateCell
+          key={state.label}
+          label={state.label}
+          force={state.force}
+          selector={entry.selector}
+          first={entry.first}
+          hidden={same.has(state.label)}
+          register={(el) =>
+            el
+              ? boxes.current.set(state.label, el)
+              : boxes.current.delete(state.label)
+          }
+        >
+          <DemoBoundary>
+            {(stateDemos[id] ?? demo.render)(state.variant)}
+          </DemoBoundary>
+        </StateCell>
+      ))}
+    </div>
+  );
+}
+
+function StateCell({
+  label,
+  force,
+  selector,
+  first,
+  hidden,
+  register,
+  children,
+}: {
+  label: string;
+  force: Force[];
+  selector?: string;
+  first?: boolean;
+  hidden: boolean;
+  register: (el: HTMLDivElement | null) => void;
+  children: ReactNode;
+}) {
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = box.current;
+    register(el);
+    return el ? applyForced(el, force, selector, first) : undefined;
+  }, [force, selector, first, register]);
+  return (
+    <section aria-label={label} className="grid gap-2">
+      <h4 className="text-xs font-medium text-muted-foreground">{label}</h4>
+      {hidden && (
+        <p className="text-xs text-muted-foreground">
+          Aucun style propre : identique au repos.
+        </p>
+      )}
+      <div ref={box} hidden={hidden}>
+        {children}
       </div>
     </section>
   );

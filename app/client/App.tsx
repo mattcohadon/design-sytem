@@ -1091,6 +1091,7 @@ export default function App() {
                         id={found.id}
                         title={found.title}
                         scope={scope}
+                        statesSrc={`/?${iframeQuery}&view=states&id=${found.id}`}
                       />
                       <FigmaSpec id={found.id} />
                     </>

@@ -629,3 +629,43 @@ test('page composant : description, exemple copiable et spécifications lues dan
     'variant="outline">Contour',
   );
 });
+
+test('page composant : les états sont forcés dans l’aperçu (survol, focus, désactivé)', async ({
+  page,
+}) => {
+  await page.goto('/#/composants/button');
+  await expect(
+    page.getByRole('heading', { name: 'États', level: 3 }),
+  ).toBeVisible();
+  const frame = page.frameLocator('iframe[title="États du composant Button"]');
+  await expect(
+    frame.getByRole('heading', { name: 'Focus clavier' }),
+  ).toBeVisible();
+  // Le bouton « Discret » est transparent au repos et prend un fond au survol.
+  const bg = (cell: string) =>
+    frame
+      .locator(`section[aria-label="${cell}"]`)
+      .getByRole('button', { name: 'Discret' })
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+  const rest = await bg('Repos');
+  await expect.poll(() => bg('Survol')).not.toBe(rest);
+  await expect(
+    frame
+      .locator('section[aria-label="Désactivé"]')
+      .getByRole('button', { name: 'Principal' }),
+  ).toBeDisabled();
+  // Un état sans style propre est dit, pas répété.
+  await expect(
+    frame
+      .locator('section[aria-label="Appui"]')
+      .getByText('Aucun style propre'),
+  ).toBeVisible();
+  // Un composant purement visuel n'a pas de section États.
+  await page.goto('/#/composants/separator');
+  await expect(
+    page.getByRole('heading', { name: 'Description', level: 3 }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'États', level: 3 }),
+  ).toHaveCount(0);
+});
