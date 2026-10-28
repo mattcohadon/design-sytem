@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test('boucle centrale réelle : diff, validation, propagation, recharge, annulation sélective', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/#/tokens');
   await expect(
     page.getByRole('heading', { name: 'Une source. Toutes les vues.' }),
   ).toBeVisible();
@@ -63,7 +63,7 @@ test('boucle centrale réelle : diff, validation, propagation, recharge, annulat
 });
 
 test('V2 : Claude est le mode de travail par défaut', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/#/tokens');
   await expect(
     page.getByRole('combobox', { name: 'Mode de travail' }),
   ).toHaveValue('claude');
@@ -72,7 +72,7 @@ test('V2 : Claude est le mode de travail par défaut', async ({ page }) => {
 test('V2 : recherche, brouillon récupéré après recharge et abandon sans écriture', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/#/tokens');
   const before = await (await page.request.get('/api/state')).json();
   await page.getByLabel('Rechercher un token').fill('radius');
   await expect(
@@ -106,14 +106,14 @@ test('V2 : conflit multi-onglets visible dans le diff, aucune perte de données'
   page,
   context,
 }) => {
-  await page.goto('/');
+  await page.goto('/#/tokens');
   await page
     .getByRole('combobox', { name: 'Token', exact: true })
     .selectOption('light.primary');
   await page.getByLabel('Valeur du token').fill('#223355');
   await page.getByRole('button', { name: 'Proposer', exact: true }).click();
   const other = await context.newPage();
-  await other.goto('/');
+  await other.goto('/#/tokens');
   await other
     .getByRole('combobox', { name: 'Token', exact: true })
     .selectOption('light.primary');
@@ -138,7 +138,7 @@ test('V2 : conflit multi-onglets visible dans le diff, aucune perte de données'
 test('V2 : capacité de session périmée simulée sans rejeu ambigu', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/#/tokens');
   await page.getByRole('heading', { name: 'Tokens sémantiques' }).waitFor();
   const boot = await (await page.request.get('/api/bootstrap')).json();
   // Un seul refus certain avant mutation, comme une capacité périmée après restart.
@@ -178,7 +178,7 @@ test('V2 : clavier, mobile 375 px et absence de stockage navigateur', async ({
     };
   });
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto('/');
+  await page.goto('/#/tokens');
   await page.getByRole('heading', { name: 'Tokens sémantiques' }).waitFor();
   await page.keyboard.press('Tab');
   await expect(
@@ -201,6 +201,17 @@ test('navigation : filtre de la sidebar, page composant, suivant, mode manuel de
   page,
 }) => {
   await page.goto('/');
+  // Page d'accueil : tous les composants et blocs en cartes, avec pastille Figma.
+  await expect(
+    page.getByRole('heading', { name: 'Composants', level: 2 }),
+  ).toBeVisible();
+  const cards = page
+    .getByRole('region', { name: 'Composants' })
+    .getByRole('link');
+  expect(await cards.count()).toBeGreaterThanOrEqual(60);
+  await expect(
+    page.getByRole('region', { name: 'Blocs' }).getByRole('link'),
+  ).toHaveCount(7);
   // Barre latérale ouverte : la barre Claude reste centrée sur la fenêtre (1600 px).
   const bar = await page
     .locator('form')
@@ -208,7 +219,10 @@ test('navigation : filtre de la sidebar, page composant, suivant, mode manuel de
     .boundingBox();
   expect(Math.abs(bar!.x + bar!.width / 2 - 800)).toBeLessThan(2);
   await page.getByLabel('Filtrer les composants').fill('dialog');
-  await page.getByRole('link', { name: 'Dialog', exact: true }).click();
+  await page
+    .locator('[data-sidebar="sidebar"]')
+    .getByRole('link', { name: 'Dialog', exact: true })
+    .click();
   await expect(page).toHaveURL(/#\/composants\/dialog$/);
   await expect(
     page.getByRole('heading', { name: 'Dialog', exact: true }),
@@ -223,7 +237,7 @@ test('navigation : filtre de la sidebar, page composant, suivant, mode manuel de
   await page.getByRole('button', { name: 'Tokens', exact: true }).click();
   await expect(page.getByLabel('Valeur du token')).toBeVisible();
   await page.getByRole('link', { name: 'Composant suivant' }).click();
-  await expect(page).toHaveURL(/#\/composants\/alert-dialog$/);
+  await expect(page).toHaveURL(/#\/composants\/(?!dialog$)[a-z-]+$/);
   await page
     .getByRole('combobox', { name: 'Mode de travail' })
     .selectOption('manual');

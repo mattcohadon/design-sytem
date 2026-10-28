@@ -63,6 +63,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { AssistantBar } from './AssistantBar.js';
 import { FigmaSpec } from './FigmaSpec.js';
+import { Landing } from './Landing.js';
 import { manifest } from './preview/manifest.js';
 import { useTokenDraft } from './useTokenDraft.js';
 import { announceChange, useDesignState } from './useDesignState.js';
@@ -89,18 +90,21 @@ import {
   type Tokens,
 } from '../shared/model.js';
 
-type Route = { kind: 'tokens' } | { kind: 'component'; id: string };
+type Route =
+  { kind: 'home' } | { kind: 'tokens' } | { kind: 'component'; id: string };
 const componentPrefix = '#/composants/';
-/** Seuls #/tokens et #/composants/<id> sont des pages ; #ds-title (lien d’évitement) est ignoré. */
+/** Seuls #/, #/tokens et #/composants/<id> sont des pages ; #ds-title (lien d’évitement) est ignoré. */
 const routeOf = (hash: string): Route | null =>
-  hash === '#/tokens'
-    ? { kind: 'tokens' }
-    : hash.startsWith(componentPrefix)
-      ? {
-          kind: 'component',
-          id: decodeURIComponent(hash.slice(componentPrefix.length)),
-        }
-      : null;
+  hash === '' || hash === '#' || hash === '#/' || hash === '#/composants'
+    ? { kind: 'home' }
+    : hash === '#/tokens'
+      ? { kind: 'tokens' }
+      : hash.startsWith(componentPrefix)
+        ? {
+            kind: 'component',
+            id: decodeURIComponent(hash.slice(componentPrefix.length)),
+          }
+        : null;
 /** Referme le panneau mobile après un clic de navigation. */
 function CloseOnNavigate({ routeKey }: { routeKey: string }) {
   const { setOpenMobile } = useSidebar();
@@ -213,7 +217,7 @@ export default function App() {
   const [notice, setNotice] = useState('');
   const [agent, setAgent] = useState('claude');
   const [route, setRoute] = useState<Route>(
-    () => routeOf(location.hash) ?? { kind: 'tokens' },
+    () => routeOf(location.hash) ?? { kind: 'home' },
   );
   const [tab, setTab] = useState<'page' | 'history'>('page');
   const [showTokens, setShowTokens] = useState(false);
@@ -258,7 +262,7 @@ export default function App() {
       route.kind === 'component'
         ? manifest.flatMap((f) => f.items).find((i) => i.id === route.id)
         : undefined;
-    document.title = `${item?.title ?? 'Tokens'} · DS-Studio`;
+    document.title = `${item?.title ?? (route.kind === 'home' ? 'Composants' : 'Tokens')} · DS-Studio`;
   }, [route]);
   useEffect(() => {
     if (agent !== 'manual')
@@ -387,17 +391,19 @@ export default function App() {
           .find((i) => i.id === route.id)
       : undefined;
   const q = navQuery.trim().toLowerCase();
-  const filtered = manifest
-    .map((f) => ({
-      ...f,
-      items: q
-        ? f.items.filter(
-            (i) => i.title.toLowerCase().includes(q) || i.id.includes(q),
-          )
-        : f.items,
-    }))
-    .filter((f) => f.items.length);
-  const pages = manifest.flatMap((f) => f.items);
+  const match = (i: { id: string; title: string }) =>
+    !q || i.title.toLowerCase().includes(q) || i.id.includes(q);
+  // Liste plate et alphabétique, comme sortui.dev ; les blocs forment un groupe à part.
+  const byTitle = (a: { title: string }, b: { title: string }) =>
+    a.title.localeCompare(b.title, 'fr');
+  const components = manifest
+    .filter((f) => f.id !== 'blocks')
+    .flatMap((f) => f.items)
+    .sort(byTitle);
+  const blocks = manifest
+    .filter((f) => f.id === 'blocks')
+    .flatMap((f) => f.items);
+  const pages = [...components, ...blocks];
   const at = found ? pages.findIndex((i) => i.id === found.id) : -1;
   const editor = (
     <div className="grid gap-4 rounded-2xl border bg-card p-4 text-card-foreground shadow-card">
@@ -642,13 +648,22 @@ export default function App() {
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel className="h-8 text-xs">
-              Sections
+              Premiers pas
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    isActive={!found}
+                    isActive={route.kind === 'home'}
+                    className={navItem}
+                    render={<a href="#/" />}
+                  >
+                    Composants
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={route.kind === 'tokens'}
                     className={navItem}
                     render={<a href="#/tokens" />}
                   >
@@ -659,9 +674,6 @@ export default function App() {
             </SidebarGroupContent>
           </SidebarGroup>
           <SidebarGroup>
-            <SidebarGroupLabel className="h-8 text-xs">
-              Composants
-            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarInput
                 type="search"
@@ -672,29 +684,34 @@ export default function App() {
               />
             </SidebarGroupContent>
           </SidebarGroup>
-          {filtered.map((family) => (
-            <SidebarGroup key={family.id}>
-              <SidebarGroupLabel className="h-8 text-xs">
-                {family.title}
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {family.items.map((item) => (
-                    <SidebarMenuItem key={item.id}>
-                      <SidebarMenuButton
-                        isActive={item.id === found?.id}
-                        className={navItem}
-                        render={<a href={`#/composants/${item.id}`} />}
-                      >
-                        <span>{item.title}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          ))}
-          {q && !filtered.length && (
+          {[
+            { title: 'Composants', items: components.filter(match) },
+            { title: 'Blocs', items: blocks.filter(match) },
+          ]
+            .filter((g) => g.items.length)
+            .map((group) => (
+              <SidebarGroup key={group.title}>
+                <SidebarGroupLabel className="h-8 text-xs">
+                  {group.title}
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {group.items.map((item) => (
+                      <SidebarMenuItem key={item.id}>
+                        <SidebarMenuButton
+                          isActive={item.id === found?.id}
+                          className={navItem}
+                          render={<a href={`#/composants/${item.id}`} />}
+                        >
+                          <span>{item.title}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            ))}
+          {q && !components.some(match) && !blocks.some(match) && (
             <p className="px-4 py-1 text-xs text-muted-foreground">
               Aucune page.
             </p>
@@ -791,7 +808,11 @@ export default function App() {
           >
             <TabsList>
               <TabsTrigger value="page">
-                {found ? 'Composant' : 'Tokens'}
+                {found
+                  ? 'Composant'
+                  : route.kind === 'home'
+                    ? 'Composants'
+                    : 'Tokens'}
               </TabsTrigger>
               <TabsTrigger value="history">
                 <HistoryIcon className="size-3.5" />
@@ -881,6 +902,8 @@ export default function App() {
               ))}
             </ol>
           </section>
+        ) : route.kind === 'home' ? (
+          <Landing components={components} blocks={blocks} />
         ) : (
           <div
             className={
