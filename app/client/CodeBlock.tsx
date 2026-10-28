@@ -3,7 +3,7 @@ import { CheckIcon, CopyIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 /** Copie dans le presse-papiers ; repli sur une zone de texte quand l'API est indisponible (page non sécurisée). */
-async function copy(text: string): Promise<boolean> {
+export async function copy(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);
     return true;

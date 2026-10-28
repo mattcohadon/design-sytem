@@ -1,6 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { CodeBlock } from './CodeBlock.js';
+import { CheckIcon, CopyIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CodeBlock, copy } from './CodeBlock.js';
 import { extractExample, parseSpec, type Spec } from './codeExtract.js';
 import { docContent } from './docContent.js';
 import { docDetails } from './docDetails.js';
@@ -35,7 +37,14 @@ interface Loaded {
   spec: Spec | null;
 }
 
-async function loadAll(id: string): Promise<Loaded> {
+const cache = new Map<string, Promise<Loaded>>();
+const loadAll = (id: string) => {
+  let hit = cache.get(id);
+  if (!hit) cache.set(id, (hit = read(id)));
+  return hit;
+};
+
+async function read(id: string): Promise<Loaded> {
   const family = manifest.find((f) => f.items.some((i) => i.id === id))?.id;
   const demoSource =
     family === 'blocks'
@@ -264,6 +273,42 @@ export function ComponentDocs({
           ))}
         </Section>
       )}
+    </div>
+  );
+}
+
+/** Bouton « Copier le code » placé au-dessus de l'aperçu : copie l'exemple de la démo affichée. */
+export function CopyExampleButton({ id }: { id: string }) {
+  const [example, setExample] = useState<string | null>();
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    let live = true;
+    setExample(undefined);
+    setCopied(false);
+    void loadAll(id).then((d) => live && setExample(d.example));
+    return () => {
+      live = false;
+    };
+  }, [id]);
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
+  if (!example) return null;
+  return (
+    <div className="flex justify-end">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={async () => setCopied(await copy(example))}
+      >
+        {copied ? <CheckIcon /> : <CopyIcon />}
+        {copied ? 'Copié' : 'Copier le code'}
+      </Button>
+      <span aria-live="polite" className="sr-only">
+        {copied ? 'Code copié' : ''}
+      </span>
     </div>
   );
 }

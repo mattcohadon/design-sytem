@@ -75,6 +75,21 @@ export function ComponentView({
   id: string;
   thumb?: boolean;
 }) {
+  const inner = useRef<HTMLDivElement>(null);
+  // L'atelier ajuste la hauteur de l'iframe à celle du composant : on lui envoie la nôtre.
+  useEffect(() => {
+    const el = inner.current;
+    if (!el || thumb || window.parent === window) return;
+    const report = () =>
+      window.parent.postMessage(
+        { type: 'ds-fit', height: el.getBoundingClientRect().height },
+        location.origin,
+      );
+    const observer = new ResizeObserver(report);
+    observer.observe(el);
+    report();
+    return () => observer.disconnect();
+  }, [id, thumb]);
   const demo = families.flatMap((f) => f.demos).find((d) => d.id === id);
   if (!demo)
     return (
@@ -89,10 +104,15 @@ export function ComponentView({
       className={
         thumb
           ? 'flex min-h-screen items-center justify-center overflow-hidden p-4'
-          : 'mx-auto max-w-4xl p-6'
+          : 'flex min-h-screen items-center'
       }
     >
-      <DemoBoundary>{demo.render()}</DemoBoundary>
+      <div
+        ref={inner}
+        className={thumb ? undefined : 'mx-auto w-full max-w-4xl p-6'}
+      >
+        <DemoBoundary>{demo.render()}</DemoBoundary>
+      </div>
     </section>
   );
 }
