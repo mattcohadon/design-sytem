@@ -219,6 +219,9 @@ test('navigation : filtre de la sidebar, page composant, suivant, mode manuel de
   // Sur l'accueil : pas de barre Claude, mais l'accès aux deux listes.
   await expect(page.getByLabel('Votre demande')).toHaveCount(0);
   await expect(page.getByRole('navigation', { name: 'Listes' })).toBeVisible();
+  await expect(
+    page.getByRole('navigation', { name: 'Sur cette page' }),
+  ).toHaveCount(0);
   await page.getByLabel('Filtrer les composants').fill('dialog');
   await page
     .getByRole('navigation', { name: 'Navigation' })
@@ -389,17 +392,28 @@ test('changelog en frise et tag New sur les composants issus de Figma', async ({
 test('sur cette page : la barre de progression suit le défilement puis passe à la section suivante', async ({
   page,
 }) => {
-  await page.goto('/');
+  // Fenêtre basse : la page Démarrage défile et son sommaire a plusieurs sections.
+  await page.setViewportSize({ width: 1600, height: 560 });
+  await page.goto('/#/demarrage');
   const toc = page.getByRole('navigation', { name: 'Sur cette page' });
   await expect(toc).toBeVisible();
+  const links = toc.getByRole('link');
+  const lastName = (await links.last().textContent())!;
   const current = toc.locator('a[aria-current="location"]');
   const progress = async () =>
     Number(
       await current.locator('[data-progress]').getAttribute('data-progress'),
     );
-  // Dans la première section : la barre est derrière « Composants » et avance.
-  await page.evaluate(() => scrollTo(0, 200));
-  await expect(current).toContainText('Composants');
+  const max = await page.evaluate(
+    () => document.documentElement.scrollHeight - innerHeight,
+  );
+  // Dans la première section : la barre est derrière son titre et avance.
+  const start = await page.evaluate(() => {
+    const h = document.querySelector('main h3')!;
+    return Math.max(h.getBoundingClientRect().top + scrollY - 96, 0);
+  });
+  await page.evaluate((y) => scrollTo(0, y), start + 10);
+  await expect(current).toHaveCount(1);
   const first = await progress();
   expect(first).toBeGreaterThan(0);
   // La barre s'anime : transition sur sa largeur et son opacité, sauf préférence de mouvement réduit.
@@ -408,11 +422,11 @@ test('sur cette page : la barre de progression suit le défilement puis passe à
     .evaluate((el) => getComputedStyle(el).transitionProperty);
   expect(transition).toContain('width');
   expect(transition).toContain('opacity');
-  await page.evaluate(() => scrollTo(0, 400));
+  await page.evaluate((y) => scrollTo(0, y), start + 14);
   await expect.poll(progress).toBeGreaterThan(first);
-  // Tout en bas : la barre est passée sur « Blocs », pleine.
+  // Tout en bas : la barre est passée sur la dernière section, pleine.
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
-  await expect(current).toContainText('Blocs');
+  await expect(current).toContainText(lastName);
   await expect.poll(progress).toBe(1);
   await expect(toc.locator('[data-progress]')).toHaveCount(1);
 });
@@ -458,7 +472,8 @@ test('sur cette page : pas de transition avec la préférence de mouvement rédu
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
+  await page.setViewportSize({ width: 1600, height: 560 });
+  await page.goto('/#/demarrage');
   // La page doit être rendue avant de défiler, sinon le défilement est ramené à 0.
   await expect(
     page.getByRole('navigation', { name: 'Sur cette page' }),

@@ -888,7 +888,13 @@ export default function App() {
           lead={hero.lead}
         />
       )}
-      <div className="mx-auto grid w-full max-w-[90rem] flex-1 gap-8 px-4 lg:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)_11rem]">
+      <div
+        className={`mx-auto grid w-full max-w-[90rem] flex-1 gap-8 px-4 lg:grid-cols-[13rem_minmax(0,1fr)] ${
+          route.kind === 'home'
+            ? ''
+            : 'xl:grid-cols-[13rem_minmax(0,1fr)_11rem]'
+        }`}
+      >
         <aside className="sticky top-12 hidden max-h-[calc(100svh-3rem)] self-start overflow-auto border-r py-6 pr-4 lg:block">
           {navList}
         </aside>
@@ -1094,7 +1100,10 @@ export default function App() {
             {nextPage && <NextPage next={nextPage} />}
           </div>
         </main>
-        <aside className="sticky top-12 hidden self-start py-6 xl:block">
+        {/* L'accueil n'a que deux listes, reliées par la barre du bas : pas de sommaire. */}
+        <aside
+          className={`sticky top-12 hidden self-start py-6 ${route.kind === 'home' ? '' : 'xl:block'}`}
+        >
           <OnThisPage routeKey={`${route.kind}${found?.id ?? ''}`} />
         </aside>
       </div>
