@@ -281,9 +281,20 @@ export default function App() {
   // La liste est longue : on amène la page active dans le champ de la barre latérale.
   const ready = !!state;
   useEffect(() => {
-    document
-      .querySelector('nav[aria-label="Navigation"] a[aria-current="page"]')
-      ?.scrollIntoView({ block: 'nearest' });
+    // On ne fait défiler que la barre latérale : scrollIntoView ferait aussi défiler la page.
+    const link = document.querySelector(
+      'nav[aria-label="Navigation"] a[aria-current="page"]',
+    );
+    const box = link?.closest('aside');
+    if (!link || !box) return;
+    const l = link.getBoundingClientRect();
+    const b = box.getBoundingClientRect();
+    if (l.top < b.top) box.scrollTop -= b.top - l.top;
+    else {
+      // La barre latérale peut dépasser l'écran quand la page est en haut : on vise ce qui est visible.
+      const limit = Math.min(b.bottom, innerHeight);
+      if (l.bottom > limit) box.scrollTop += l.bottom - limit;
+    }
   }, [route, ready]);
   useEffect(() => {
     const item =
