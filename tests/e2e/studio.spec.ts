@@ -257,3 +257,22 @@ test('page composant : spécification Figma issue du snapshot', async ({
   await expect(spec).toContainText('Variant');
   await expect(spec).toContainText('Destructive');
 });
+
+test('pages Bienvenue et Démarrage dans la navigation flottante', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const nav = page.locator('[data-sidebar="sidebar"]');
+  await nav.getByRole('link', { name: 'Bienvenue', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Bienvenue', level: 2 }),
+  ).toBeVisible();
+  await nav.getByRole('link', { name: 'Démarrage', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Démarrage', level: 2 }),
+  ).toBeVisible();
+  // Sur ordinateur la navigation ne se referme pas : aucun bouton pour la masquer.
+  await expect(
+    page.getByRole('button', { name: /barre latérale|sidebar/i }),
+  ).toBeHidden();
+});

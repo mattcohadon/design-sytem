@@ -63,6 +63,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { AssistantBar } from './AssistantBar.js';
 import { FigmaSpec } from './FigmaSpec.js';
+import { GetStarted, Welcome } from './Docs.js';
 import { Landing } from './Landing.js';
 import { manifest } from './preview/manifest.js';
 import { useTokenDraft } from './useTokenDraft.js';
@@ -91,20 +92,33 @@ import {
 } from '../shared/model.js';
 
 type Route =
-  { kind: 'home' } | { kind: 'tokens' } | { kind: 'component'; id: string };
+  | { kind: 'home' }
+  | { kind: 'welcome' }
+  | { kind: 'start' }
+  | { kind: 'tokens' }
+  | { kind: 'component'; id: string };
 const componentPrefix = '#/composants/';
+const pageLabels: Partial<Record<Route['kind'], string>> = {
+  home: 'Composants',
+  welcome: 'Bienvenue',
+  start: 'Démarrage',
+};
 /** Seuls #/, #/tokens et #/composants/<id> sont des pages ; #ds-title (lien d’évitement) est ignoré. */
 const routeOf = (hash: string): Route | null =>
   hash === '' || hash === '#' || hash === '#/' || hash === '#/composants'
     ? { kind: 'home' }
-    : hash === '#/tokens'
-      ? { kind: 'tokens' }
-      : hash.startsWith(componentPrefix)
-        ? {
-            kind: 'component',
-            id: decodeURIComponent(hash.slice(componentPrefix.length)),
-          }
-        : null;
+    : hash === '#/bienvenue'
+      ? { kind: 'welcome' }
+      : hash === '#/demarrage'
+        ? { kind: 'start' }
+        : hash === '#/tokens'
+          ? { kind: 'tokens' }
+          : hash.startsWith(componentPrefix)
+            ? {
+                kind: 'component',
+                id: decodeURIComponent(hash.slice(componentPrefix.length)),
+              }
+            : null;
 /** Referme le panneau mobile après un clic de navigation. */
 function CloseOnNavigate({ routeKey }: { routeKey: string }) {
   const { setOpenMobile } = useSidebar();
@@ -262,7 +276,7 @@ export default function App() {
       route.kind === 'component'
         ? manifest.flatMap((f) => f.items).find((i) => i.id === route.id)
         : undefined;
-    document.title = `${item?.title ?? (route.kind === 'home' ? 'Composants' : 'Tokens')} · DS-Studio`;
+    document.title = `${item?.title ?? pageLabels[route.kind] ?? 'Tokens'} · DS-Studio`;
   }, [route]);
   useEffect(() => {
     if (agent !== 'manual')
@@ -625,7 +639,7 @@ export default function App() {
       >
         Aller aux tokens
       </a>
-      <Sidebar>
+      <Sidebar variant="floating">
         <SidebarHeader className="gap-3 p-3">
           <div className="flex items-center gap-2.5">
             <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -652,6 +666,24 @@ export default function App() {
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={route.kind === 'welcome'}
+                    className={navItem}
+                    render={<a href="#/bienvenue" />}
+                  >
+                    Bienvenue
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={route.kind === 'start'}
+                    className={navItem}
+                    render={<a href="#/demarrage" />}
+                  >
+                    Démarrage
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     isActive={route.kind === 'home'}
@@ -723,8 +755,9 @@ export default function App() {
       </Sidebar>
       <SidebarInset className="min-w-0">
         <header className="sticky top-0 z-20 flex flex-wrap items-center gap-x-3 gap-y-2 border-b bg-background/90 px-4 py-2.5 backdrop-blur">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="h-5" />
+          {/* Sur ordinateur la navigation reste ouverte ; le bouton ne sert qu'au panneau mobile. */}
+          <SidebarTrigger className="-ml-1 md:hidden" />
+          <Separator orientation="vertical" className="h-5 md:hidden" />
           <div className="mr-auto grid min-w-0">
             <h1 className="text-base font-semibold tracking-tight">
               Une source. Toutes les vues.
@@ -808,11 +841,7 @@ export default function App() {
           >
             <TabsList>
               <TabsTrigger value="page">
-                {found
-                  ? 'Composant'
-                  : route.kind === 'home'
-                    ? 'Composants'
-                    : 'Tokens'}
+                {found ? 'Composant' : (pageLabels[route.kind] ?? 'Tokens')}
               </TabsTrigger>
               <TabsTrigger value="history">
                 <HistoryIcon className="size-3.5" />
@@ -902,6 +931,10 @@ export default function App() {
               ))}
             </ol>
           </section>
+        ) : route.kind === 'welcome' ? (
+          <Welcome />
+        ) : route.kind === 'start' ? (
+          <GetStarted />
         ) : route.kind === 'home' ? (
           <Landing components={components} blocks={blocks} />
         ) : (
