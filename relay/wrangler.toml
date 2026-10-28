@@ -1,0 +1,7 @@
+name = "figma-sync-relay"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[vars]
+GITHUB_REPO = "mattcohadon/design-sytem"
+# FIGMA_PASSCODE, FIGMA_FILE_KEY et GITHUB_TOKEN : wrangler secret put (jamais ici).

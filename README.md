@@ -221,6 +221,10 @@ ils peuvent consommer du quota, contrairement aux autres commandes.
 Le starter est sous [licence MIT](LICENSE) pour le code original ; les dépendances
 conservent leurs licences. Aucune copie du code ou des mémoires personnelles de MARC.
 
+## Synchro Figma → PR
+
+Publier la bibliothèque Figma ouvre une pull request (composants, variantes, styles). Installation, relance manuelle et débogage : [docs/FIGMA_SYNC.md](docs/FIGMA_SYNC.md).
+
 ## Pour aller plus loin
 
 [Guide étudiant](docs/STUDENT_GUIDE.md) · [Guide enseignant](docs/TEACHER_GUIDE.md) ·
