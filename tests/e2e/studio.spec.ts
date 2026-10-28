@@ -45,7 +45,10 @@ test('boucle centrale réelle : diff, validation, propagation, recharge, annulat
   await page.getByLabel('Valeur du token').fill('22');
   await page.getByRole('button', { name: 'Proposer', exact: true }).click();
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
-  await page.getByRole('link', { name: /Changelog/ }).click();
+  await page
+    .getByRole('navigation', { name: 'Principal' })
+    .getByRole('link', { name: /Changelog/ })
+    .click();
   await page
     .getByRole('button', { name: 'Annuler la révision 1', exact: true })
     .click();
@@ -463,4 +466,41 @@ test('sur cette page : pas de transition avec la préférence de mouvement rédu
   expect(
     await bar.evaluate((el) => getComputedStyle(el).transitionProperty),
   ).toBe('none');
+});
+
+test('fin de page : continuer à défiler remplit la barre puis ouvre la page suivante', async ({
+  page,
+}) => {
+  await page.goto('/#/bienvenue');
+  await expect(
+    page.getByRole('heading', { name: 'Bienvenue', level: 2 }),
+  ).toBeVisible();
+  const link = page.locator('a[href="#/demarrage"]', {
+    hasText: 'Page suivante',
+  });
+  await expect(link).toBeVisible();
+  // La barre ne se remplit qu'une fois le bas de page atteint : on y va d'abord.
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+  await page.mouse.move(800, 600);
+  await page.mouse.wheel(0, 150);
+  await expect(link).toContainText(
+    'Continuez à scroller pour passer à « Démarrage »',
+  );
+  const pulled = async () =>
+    Number(await page.locator('[data-pull]').getAttribute('data-pull'));
+  // La barre se remplit (le rendu suit le geste d'un instant).
+  await expect.poll(pulled).toBeGreaterThan(0);
+  expect(await pulled()).toBeLessThan(100);
+  // Remonter annule le geste : on reste sur la page.
+  await page.mouse.wheel(0, -50);
+  await expect(page).toHaveURL(/#\/bienvenue$/);
+  for (let i = 0; i < 4; i++) await page.mouse.wheel(0, 120);
+  await expect(page).toHaveURL(/#\/demarrage$/);
+  // L'élan de la molette ne fait pas enchaîner plusieurs pages.
+  for (let i = 0; i < 5; i++) await page.mouse.wheel(0, 120);
+  await page.waitForTimeout(300);
+  await expect(page).toHaveURL(/#\/demarrage$/);
+  await expect(
+    page.getByRole('heading', { name: 'Démarrage', level: 2 }),
+  ).toBeVisible();
 });

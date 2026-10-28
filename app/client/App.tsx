@@ -58,6 +58,7 @@ import { FigmaSpec } from './FigmaSpec.js';
 import { GetStarted, Welcome } from './Docs.js';
 import { Changelog } from './Changelog.js';
 import { Hero } from './Hero.js';
+import { NextPage, type NextTarget } from './NextPage.js';
 import { isNew, NewTag } from './NewTag.js';
 import { Landing } from './Landing.js';
 import { OnThisPage } from './OnThisPage.js';
@@ -435,6 +436,21 @@ export default function App() {
     .flatMap((f) => f.items);
   const pages = [...components, ...blocks];
   const at = found ? pages.findIndex((i) => i.id === found.id) : -1;
+  // Ordre de lecture : Bienvenue, Démarrage, Composants, Tokens, Changelog ; puis les composants un à un.
+  const nextPage: NextTarget | null = found
+    ? at >= 0 && at < pages.length - 1
+      ? { href: `#/composants/${pages[at + 1].id}`, label: pages[at + 1].title }
+      : null
+    : (
+        {
+          welcome: { href: '#/demarrage', label: 'Démarrage' },
+          start: { href: '#/', label: 'Composants' },
+          home: { href: '#/tokens', label: 'Tokens' },
+          tokens: { href: '#/changelog', label: 'Changelog' },
+          history: null,
+          component: null,
+        } as const
+      )[route.kind];
   const editor = (
     <div className="grid gap-4 rounded-2xl border bg-card p-4 text-card-foreground">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -869,197 +885,206 @@ export default function App() {
           {navList}
         </aside>
         <main className="min-w-0">
-          {route.kind === 'history' ? (
-            <section aria-label="Changelog">
-              <Changelog
-                history={state.history}
-                sourceLabel={(source) => sourceLabels[source]}
-                onUndo={(event) =>
-                  void perform(async () =>
-                    setProposal(
-                      await request('undo', {
-                        revision: state.revision,
-                        id: event.id,
-                      }),
-                    ),
-                  )
-                }
-              />
-            </section>
-          ) : route.kind === 'welcome' ? (
-            <Welcome />
-          ) : route.kind === 'start' ? (
-            <GetStarted />
-          ) : route.kind === 'home' ? (
-            <Landing components={components} blocks={blocks} />
-          ) : (
-            <div className={'grid gap-6 p-4'}>
-              <section
-                aria-labelledby="ds-title"
-                className="grid min-w-0 gap-4"
-              >
-                <div className="flex flex-wrap items-center justify-end gap-3">
-                  <div className="flex items-center gap-2">
-                    {found && (
-                      <>
-                        <Button
-                          variant={showTokens ? 'secondary' : 'outline'}
-                          size="sm"
-                          aria-pressed={showTokens}
-                          onClick={() => setShowTokens(!showTokens)}
-                        >
-                          <PaletteIcon data-icon="inline-start" />
-                          Tokens
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon-sm"
-                          aria-label="Composant précédent"
-                          disabled={at <= 0}
-                          render={
-                            at > 0 ? (
-                              <a href={`#/composants/${pages[at - 1].id}`} />
-                            ) : undefined
-                          }
-                        >
-                          <ChevronLeftIcon />
-                        </Button>
-                        <span className="text-xs text-muted-foreground tabular-nums">
-                          {at + 1} / {pages.length}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="icon-sm"
-                          aria-label="Composant suivant"
-                          disabled={at >= pages.length - 1}
-                          render={
-                            at < pages.length - 1 ? (
-                              <a href={`#/composants/${pages[at + 1].id}`} />
-                            ) : undefined
-                          }
-                        >
-                          <ChevronRightIcon />
-                        </Button>
-                      </>
-                    )}
-                    {!found && route.kind === 'tokens' && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          title={
-                            boot?.figma.connected
-                              ? 'Lire les variables Figma et proposer les différences'
-                              : 'Figma non configuré : npm run figma:setup'
-                          }
-                          disabled={syncing}
-                          onClick={() =>
-                            void perform(async () => {
-                              setSyncing(true);
-                              try {
-                                const result = await request<{
-                                  proposal: Proposal | null;
-                                }>('figma-sync', { revision: state.revision });
-                                if (result.proposal)
-                                  setProposal(result.proposal);
-                                else
-                                  setNotice(
-                                    'Figma et DS-Studio sont déjà identiques.',
-                                  );
-                              } finally {
-                                setSyncing(false);
-                              }
-                            })
-                          }
-                        >
-                          <RefreshCwIcon
-                            data-icon="inline-start"
-                            className={syncing ? 'animate-spin' : undefined}
-                          />
-                          <span className="max-sm:sr-only">
-                            {syncing ? 'Lecture de Figma…' : 'Sync Figma'}
-                          </span>
-                        </Button>
-                        <label className={buttonVariants({ variant: 'ghost' })}>
-                          <UploadIcon data-icon="inline-start" />
-                          <span className="max-sm:sr-only">
-                            Importer un JSON
-                          </span>
-                          <input
-                            type="file"
-                            className="sr-only"
-                            accept=".json,application/json"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              e.target.value = '';
-                              if (file)
-                                void perform(async () => {
-                                  if (file.size > 128000)
-                                    throw new Error(
-                                      'Fichier trop volumineux (128 Ko maximum).',
-                                    );
-                                  const tokens = JSON.parse(await file.text());
-                                  setProposal(
-                                    await request('import', {
-                                      revision: state.revision,
-                                      tokens,
-                                    }),
-                                  );
-                                });
-                            }}
-                          />
-                        </label>
-                      </>
-                    )}
-                    <Badge variant="outline" className="tabular-nums">
-                      r{state.revision}
-                    </Badge>
-                  </div>
-                </div>
-                {found ? (
-                  <>
-                    <h3 className="sr-only">Aperçu</h3>
-                    <iframe
-                      className="catalogue-frame h-[min(640px,calc(100svh-14rem))] w-full rounded-2xl border bg-background"
-                      title={`Composant ${found.title}`}
-                      src={frameSrc}
-                    />
-                    <FigmaSpec id={found.id} />
-                  </>
-                ) : (
-                  <>
-                    {editor}
-                    <iframe
-                      className="catalogue-frame h-64 w-full rounded-2xl border bg-background"
-                      title="Aperçu en direct"
-                      src={frameSrc}
-                    />
-                  </>
-                )}
+          <div key={`${route.kind}:${found?.id ?? ''}`} className="page-enter">
+            {route.kind === 'history' ? (
+              <section aria-label="Changelog">
+                <Changelog
+                  history={state.history}
+                  sourceLabel={(source) => sourceLabels[source]}
+                  onUndo={(event) =>
+                    void perform(async () =>
+                      setProposal(
+                        await request('undo', {
+                          revision: state.revision,
+                          id: event.id,
+                        }),
+                      ),
+                    )
+                  }
+                />
               </section>
-              {found && showTokens && (
-                <aside
-                  aria-label="Éditeur de tokens"
-                  className="fixed inset-x-2 top-14 bottom-20 z-40 grid content-start gap-2 overflow-auto rounded-2xl border bg-background p-2 shadow-lg sm:inset-x-auto sm:right-4 sm:w-[26rem]"
+            ) : route.kind === 'welcome' ? (
+              <Welcome />
+            ) : route.kind === 'start' ? (
+              <GetStarted />
+            ) : route.kind === 'home' ? (
+              <Landing components={components} blocks={blocks} />
+            ) : (
+              <div className={'grid gap-6 p-4'}>
+                <section
+                  aria-labelledby="ds-title"
+                  className="grid min-w-0 gap-4"
                 >
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    className="justify-self-end"
-                    aria-label="Fermer les tokens"
-                    onClick={() => setShowTokens(false)}
-                  >
-                    <XIcon />
-                  </Button>
-                  {scope && (
-                    <p className="px-2 text-xs text-muted-foreground">
-                      Seuls les tokens utilisés par ce composant sont listés.
-                    </p>
+                  <div className="flex flex-wrap items-center justify-end gap-3">
+                    <div className="flex items-center gap-2">
+                      {found && (
+                        <>
+                          <Button
+                            variant={showTokens ? 'secondary' : 'outline'}
+                            size="sm"
+                            aria-pressed={showTokens}
+                            onClick={() => setShowTokens(!showTokens)}
+                          >
+                            <PaletteIcon data-icon="inline-start" />
+                            Tokens
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon-sm"
+                            aria-label="Composant précédent"
+                            disabled={at <= 0}
+                            render={
+                              at > 0 ? (
+                                <a href={`#/composants/${pages[at - 1].id}`} />
+                              ) : undefined
+                            }
+                          >
+                            <ChevronLeftIcon />
+                          </Button>
+                          <span className="text-xs text-muted-foreground tabular-nums">
+                            {at + 1} / {pages.length}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="icon-sm"
+                            aria-label="Composant suivant"
+                            disabled={at >= pages.length - 1}
+                            render={
+                              at < pages.length - 1 ? (
+                                <a href={`#/composants/${pages[at + 1].id}`} />
+                              ) : undefined
+                            }
+                          >
+                            <ChevronRightIcon />
+                          </Button>
+                        </>
+                      )}
+                      {!found && route.kind === 'tokens' && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            title={
+                              boot?.figma.connected
+                                ? 'Lire les variables Figma et proposer les différences'
+                                : 'Figma non configuré : npm run figma:setup'
+                            }
+                            disabled={syncing}
+                            onClick={() =>
+                              void perform(async () => {
+                                setSyncing(true);
+                                try {
+                                  const result = await request<{
+                                    proposal: Proposal | null;
+                                  }>('figma-sync', {
+                                    revision: state.revision,
+                                  });
+                                  if (result.proposal)
+                                    setProposal(result.proposal);
+                                  else
+                                    setNotice(
+                                      'Figma et DS-Studio sont déjà identiques.',
+                                    );
+                                } finally {
+                                  setSyncing(false);
+                                }
+                              })
+                            }
+                          >
+                            <RefreshCwIcon
+                              data-icon="inline-start"
+                              className={syncing ? 'animate-spin' : undefined}
+                            />
+                            <span className="max-sm:sr-only">
+                              {syncing ? 'Lecture de Figma…' : 'Sync Figma'}
+                            </span>
+                          </Button>
+                          <label
+                            className={buttonVariants({ variant: 'ghost' })}
+                          >
+                            <UploadIcon data-icon="inline-start" />
+                            <span className="max-sm:sr-only">
+                              Importer un JSON
+                            </span>
+                            <input
+                              type="file"
+                              className="sr-only"
+                              accept=".json,application/json"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                e.target.value = '';
+                                if (file)
+                                  void perform(async () => {
+                                    if (file.size > 128000)
+                                      throw new Error(
+                                        'Fichier trop volumineux (128 Ko maximum).',
+                                      );
+                                    const tokens = JSON.parse(
+                                      await file.text(),
+                                    );
+                                    setProposal(
+                                      await request('import', {
+                                        revision: state.revision,
+                                        tokens,
+                                      }),
+                                    );
+                                  });
+                              }}
+                            />
+                          </label>
+                        </>
+                      )}
+                      <Badge variant="outline" className="tabular-nums">
+                        r{state.revision}
+                      </Badge>
+                    </div>
+                  </div>
+                  {found ? (
+                    <>
+                      <h3 className="sr-only">Aperçu</h3>
+                      <iframe
+                        className="catalogue-frame h-[min(640px,calc(100svh-14rem))] w-full rounded-2xl border bg-background"
+                        title={`Composant ${found.title}`}
+                        src={frameSrc}
+                      />
+                      <FigmaSpec id={found.id} />
+                    </>
+                  ) : (
+                    <>
+                      {editor}
+                      <iframe
+                        className="catalogue-frame h-64 w-full rounded-2xl border bg-background"
+                        title="Aperçu en direct"
+                        src={frameSrc}
+                      />
+                    </>
                   )}
-                  {editor}
-                </aside>
-              )}
-            </div>
-          )}
+                </section>
+                {found && showTokens && (
+                  <aside
+                    aria-label="Éditeur de tokens"
+                    className="fixed inset-x-2 top-14 bottom-20 z-40 grid content-start gap-2 overflow-auto rounded-2xl border bg-background p-2 shadow-lg sm:inset-x-auto sm:right-4 sm:w-[26rem]"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      className="justify-self-end"
+                      aria-label="Fermer les tokens"
+                      onClick={() => setShowTokens(false)}
+                    >
+                      <XIcon />
+                    </Button>
+                    {scope && (
+                      <p className="px-2 text-xs text-muted-foreground">
+                        Seuls les tokens utilisés par ce composant sont listés.
+                      </p>
+                    )}
+                    {editor}
+                  </aside>
+                )}
+              </div>
+            )}
+            {nextPage && <NextPage next={nextPage} />}
+          </div>
         </main>
         <aside className="sticky top-12 hidden self-start py-6 xl:block">
           <OnThisPage routeKey={`${route.kind}${found?.id ?? ''}`} />
