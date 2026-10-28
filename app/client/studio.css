@@ -10,6 +10,8 @@ html {
 }
 
 :root {
+  --hero-blue: #4d80e6;
+  --hero-mid: #e9dfe5;
   --radius: 10px;
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);
@@ -73,6 +75,7 @@ html {
 }
 
 :root.dark {
+  --hero-mid: color-mix(in srgb, #e9dfe5 8%, oklch(0.145 0 0));
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
