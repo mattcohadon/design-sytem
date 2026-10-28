@@ -90,7 +90,7 @@ contenant des espaces est accepté. N’utilisez ni `sudo` ni installation de se
 2. Cliquez **Proposer**. Le diff montre l’ancienne et la nouvelle valeur, sans écriture.
 3. Cliquez **Valider et enregistrer**. Boutons, réservation et navigation changent dans les deux vues.
 4. Testez la réservation, puis les viewports 320, 375, 430 et 1024 px (défilement horizontal si nécessaire).
-5. Rechargez ou redémarrez : la valeur reste. Dans **Historique**, annulez la révision,
+5. Rechargez ou redémarrez : la valeur reste. Dans **Changelog**, annulez la révision,
    examinez son diff et validez. Les changements des autres tokens sont conservés.
 
 La propagation inter-vues utilise les valeurs enregistrées sur disque (diffusion

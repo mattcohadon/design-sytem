@@ -5,6 +5,9 @@ import {
   DownloadIcon,
   RefreshCwIcon,
   HistoryIcon,
+  MoonIcon,
+  SunIcon,
+  XIcon,
   MenuIcon,
   SearchIcon,
   PaletteIcon,
@@ -56,6 +59,7 @@ import { FigmaSpec } from './FigmaSpec.js';
 import { GetStarted, Welcome } from './Docs.js';
 import { Landing } from './Landing.js';
 import { OnThisPage } from './OnThisPage.js';
+import { inScope, useComponentTokens } from './useComponentTokens.js';
 import { manifest } from './preview/manifest.js';
 import { useTokenDraft } from './useTokenDraft.js';
 import { announceChange, useDesignState } from './useDesignState.js';
@@ -94,7 +98,7 @@ const pageLabels: Partial<Record<Route['kind'], string>> = {
   home: 'Composants',
   welcome: 'Bienvenue',
   start: 'Démarrage',
-  history: 'Historique',
+  history: 'Changelog',
 };
 /** Seuls #/, #/tokens et #/composants/<id> sont des pages ; #ds-title (lien d’évitement) est ignoré. */
 const routeOf = (hash: string): Route | null =>
@@ -102,7 +106,7 @@ const routeOf = (hash: string): Route | null =>
     ? { kind: 'home' }
     : hash === '#/bienvenue'
       ? { kind: 'welcome' }
-      : hash === '#/historique'
+      : hash === '#/changelog'
         ? { kind: 'history' }
         : hash === '#/demarrage'
           ? { kind: 'start' }
@@ -268,6 +272,21 @@ export default function App() {
         .catch((e) => setError(e.message));
   }, [agent]);
   const current = state?.tokens[key].$value;
+  const scope = useComponentTokens(
+    route.kind === 'component' ? route.id : undefined,
+  );
+  const [dark, setDark] = useState(() =>
+    document.documentElement.classList.contains('dark'),
+  );
+  // Sur une page composant, l'éditeur ne propose que ses tokens : on choisit le premier.
+  useEffect(() => {
+    if (scope && !inScope(scope, key)) {
+      const first = tokenKeys.find(
+        (k) => (tokenMode(k) ?? mode) === mode && inScope(scope, k),
+      );
+      if (first) setKey(first);
+    }
+  }, [scope]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const clearError = () => {
     setError('');
@@ -374,8 +393,11 @@ export default function App() {
       : undefined;
   const query = search.trim().toLowerCase();
   // Sans recherche, seuls les tokens du mode affiché sont listés.
-  const matchingKeys = tokenKeys.filter((k) =>
-    query ? k.toLowerCase().includes(query) : (tokenMode(k) ?? mode) === mode,
+  const matchingKeys = tokenKeys.filter(
+    (k) =>
+      (query
+        ? k.toLowerCase().includes(query)
+        : (tokenMode(k) ?? mode) === mode) && inScope(scope, k),
   );
   const pickerHex =
     token.$type === 'color' ? (toHex(draft) ?? toHex(String(current))) : null;
@@ -403,12 +425,12 @@ export default function App() {
   const pages = [...components, ...blocks];
   const at = found ? pages.findIndex((i) => i.id === found.id) : -1;
   const editor = (
-    <div className="grid gap-4 rounded-2xl border bg-card p-4 text-card-foreground shadow-card">
+    <div className="grid gap-4 rounded-2xl border bg-card p-4 text-card-foreground">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-sm font-medium">
           Tokens sémantiques{' '}
           <span className="font-normal text-muted-foreground tabular-nums">
-            · {tokenKeys.length}
+            · {scope ? matchingKeys.length : tokenKeys.length}
           </span>
         </h3>
         <ToggleGroup
@@ -668,24 +690,22 @@ export default function App() {
       {q && !components.some(match) && !blocks.some(match) && (
         <p className="px-2.5 text-xs text-muted-foreground">Aucune page.</p>
       )}
-      <div className="flex flex-wrap gap-1.5 px-2.5">
-        <Badge variant="secondary">Local · V2</Badge>
-        <Badge variant="outline">
-          {boot?.figma.label ?? 'Figma non connecté'}
-        </Badge>
-      </div>
+      <p className="grid gap-0.5 px-2.5 text-2xs text-muted-foreground">
+        <span>Local · V2</span>
+        <span>{boot?.figma.label ?? 'Figma non connecté'}</span>
+      </p>
     </nav>
   );
   return (
-    <div className="flex min-h-svh flex-col bg-linear-to-b from-fill-1 to-background to-40%">
+    <div className="flex min-h-svh flex-col bg-background">
       <a
         href="#ds-title"
         className="sr-only z-50 rounded-lg bg-background px-3 py-2 text-sm font-medium shadow-md focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
       >
         Aller au contenu
       </a>
-      <header className="sticky top-0 z-30 grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-2 bg-background/80 px-4 backdrop-blur">
-        <div className="flex items-center gap-2">
+      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur">
+        <div className="mx-auto flex h-12 w-full max-w-7xl items-center gap-3 px-6">
           <Sheet open={menu} onOpenChange={setMenu}>
             <SheetTrigger
               render={
@@ -704,36 +724,60 @@ export default function App() {
               {navList}
             </SheetContent>
           </Sheet>
-          <a
-            href="#/"
-            className={`${buttonVariants({
-              variant: route.kind === 'home' ? 'secondary' : 'ghost',
-            })} max-sm:hidden`}
-          >
-            Composants
-          </a>
-          <a
-            href="#/historique"
-            className={buttonVariants({
-              variant: route.kind === 'history' ? 'secondary' : 'ghost',
-            })}
-          >
-            <HistoryIcon data-icon="inline-start" />
-            <span className="max-sm:sr-only">
-              Historique · {state.revision}
-            </span>
-          </a>
-        </div>
-        <a href="#/" className="flex items-center gap-2">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <a href="#/" className="flex items-center gap-2">
             <SwatchBookIcon className="size-4" />
-          </span>
-          <h1 className="text-base font-semibold tracking-tight">Stride UI</h1>
-        </a>
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => void perform(exportTokens)}>
-            <DownloadIcon data-icon="inline-start" />
-            <span className="max-sm:sr-only">Exporter les tokens</span>
+            <h1 className="text-sm font-medium tracking-tight">Stride UI</h1>
+          </a>
+          <nav
+            aria-label="Principal"
+            className="ml-auto flex items-center gap-0.5 text-sm"
+          >
+            {[
+              ['home', '#/', 'Composants', 'max-sm:hidden'],
+              ['tokens', '#/tokens', 'Tokens', 'max-sm:hidden'],
+              ['history', '#/changelog', `Changelog · ${state.revision}`, ''],
+            ].map(([kind, href, label, extra]) => (
+              <a
+                key={kind}
+                href={href}
+                aria-current={route.kind === kind ? 'page' : undefined}
+                className={`rounded-lg px-2.5 py-1 transition-colors ${extra} ${
+                  route.kind === kind
+                    ? 'bg-fill-2 font-medium text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {label}
+              </a>
+            ))}
+          </nav>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={
+              dark ? 'Passer au thème clair' : 'Passer au thème sombre'
+            }
+            aria-pressed={dark}
+            onClick={() => {
+              const next = !dark;
+              document.documentElement.classList.toggle('dark', next);
+              setDark(next);
+              const m: Mode = next ? 'dark' : 'light';
+              setMode(m);
+              if (tokenMode(key))
+                setKey(`${m}.${key.split('.')[1]}` as TokenKey);
+            }}
+          >
+            {dark ? <SunIcon /> : <MoonIcon />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Exporter les tokens"
+            title="Exporter les tokens"
+            onClick={() => void perform(exportTokens)}
+          >
+            <DownloadIcon />
           </Button>
         </div>
       </header>
@@ -758,21 +802,21 @@ export default function App() {
         )}
       </div>
       <div className="mx-auto grid w-full max-w-7xl flex-1 gap-8 px-4 lg:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)_11rem]">
-        <aside className="sticky top-16 hidden max-h-[calc(100svh-5rem)] self-start overflow-auto py-4 lg:block">
+        <aside className="sticky top-12 hidden max-h-[calc(100svh-3rem)] self-start overflow-auto border-r py-6 pr-4 lg:block">
           {navList}
         </aside>
         <main className="min-w-0">
           {route.kind === 'history' ? (
             <section
-              aria-label="Historique des changements"
+              aria-label="Changelog"
               className="mx-auto grid w-full max-w-2xl gap-3 p-4"
             >
               <h2
                 id="ds-title"
                 tabIndex={-1}
-                className="font-serif text-5xl tracking-tight outline-none"
+                className="text-3xl font-medium tracking-tight outline-none"
               >
-                Historique
+                Changelog
               </h2>
               <p className="text-xs text-muted-foreground">
                 Annuler une révision n’écrase pas les autres tokens.
@@ -833,13 +877,7 @@ export default function App() {
           ) : route.kind === 'home' ? (
             <Landing components={components} blocks={blocks} />
           ) : (
-            <div
-              className={
-                found && showTokens
-                  ? 'grid items-start gap-6 p-4 xl:grid-cols-[minmax(0,1fr)_26rem]'
-                  : 'grid gap-6 p-4'
-              }
-            >
+            <div className={'grid gap-6 p-4'}>
               <section
                 aria-labelledby="ds-title"
                 className="grid min-w-0 gap-4"
@@ -849,7 +887,7 @@ export default function App() {
                     <h2
                       id="ds-title"
                       tabIndex={-1}
-                      className="font-serif text-4xl tracking-tight outline-none"
+                      className="text-3xl font-medium tracking-tight outline-none"
                     >
                       {found?.title ?? 'Design System'}
                     </h2>
@@ -905,7 +943,7 @@ export default function App() {
                     {!found && route.kind === 'tokens' && (
                       <>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           title={
                             boot?.figma.connected
                               ? 'Lire les variables Figma et proposer les différences'
@@ -939,9 +977,7 @@ export default function App() {
                             {syncing ? 'Lecture de Figma…' : 'Sync Figma'}
                           </span>
                         </Button>
-                        <label
-                          className={buttonVariants({ variant: 'outline' })}
-                        >
+                        <label className={buttonVariants({ variant: 'ghost' })}>
                           <UploadIcon data-icon="inline-start" />
                           <span className="max-sm:sr-only">
                             Importer un JSON
@@ -998,14 +1034,31 @@ export default function App() {
                 )}
               </section>
               {found && showTokens && (
-                <aside className="grid gap-4 xl:sticky xl:top-20 xl:max-h-[calc(100svh-6rem)] xl:overflow-auto">
+                <aside
+                  aria-label="Éditeur de tokens"
+                  className="fixed inset-x-2 top-14 bottom-20 z-40 grid content-start gap-2 overflow-auto rounded-2xl border bg-background p-2 shadow-lg sm:inset-x-auto sm:right-4 sm:w-[26rem]"
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className="justify-self-end"
+                    aria-label="Fermer les tokens"
+                    onClick={() => setShowTokens(false)}
+                  >
+                    <XIcon />
+                  </Button>
+                  {scope && (
+                    <p className="px-2 text-xs text-muted-foreground">
+                      Seuls les tokens utilisés par ce composant sont listés.
+                    </p>
+                  )}
                   {editor}
                 </aside>
               )}
             </div>
           )}
         </main>
-        <aside className="sticky top-16 hidden self-start py-4 xl:block">
+        <aside className="sticky top-12 hidden self-start py-6 xl:block">
           <OnThisPage routeKey={`${route.kind}${found?.id ?? ''}`} />
         </aside>
       </div>

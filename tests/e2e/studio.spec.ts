@@ -45,12 +45,12 @@ test('boucle centrale réelle : diff, validation, propagation, recharge, annulat
   await page.getByLabel('Valeur du token').fill('22');
   await page.getByRole('button', { name: 'Proposer', exact: true }).click();
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
-  await page.getByRole('link', { name: /Historique/ }).click();
+  await page.getByRole('link', { name: /Changelog/ }).click();
   await page
     .getByRole('button', { name: 'Annuler la révision 1', exact: true })
     .click();
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
-  // On revient de l'onglet Historique à la page Tokens.
+  // On revient de la page Changelog à la page Tokens.
   await page
     .getByRole('navigation', { name: 'Navigation' })
     .getByRole('link', { name: 'Tokens', exact: true })

@@ -90,7 +90,7 @@ export function AssistantBar(p: Props) {
             p.onSend();
           }}
         >
-          <AIChatComposer className="shadow-popover">
+          <AIChatComposer className="shadow-[0_6px_28px_-6px_color-mix(in_oklch,var(--primary)_35%,transparent)]">
             <AIChatComposerTextarea
               aria-label="Votre demande"
               placeholder={
