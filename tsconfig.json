@@ -28,6 +28,7 @@
     "connectors",
     "tests",
     "scripts/*.ts",
+    "figma-sync",
     "vite.config.ts",
     "playwright.config.ts"
   ]

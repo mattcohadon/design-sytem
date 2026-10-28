@@ -1,0 +1,91 @@
+name: Figma sync
+on:
+  # Pas de webhook : on interroge Figma toutes les heures (minute 17, GitHub saute parfois les heures pleines).
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+# Deux exécutions simultanées sont mises en file. Le nom de branche dérive du snapshot :
+# le même état de Figma retrouve la même branche et la même PR.
+concurrency:
+  group: figma-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PR_TOKEN || github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Snapshot Figma et diff
+        id: diff
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+          FIGMA_FILE_KEY: ${{ vars.FIGMA_FILE_KEY }}
+        run: |
+          old=-
+          [ -f figma-sync/snapshot.json ] && old=figma-sync/snapshot.json
+          npx tsx figma-sync/snapshot.ts figma-sync/snapshot.new.json
+          result=$(npx tsx figma-sync/diff.ts "$old" figma-sync/snapshot.new.json | tail -1)
+          if [ "$result" = EMPTY ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Aucun changement de composant ou de style : pas de PR." >> "$GITHUB_STEP_SUMMARY"
+          else
+            mv figma-sync/snapshot.new.json figma-sync/snapshot.json
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "branch=figma-sync/$(sha256sum figma-sync/snapshot.json | cut -c1-10)" >> "$GITHUB_OUTPUT"
+          fi
+          rm -f figma-sync/snapshot.new.json
+        shell: bash
+      - uses: anthropics/claude-code-action@v1
+        if: steps.diff.outputs.changed == 'true'
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: |
+            --max-turns 40
+            --allowedTools "Read,Edit,Write,Glob,Grep,Bash(npm run build:*),Bash(npm test:*),Bash(npx tsc:*)"
+          prompt: |
+            Tu maintiens le code et la doc d'un design system à partir du rapport de diff Figma.
+            Entrées : figma-sync/diff.json (changements), figma-sync/diff.md (résumé), figma-sync/snapshot.json (état complet).
+            Conventions : lis CLAUDE.md (nommage Figma → code, structure, composants dans app/client/sortui).
+            Règles :
+            - Ne modifie que ce que le diff justifie. N'invente aucune variante ni propriété absente du diff.
+            - Garde le comportement et l'accessibilité existants. Mets à jour la doc (démos dans app/client/preview, manifest.ts) et docs/V2_CHANGELOG.md.
+            - Vérifie avec npm run build et npm test avant de finir.
+            - Ambiguïté : signale-la dans la PR, ne devine pas.
+            - N'écris rien dans figma-sync/snapshot.json, figma-sync/diff.json, figma-sync/diff.md.
+            Sortie : écris la description de la PR, en français, dans figma-sync/pr-body.md avec les sections
+            « Ce qui change », « Changements cassants », « À relire en priorité », « À reporter dans Figma » (cases à cocher) et « Incertitudes ».
+            Les valeurs des variables Figma ne sont pas lisibles ici : ne les modifie pas.
+      - name: Branche et PR
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          BRANCH: ${{ steps.diff.outputs.branch }}
+        run: |
+          body=figma-sync/pr-body.md
+          [ -s "$body" ] || cp figma-sync/diff.md "$body"
+          mv "$body" "$RUNNER_TEMP/pr-body.md"
+          git config user.name "figma-sync[bot]"
+          git config user.email "figma-sync@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add -A
+          git reset -q figma-sync/diff.json figma-sync/diff.md
+          git commit -m "Sync from Figma library publish" || { echo "Rien à committer."; exit 0; }
+          git push --force origin "$BRANCH"
+          if [ -z "$(gh pr list --head "$BRANCH" --json number --jq '.[0].number')" ]; then
+            gh pr create --base main --head "$BRANCH" --title "Figma sync : $(date -u +%F)" --body-file "$RUNNER_TEMP/pr-body.md"
+          else
+            gh pr edit "$BRANCH" --body-file "$RUNNER_TEMP/pr-body.md"
+          fi

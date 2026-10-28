@@ -63,7 +63,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { AssistantBar } from './AssistantBar.js';
 import { manifest } from './preview/manifest.js';
-import ProjectBrief from './ProjectBrief.js';
 import { useTokenDraft } from './useTokenDraft.js';
 import { announceChange, useDesignState } from './useDesignState.js';
 import {
@@ -89,19 +88,6 @@ import {
   type Tokens,
 } from '../shared/model.js';
 
-const devices = [
-  { label: 'Compact · 320', width: 320 },
-  { label: 'Standard · 375', width: 375 },
-  { label: 'Grand · 430', width: 430 },
-  { label: 'Desktop · 1024', width: 1024 },
-];
-const scenarios = [
-  { id: 'cards', label: 'Découvrir' },
-  { id: 'form', label: 'Inscription' },
-  { id: 'chat', label: 'Assistant (blocs chat)' },
-  { id: 'welcome', label: 'Accueil assistant' },
-  { id: 'widgets', label: 'Widgets' },
-];
 type Route = { kind: 'tokens' } | { kind: 'component'; id: string };
 const componentPrefix = '#/composants/';
 /** Seuls #/tokens et #/composants/<id> sont des pages ; #ds-title (lien d’évitement) est ignoré. */
@@ -224,15 +210,11 @@ export default function App() {
   const [proposal, setProposal] = useState<Proposal>();
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  const [device, setDevice] = useState(1);
-  const [scenario, setScenario] = useState('cards');
   const [agent, setAgent] = useState('claude');
   const [route, setRoute] = useState<Route>(
     () => routeOf(location.hash) ?? { kind: 'tokens' },
   );
-  const [tab, setTab] = useState<'page' | 'preview' | 'history' | 'project'>(
-    'page',
-  );
+  const [tab, setTab] = useState<'page' | 'history'>('page');
   const [showTokens, setShowTokens] = useState(false);
   const [navQuery, setNavQuery] = useState('');
   const [syncing, setSyncing] = useState(false);
@@ -810,12 +792,10 @@ export default function App() {
               <TabsTrigger value="page">
                 {found ? 'Composant' : 'Tokens'}
               </TabsTrigger>
-              <TabsTrigger value="preview">Aperçu responsive</TabsTrigger>
               <TabsTrigger value="history">
                 <HistoryIcon className="size-3.5" />
                 Historique · {state.revision}
               </TabsTrigger>
-              <TabsTrigger value="project">Projet</TabsTrigger>
             </TabsList>
           </Tabs>
           {/* Dans l’en-tête collant : visible quel que soit le défilement. */}
@@ -842,68 +822,7 @@ export default function App() {
             </Alert>
           )}
         </div>
-        {tab === 'preview' ? (
-          <section
-            aria-labelledby="mobile-title"
-            className="grid min-w-0 gap-3 p-4"
-          >
-            <div>
-              <h2
-                id="mobile-title"
-                tabIndex={-1}
-                className="text-lg font-semibold tracking-tight outline-none"
-              >
-                Aperçu responsive
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                De vrais composants, à largeur réelle
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Field className="w-auto">
-                <FieldLabel htmlFor="preview-device">Viewport</FieldLabel>
-                <NativeSelect
-                  id="preview-device"
-                  value={device}
-                  onChange={(e) => setDevice(Number(e.target.value))}
-                >
-                  {devices.map((d, i) => (
-                    <NativeSelectOption key={d.width} value={i}>
-                      {d.label}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
-              </Field>
-              <Field className="w-auto">
-                <FieldLabel htmlFor="preview-scenario">Scénario</FieldLabel>
-                <NativeSelect
-                  id="preview-scenario"
-                  value={scenario}
-                  onChange={(e) => setScenario(e.target.value)}
-                >
-                  {scenarios.map((s) => (
-                    <NativeSelectOption key={s.id} value={s.id}>
-                      {s.label}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
-              </Field>
-            </div>
-            <div className="max-h-[820px] max-w-full overflow-auto rounded-2xl border bg-fill-1 p-3">
-              <iframe
-                title="Aperçu responsive"
-                className="mx-auto block rounded-xl bg-background shadow-md ring-1 ring-border"
-                src={`/?${iframeQuery}&scenario=${scenario}`}
-                width={devices[device].width}
-                height={760}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground tabular-nums">
-              {devices[device].width} px CSS · aucun zoom · défilez si
-              nécessaire
-            </p>
-          </section>
-        ) : tab === 'history' ? (
+        {tab === 'history' ? (
           <section
             aria-label="Historique des changements"
             className="mx-auto grid w-full max-w-2xl gap-3 p-4"
@@ -960,11 +879,6 @@ export default function App() {
                 </li>
               ))}
             </ol>
-          </section>
-        ) : tab === 'project' ? (
-          <section className="mx-auto grid w-full max-w-2xl gap-3 p-4">
-            <h2 className="text-lg font-semibold tracking-tight">Projet</h2>
-            <ProjectBrief />
           </section>
         ) : (
           <div
