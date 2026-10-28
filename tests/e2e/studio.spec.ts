@@ -442,12 +442,16 @@ test('sur cette page : pas de transition avec la préférence de mouvement rédu
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
+  // La page doit être rendue avant de défiler, sinon le défilement est ramené à 0.
+  await expect(
+    page.getByRole('navigation', { name: 'Sur cette page' }),
+  ).toBeVisible();
   await page.evaluate(() => scrollTo(0, 200));
   const bar = page.locator(
     'nav[aria-label="Sur cette page"] a[aria-current="location"] [data-progress]',
   );
   await expect(bar).toHaveCount(1);
   expect(
-    await bar.evaluate((el) => getComputedStyle(el).transitionDuration),
-  ).toBe('0s');
+    await bar.evaluate((el) => getComputedStyle(el).transitionProperty),
+  ).toBe('none');
 });
