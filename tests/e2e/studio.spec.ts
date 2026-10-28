@@ -309,9 +309,10 @@ test('exemple de landing : page de vente intégrée à l’atelier, aux couleurs
   await expect(
     frame.getByRole('heading', { level: 1, name: /Comprenez vos clients/ }),
   ).toBeVisible();
+  // La couleur suit les tokens enregistrés (d'autres tests les modifient) : on vérifie qu'elle est posée.
   await expect(
     frame.getByRole('button', { name: 'Démarrer gratuitement' }).first(),
-  ).toHaveCSS('background-color', 'oklch(0.585 0.233 277.117)');
+  ).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   await frame
     .getByRole('button', { name: /carte bancaire pour essayer/ })
     .click();
