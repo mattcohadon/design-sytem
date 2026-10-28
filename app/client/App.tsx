@@ -951,8 +951,9 @@ export default function App() {
                   aria-labelledby="ds-title"
                   className="grid min-w-0 gap-4"
                 >
-                  <div className="flex flex-wrap items-center justify-end gap-3">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-3">
+                    {found && <CopyExampleButton id={found.id} />}
+                    <div className="ml-auto flex items-center gap-2">
                       {found && (
                         <>
                           <Button
@@ -1077,7 +1078,6 @@ export default function App() {
                   {found ? (
                     <>
                       <h3 className="sr-only">Aperçu</h3>
-                      <CopyExampleButton id={found.id} />
                       <PreviewFrame
                         title={`Composant ${found.title}`}
                         src={frameSrc}

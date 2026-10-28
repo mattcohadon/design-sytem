@@ -313,7 +313,7 @@ export function ComponentDocs({
   );
 }
 
-/** Bouton « Copier le code » placé au-dessus de l'aperçu : copie l'exemple de la démo affichée. */
+/** Bouton « Copier le code » placé sur la ligne d'outils, à gauche : copie l'exemple de la démo affichée. */
 export function CopyExampleButton({ id }: { id: string }) {
   const [example, setExample] = useState<string | null>();
   const [copied, setCopied] = useState(false);
@@ -333,7 +333,7 @@ export function CopyExampleButton({ id }: { id: string }) {
   }, [copied]);
   if (!example) return null;
   return (
-    <div className="flex justify-end">
+    <div>
       <Button
         variant="outline"
         size="sm"
