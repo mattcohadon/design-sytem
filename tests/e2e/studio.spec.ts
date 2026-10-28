@@ -45,7 +45,10 @@ test('boucle centrale réelle : diff, validation, propagation, recharge, annulat
   await page.getByLabel('Valeur du token').fill('22');
   await page.getByRole('button', { name: 'Proposer', exact: true }).click();
   await dialog.getByRole('button', { name: 'Valider et enregistrer' }).click();
-  await page.getByRole('link', { name: /Changelog/ }).click();
+  await page
+    .getByRole('navigation', { name: 'Principal' })
+    .getByRole('link', { name: /Changelog/ })
+    .click();
   await page
     .getByRole('button', { name: 'Annuler la révision 1', exact: true })
     .click();
@@ -296,4 +299,238 @@ test('accessibilité : anneau de focus, Échap ferme les tokens, thème mémoris
   await page.getByRole('button', { name: 'Passer au thème sombre' }).click();
   await page.reload();
   await expect(page.locator('html')).toHaveClass(/dark/);
+});
+
+test('landing d’exemple : page à part, accessible par son adresse', async ({
+  page,
+}) => {
+  await page.goto('/?preview=1&mode=light&view=landing');
+  await expect(
+    page.getByRole('heading', { level: 1, name: /Comprenez vos clients/ }),
+  ).toBeVisible();
+  await expect(page).toHaveTitle(/Orbite/);
+  await expect(
+    page.getByRole('button', { name: 'Démarrer gratuitement' }).first(),
+  ).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await page
+    .getByRole('button', { name: /carte bancaire pour essayer/ })
+    .click();
+  await expect(page.getByText(/aucun moyen de paiement/)).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'Aller au contenu' }),
+  ).toHaveCount(1);
+  await expect(
+    page.getByRole('link', { name: 'Voir la démo' }),
+  ).toHaveAttribute('href', '#apercu');
+  // Elle ne figure plus dans la navigation de la documentation.
+  await page.goto('/');
+  await expect(
+    page.getByRole('link', { name: /Exemple de landing/ }),
+  ).toHaveCount(0);
+});
+
+test('recherche : palette Cmd/Ctrl+K et bouton de la barre du haut', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Rechercher' }).click();
+  await page
+    .getByPlaceholder('Rechercher une page, un composant…')
+    .fill('alert dia');
+  await page.getByRole('option', { name: 'Alert Dialog' }).click();
+  await expect(page).toHaveURL(/#\/composants\/alert-dialog$/);
+  await page.keyboard.press('Control+k');
+  await expect(
+    page.getByPlaceholder('Rechercher une page, un composant…'),
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(
+    page.getByPlaceholder('Rechercher une page, un composant…'),
+  ).toHaveCount(0);
+});
+
+test('changelog en frise et tag New sur les composants issus de Figma', async ({
+  page,
+}) => {
+  await page.goto('/#/changelog');
+  const region = page.getByRole('region', { name: 'Changelog' });
+  // Selon l'ordre des tests, l'historique est vide ou contient des révisions.
+  await expect(
+    region
+      .getByRole('heading', { name: /^Révision \d+$/ })
+      .first()
+      .or(region.getByText('Aucun changement enregistré')),
+  ).toBeVisible();
+  await page.goto('/');
+  const card = page
+    .getByRole('region', { name: 'Composants' })
+    .getByRole('link', { name: /^Button/ })
+    .first();
+  await expect(card).toContainText('New');
+  const tag = card.getByText('New', { exact: true });
+  // Pleine arrondi : le rayon dépasse la moitié de la hauteur du tag.
+  const [radius, height] = await tag.evaluate((el) => [
+    parseFloat(getComputedStyle(el).borderTopLeftRadius),
+    el.getBoundingClientRect().height,
+  ]);
+  expect(radius).toBeGreaterThanOrEqual(height / 2);
+  await expect(
+    page
+      .getByRole('region', { name: 'Composants' })
+      .getByRole('link', { name: /^Accordion/ }),
+  ).not.toContainText('New');
+});
+
+test('sur cette page : la barre de progression suit le défilement puis passe à la section suivante', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const toc = page.getByRole('navigation', { name: 'Sur cette page' });
+  await expect(toc).toBeVisible();
+  const current = toc.locator('a[aria-current="location"]');
+  const progress = async () =>
+    Number(
+      await current.locator('[data-progress]').getAttribute('data-progress'),
+    );
+  // Dans la première section : la barre est derrière « Composants » et avance.
+  await page.evaluate(() => scrollTo(0, 200));
+  await expect(current).toContainText('Composants');
+  const first = await progress();
+  expect(first).toBeGreaterThan(0);
+  // La barre s'anime : transition sur sa largeur et son opacité, sauf préférence de mouvement réduit.
+  const transition = await current
+    .locator('[data-progress]')
+    .evaluate((el) => getComputedStyle(el).transitionProperty);
+  expect(transition).toContain('width');
+  expect(transition).toContain('opacity');
+  await page.evaluate(() => scrollTo(0, 400));
+  await expect.poll(progress).toBeGreaterThan(first);
+  // Tout en bas : la barre est passée sur « Blocs », pleine.
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+  await expect(current).toContainText('Blocs');
+  await expect.poll(progress).toBe(1);
+  await expect(toc.locator('[data-progress]')).toHaveCount(1);
+});
+
+test('sur cette page : sur une page courte, la progression traverse chaque section sans en sauter', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1600, height: 560 });
+  await page.goto('/#/demarrage');
+  const toc = page.getByRole('navigation', { name: 'Sur cette page' });
+  await expect(toc).toBeVisible();
+  const total = await toc.getByRole('link').count();
+  expect(total).toBe(5);
+  const visited: number[] = [];
+  const max = await page.evaluate(
+    () => document.documentElement.scrollHeight - innerHeight,
+  );
+  expect(max).toBeGreaterThan(100);
+  for (let step = 0; step <= 40; step++) {
+    await page.evaluate(
+      async (y) => {
+        scrollTo(0, y);
+        // Deux images : la mesure se fait dans requestAnimationFrame, puis React met à jour.
+        await new Promise((r) =>
+          requestAnimationFrame(() => requestAnimationFrame(r)),
+        );
+      },
+      (max * step) / 40,
+    );
+    const index = await toc.evaluate((nav) =>
+      [...nav.querySelectorAll('a')].findIndex(
+        (a) => a.getAttribute('aria-current') === 'location',
+      ),
+    );
+    if (visited.at(-1) !== index) visited.push(index);
+  }
+  // Chaque section est traversée dans l'ordre, y compris la dernière, sans saut de 1 à 5.
+  const real = visited.filter((i) => i >= 0);
+  expect(real).toEqual([0, 1, 2, 3, 4]);
+});
+
+test('sur cette page : pas de transition avec la préférence de mouvement réduit', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  // La page doit être rendue avant de défiler, sinon le défilement est ramené à 0.
+  await expect(
+    page.getByRole('navigation', { name: 'Sur cette page' }),
+  ).toBeVisible();
+  await page.evaluate(() => scrollTo(0, 200));
+  const bar = page.locator(
+    'nav[aria-label="Sur cette page"] a[aria-current="location"] [data-progress]',
+  );
+  await expect(bar).toHaveCount(1);
+  expect(
+    await bar.evaluate((el) => getComputedStyle(el).transitionProperty),
+  ).toBe('none');
+});
+
+test('fin de page : continuer à défiler remplit la barre puis ouvre la page suivante', async ({
+  page,
+}) => {
+  await page.goto('/#/bienvenue');
+  await expect(
+    page.getByRole('heading', { name: 'Bienvenue', level: 2 }),
+  ).toBeVisible();
+  const link = page.locator('a[href="#/demarrage"]', {
+    hasText: 'Page suivante',
+  });
+  await expect(link).toBeVisible();
+  // La barre ne se remplit qu'une fois le bas de page atteint : on y va d'abord.
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+  await page.mouse.move(800, 600);
+  await page.mouse.wheel(0, 150);
+  await expect(link).toContainText('Continuez à scroller pour passer');
+  const pulled = async () =>
+    Number(await page.locator('[data-pull]').getAttribute('data-pull'));
+  // La barre se remplit (le rendu suit le geste d'un instant).
+  await expect.poll(pulled).toBeGreaterThan(0);
+  expect(await pulled()).toBeLessThan(100);
+  // Remonter annule le geste : on reste sur la page.
+  await page.mouse.wheel(0, -50);
+  await expect(page).toHaveURL(/#\/bienvenue$/);
+  for (let i = 0; i < 9; i++) await page.mouse.wheel(0, 120);
+  await expect(page).toHaveURL(/#\/demarrage$/);
+  // L'élan de la molette ne fait pas enchaîner plusieurs pages.
+  for (let i = 0; i < 10; i++) await page.mouse.wheel(0, 120);
+  await page.waitForTimeout(300);
+  await expect(page).toHaveURL(/#\/demarrage$/);
+  await expect(
+    page.getByRole('heading', { name: 'Démarrage', level: 2 }),
+  ).toBeVisible();
+});
+
+test('nouvelle page : le titre et l’accroche se révèlent en décalé (Texts reveal)', async ({
+  page,
+}) => {
+  await page.goto('/#/bienvenue');
+  const title = page.getByRole('heading', { name: 'Bienvenue', level: 2 });
+  await expect(title).toBeVisible();
+  const lines = await page.locator('.t-texts-reveal > *').evaluateAll((els) =>
+    els.map((el) => {
+      const cs = getComputedStyle(el);
+      return [cs.animationName, cs.animationDelay];
+    }),
+  );
+  // Deux lignes, la seconde partant après la première.
+  expect(lines.length).toBe(2);
+  expect(lines.every(([name]) => name === 't-texts-reveal')).toBe(true);
+  expect(parseFloat(lines[1][1])).toBeGreaterThan(parseFloat(lines[0][1]));
+  // L'effet rejoue à chaque changement de page.
+  await page.goto('/#/demarrage');
+  await expect(
+    page.getByRole('heading', { name: 'Démarrage', level: 2 }),
+  ).toBeVisible();
+  expect(await page.locator('.t-texts-reveal > *').count()).toBe(2);
+  // Mouvement réduit : aucune animation.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  expect(
+    await page
+      .locator('.t-texts-reveal > *')
+      .first()
+      .evaluate((el) => getComputedStyle(el).animationName),
+  ).toBe('none');
 });

@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import '../sortui.css';
 import { modes, type Mode } from '../../shared/model.js';
@@ -5,6 +6,11 @@ import { useDesignState } from '../useDesignState.js';
 import { Catalogue, ComponentView } from './Catalogue.js';
 import { Scenario } from './Scenario.js';
 import { SortUIRoot } from './SortUIRoot.js';
+
+// La landing d'exemple ne se charge que dans sa propre vue.
+const SalesLanding = lazy(() =>
+  import('./SalesLanding.js').then((m) => ({ default: m.SalesLanding })),
+);
 
 // Document isolé (iframe) : seul le CSS SortUI s’applique, sans le chrome de l’atelier.
 const params = new URLSearchParams(location.search);
@@ -28,6 +34,10 @@ function Preview() {
     <SortUIRoot tokens={state.tokens} mode={mode}>
       {view === 'catalogue' ? (
         <Catalogue />
+      ) : view === 'landing' ? (
+        <Suspense fallback={null}>
+          <SalesLanding />
+        </Suspense>
       ) : view === 'component' ? (
         <ComponentView id={component} />
       ) : (
