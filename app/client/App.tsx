@@ -921,7 +921,7 @@ export default function App() {
             : 'xl:grid-cols-[13rem_minmax(0,1fr)_11rem]'
         }`}
       >
-        <aside className="sticky top-20 hidden max-h-[calc(100svh-5rem)] self-start overflow-auto border-r py-6 pr-4 lg:block">
+        <aside className="sticky top-20 hidden max-h-[calc(100svh-5rem)] self-start overflow-auto py-6 pr-4 lg:block">
           {navList}
         </aside>
         <main className="min-w-0">
