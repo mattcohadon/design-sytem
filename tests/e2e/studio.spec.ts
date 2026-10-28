@@ -345,3 +345,35 @@ test('recherche : palette Cmd/Ctrl+K et bouton de la barre du haut', async ({
     page.getByPlaceholder('Rechercher une page, un composant…'),
   ).toHaveCount(0);
 });
+
+test('changelog en frise et tag New sur les composants issus de Figma', async ({
+  page,
+}) => {
+  await page.goto('/#/changelog');
+  const region = page.getByRole('region', { name: 'Changelog' });
+  // Selon l'ordre des tests, l'historique est vide ou contient des révisions.
+  await expect(
+    region
+      .getByRole('heading', { name: /^Révision \d+$/ })
+      .first()
+      .or(region.getByText('Aucun changement enregistré')),
+  ).toBeVisible();
+  await page.goto('/');
+  const card = page
+    .getByRole('region', { name: 'Composants' })
+    .getByRole('link', { name: /^Button/ })
+    .first();
+  await expect(card).toContainText('New');
+  const tag = card.getByText('New', { exact: true });
+  // Pleine arrondi : le rayon dépasse la moitié de la hauteur du tag.
+  const [radius, height] = await tag.evaluate((el) => [
+    parseFloat(getComputedStyle(el).borderTopLeftRadius),
+    el.getBoundingClientRect().height,
+  ]);
+  expect(radius).toBeGreaterThanOrEqual(height / 2);
+  await expect(
+    page
+      .getByRole('region', { name: 'Composants' })
+      .getByRole('link', { name: /^Accordion/ }),
+  ).not.toContainText('New');
+});

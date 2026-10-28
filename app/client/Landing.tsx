@@ -1,6 +1,5 @@
 import { ChevronRightIcon } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { figmaIds } from './FigmaSpec.js';
+import { isNew, NewTag } from './NewTag.js';
 import type { ManifestFamily } from './preview/manifest.js';
 
 type Item = ManifestFamily['items'][number];
@@ -20,14 +19,7 @@ function Grid({ title, items }: { title: string; items: Item[] }) {
             >
               <span className="truncate">{item.title}</span>
               <span className="flex shrink-0 items-center gap-2">
-                {figmaIds.has(item.id) && (
-                  <Badge
-                    variant="secondary"
-                    title="Existe dans la bibliothèque Figma"
-                  >
-                    Figma
-                  </Badge>
-                )}
+                {isNew(item.id) && <NewTag />}
                 <ChevronRightIcon className="size-4 text-muted-foreground" />
               </span>
             </a>

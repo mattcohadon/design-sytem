@@ -9,6 +9,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import { isNew, NewTag } from './NewTag.js';
 
 interface Page {
   id: string;
@@ -55,6 +56,7 @@ export function Search({
           onSelect={() => go(`#/composants/${p.id}`)}
         >
           {p.title}
+          {isNew(p.id) && <NewTag />}
         </CommandItem>
       ))}
     </CommandGroup>

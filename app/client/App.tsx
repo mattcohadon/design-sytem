@@ -12,7 +12,6 @@ import {
   SearchIcon,
   PaletteIcon,
   SwatchBookIcon,
-  Undo2Icon,
   UploadIcon,
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -57,7 +56,9 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { AssistantBar } from './AssistantBar.js';
 import { FigmaSpec } from './FigmaSpec.js';
 import { GetStarted, Welcome } from './Docs.js';
+import { Changelog } from './Changelog.js';
 import { Hero } from './Hero.js';
+import { isNew, NewTag } from './NewTag.js';
 import { Landing } from './Landing.js';
 import { OnThisPage } from './OnThisPage.js';
 import { Search } from './Search.js';
@@ -693,6 +694,12 @@ export default function App() {
                 className={navLink(item.id === found?.id)}
               >
                 {item.title}
+                {isNew(item.id) && (
+                  <>
+                    {' '}
+                    <NewTag />
+                  </>
+                )}
               </a>
             ))}
           </div>
@@ -863,57 +870,21 @@ export default function App() {
         </aside>
         <main className="min-w-0">
           {route.kind === 'history' ? (
-            <section
-              aria-label="Changelog"
-              className="mx-auto grid w-full max-w-2xl gap-3 p-4"
-            >
-              {!state.history.length && (
-                <p className="text-xs">
-                  Aucun changement enregistré. Chaque validation apparaîtra ici,
-                  annulable une à une.
-                </p>
-              )}
-              <ol className="grid gap-1.5">
-                {[...state.history].reverse().map((event) => (
-                  <li
-                    key={event.id}
-                    className="grid gap-1 rounded-lg border p-2 text-xs"
-                  >
-                    <div className="flex items-baseline justify-between gap-2">
-                      <strong className="font-medium">
-                        Révision {event.revision}
-                      </strong>
-                      <Badge variant="outline">
-                        {sourceLabels[event.source]}
-                      </Badge>
-                    </div>
-                    <time className="text-muted-foreground tabular-nums">
-                      {new Date(event.date).toLocaleString('fr-FR')}
-                    </time>
-                    <p className="font-mono text-2xs break-all text-muted-foreground">
-                      {event.patches.map((p) => p.key).join(', ')}
-                    </p>
-                    <Button
-                      variant="ghost"
-                      size="xs"
-                      className="w-fit"
-                      onClick={() =>
-                        void perform(async () =>
-                          setProposal(
-                            await request('undo', {
-                              revision: state.revision,
-                              id: event.id,
-                            }),
-                          ),
-                        )
-                      }
-                    >
-                      <Undo2Icon data-icon="inline-start" />
-                      Annuler la révision {event.revision}
-                    </Button>
-                  </li>
-                ))}
-              </ol>
+            <section aria-label="Changelog">
+              <Changelog
+                history={state.history}
+                sourceLabel={(source) => sourceLabels[source]}
+                onUndo={(event) =>
+                  void perform(async () =>
+                    setProposal(
+                      await request('undo', {
+                        revision: state.revision,
+                        id: event.id,
+                      }),
+                    ),
+                  )
+                }
+              />
             </section>
           ) : route.kind === 'welcome' ? (
             <Welcome />
