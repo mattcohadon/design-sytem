@@ -106,21 +106,27 @@ export function OnThisPage({ routeKey }: { routeKey: string }) {
                 .getElementById(e.id)
                 ?.scrollIntoView({ behavior: 'smooth' });
             }}
-            className={`relative isolate overflow-hidden rounded-lg px-2.5 py-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring/30 ${
+            className={`relative isolate overflow-hidden rounded-lg px-2.5 py-1.5 transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring/30 ${
               current
                 ? 'font-medium text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            {current && (
-              // Barre de progression derrière le texte, qui avance avec le défilement.
-              <span
-                aria-hidden
-                data-progress={active.progress}
-                className="absolute inset-y-0 left-0 -z-10 rounded-lg bg-fill-3"
-                style={{ width: `${Math.max(active.progress, 0.04) * 100}%` }}
-              />
-            )}
+            {/* Barre derrière le texte : pleine une fois la section passée, vide avant, et qui s'efface ou
+                apparaît en douceur d'un élément à l'autre. */}
+            <span
+              aria-hidden
+              data-progress={current ? active.progress : undefined}
+              className="absolute inset-y-0 left-0 -z-10 rounded-lg bg-fill-3 transition-[width,opacity] duration-200 ease-out motion-reduce:transition-none"
+              style={{
+                opacity: current ? 1 : 0,
+                width: current
+                  ? `${Math.max(active.progress, 0.04) * 100}%`
+                  : i < active.index
+                    ? '100%'
+                    : '0%',
+              }}
+            />
             {e.text}
           </a>
         );

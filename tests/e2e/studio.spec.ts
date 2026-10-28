@@ -394,6 +394,12 @@ test('sur cette page : la barre de progression suit le défilement puis passe à
   await expect(current).toContainText('Composants');
   const first = await progress();
   expect(first).toBeGreaterThan(0);
+  // La barre s'anime : transition sur sa largeur et son opacité, sauf préférence de mouvement réduit.
+  const transition = await current
+    .locator('[data-progress]')
+    .evaluate((el) => getComputedStyle(el).transitionProperty);
+  expect(transition).toContain('width');
+  expect(transition).toContain('opacity');
   await page.evaluate(() => scrollTo(0, 400));
   await expect.poll(progress).toBeGreaterThan(first);
   // Tout en bas : la barre est passée sur « Blocs », pleine.
@@ -429,4 +435,19 @@ test('sur cette page : sur une page courte, la progression traverse chaque secti
   // Chaque section est traversée dans l'ordre, y compris la dernière, sans saut de 1 à 5.
   const real = visited.filter((i) => i >= 0);
   expect(real).toEqual([0, 1, 2, 3, 4]);
+});
+
+test('sur cette page : pas de transition avec la préférence de mouvement réduit', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.evaluate(() => scrollTo(0, 200));
+  const bar = page.locator(
+    'nav[aria-label="Sur cette page"] a[aria-current="location"] [data-progress]',
+  );
+  await expect(bar).toHaveCount(1);
+  expect(
+    await bar.evaluate((el) => getComputedStyle(el).transitionDuration),
+  ).toBe('0s');
 });
