@@ -790,6 +790,7 @@ export default function App() {
           >
             <SwatchBookIcon className="size-4" />
             <h1 className="text-sm font-medium tracking-tight">Stride UI</h1>
+            <span className="text-xs text-muted-foreground italic">v2.0.4</span>
           </a>
           <div className="ml-auto">
             <Search components={components} blocks={blocks} />
