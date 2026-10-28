@@ -13,6 +13,7 @@ export function Hero({
 }) {
   return (
     <section className="relative isolate min-h-[25rem] overflow-hidden">
+      {/* Le texte reste sombre dans les deux thèmes : le centre du dégradé est clair. */}
       {/* Grand arc (maquette Figma) : radial centré en haut, bleu → rose → fond de page, avec un grain léger. */}
       <div
         aria-hidden
@@ -26,7 +27,7 @@ export function Hero({
         <h2
           id="ds-title"
           tabIndex={-1}
-          className="text-5xl font-medium tracking-tight outline-none"
+          className="text-5xl font-medium tracking-tight text-[#0a0a0a] outline-none"
           style={{ '--t-index': 0 } as CSSProperties}
         >
           {title}
@@ -37,7 +38,7 @@ export function Hero({
           )}
         </h2>
         <p
-          className="mx-auto max-w-xl text-base text-muted-foreground"
+          className="mx-auto max-w-xl text-base text-[#4a4a4a]"
           style={{ '--t-index': 1 } as CSSProperties}
         >
           {lead}
