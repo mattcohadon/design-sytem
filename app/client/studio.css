@@ -153,3 +153,35 @@ html {
     animation: none;
   }
 }
+
+/* « Texts reveal » : les lignes montent l'une après l'autre (décalage), avec un léger flou.
+   Les réglages sont des variables CSS ; --t-index fixe le rang de chaque ligne. */
+.t-texts-reveal {
+  --t-duration: 0.75s;
+  --t-easing: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-distance: 18px;
+  --t-blur: 6px;
+  --t-scale: 0.98;
+  --t-stagger: 0.1s;
+}
+.t-texts-reveal > * {
+  animation: t-texts-reveal var(--t-duration) var(--t-easing) both;
+  animation-delay: calc(var(--t-index, 0) * var(--t-stagger));
+}
+@keyframes t-texts-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(var(--t-distance)) scale(var(--t-scale));
+    filter: blur(var(--t-blur));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-texts-reveal > * {
+    animation: none;
+  }
+}

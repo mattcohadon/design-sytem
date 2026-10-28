@@ -502,3 +502,35 @@ test('fin de page : continuer à défiler remplit la barre puis ouvre la page su
     page.getByRole('heading', { name: 'Démarrage', level: 2 }),
   ).toBeVisible();
 });
+
+test('nouvelle page : le titre et l’accroche se révèlent en décalé (Texts reveal)', async ({
+  page,
+}) => {
+  await page.goto('/#/bienvenue');
+  const title = page.getByRole('heading', { name: 'Bienvenue', level: 2 });
+  await expect(title).toBeVisible();
+  const lines = await page.locator('.t-texts-reveal > *').evaluateAll((els) =>
+    els.map((el) => {
+      const cs = getComputedStyle(el);
+      return [cs.animationName, cs.animationDelay];
+    }),
+  );
+  // Deux lignes, la seconde partant après la première.
+  expect(lines.length).toBe(2);
+  expect(lines.every(([name]) => name === 't-texts-reveal')).toBe(true);
+  expect(parseFloat(lines[1][1])).toBeGreaterThan(parseFloat(lines[0][1]));
+  // L'effet rejoue à chaque changement de page.
+  await page.goto('/#/demarrage');
+  await expect(
+    page.getByRole('heading', { name: 'Démarrage', level: 2 }),
+  ).toBeVisible();
+  expect(await page.locator('.t-texts-reveal > *').count()).toBe(2);
+  // Mouvement réduit : aucune animation.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  expect(
+    await page
+      .locator('.t-texts-reveal > *')
+      .first()
+      .evaluate((el) => getComputedStyle(el).animationName),
+  ).toBe('none');
+});

@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 /** Bandeau d'ouverture de page : la navigation et le contenu commencent en dessous. */
 export function Hero({ title, lead }: { title: string; lead: string }) {
   return (
@@ -14,15 +16,19 @@ export function Hero({ title, lead }: { title: string; lead: string }) {
         <circle cx="720" cy="640" r="580" />
         <circle cx="720" cy="640" r="720" />
       </svg>
-      <div className="mx-auto grid max-w-3xl gap-4 px-6 pt-16 pb-14 text-center">
+      <div className="t-texts-reveal mx-auto grid max-w-3xl gap-4 px-6 pt-16 pb-14 text-center">
         <h2
           id="ds-title"
           tabIndex={-1}
           className="text-5xl font-medium tracking-tight outline-none"
+          style={{ '--t-index': 0 } as CSSProperties}
         >
           {title}
         </h2>
-        <p className="mx-auto max-w-xl text-base text-muted-foreground">
+        <p
+          className="mx-auto max-w-xl text-base text-muted-foreground"
+          style={{ '--t-index': 1 } as CSSProperties}
+        >
           {lead}
         </p>
       </div>

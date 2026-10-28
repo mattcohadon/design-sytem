@@ -879,7 +879,14 @@ export default function App() {
           </Alert>
         )}
       </div>
-      {hero && <Hero title={hero.title} lead={hero.lead} />}
+      {hero && (
+        // La clé relance l'effet de texte à chaque nouvelle page.
+        <Hero
+          key={`${route.kind}:${found?.id ?? ''}`}
+          title={hero.title}
+          lead={hero.lead}
+        />
+      )}
       <div className="mx-auto grid w-full max-w-7xl flex-1 gap-8 px-4 lg:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)_11rem]">
         <aside className="sticky top-12 hidden max-h-[calc(100svh-3rem)] self-start overflow-auto border-r py-6 pr-4 lg:block">
           {navList}
