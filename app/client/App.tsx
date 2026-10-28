@@ -58,6 +58,7 @@ import { FigmaSpec } from './FigmaSpec.js';
 import { GetStarted, Welcome } from './Docs.js';
 import { Changelog } from './Changelog.js';
 import { Hero } from './Hero.js';
+import { HeroActions, HeroEyebrow } from './LandingSections.js';
 import { NextPage, type NextTarget } from './NextPage.js';
 import { isNew, NewTag } from './NewTag.js';
 import { ComponentDocs, CopyExampleButton } from './ComponentDocs.js';
@@ -757,8 +758,8 @@ export default function App() {
     : (
         {
           home: {
-            title: 'Composants',
-            lead: `${components.length} composants et ${blocks.length} blocs SortUI, pilotés par vos tokens. Choisissez-en un pour voir ses exemples et sa spécification Figma.`,
+            title: 'Un design system fidèle à son code.',
+            lead: `${components.length} composants et ${blocks.length} blocs accessibles. Leur documentation est lue dans le code, leurs tokens se changent en un clic et leur bibliothèque Figma reste synchronisée.`,
           },
           welcome: {
             title: 'Bienvenue',
@@ -912,7 +913,11 @@ export default function App() {
           title={hero.title}
           lead={hero.lead}
           isNew={!!found && isNew(found.id)}
-        />
+          large={route.kind === 'home'}
+          eyebrow={route.kind === 'home' ? <HeroEyebrow /> : undefined}
+        >
+          {route.kind === 'home' && <HeroActions />}
+        </Hero>
       )}
       <div
         className={`mx-auto grid w-full max-w-[90rem] flex-1 gap-8 px-4 lg:grid-cols-[13rem_minmax(0,1fr)] ${
@@ -948,7 +953,11 @@ export default function App() {
             ) : route.kind === 'start' ? (
               <GetStarted />
             ) : route.kind === 'home' ? (
-              <Landing components={components} blocks={blocks} />
+              <Landing
+                components={components}
+                blocks={blocks}
+                tokens={tokenKeys.length}
+              />
             ) : (
               <div className={'grid gap-6 p-4'}>
                 <section

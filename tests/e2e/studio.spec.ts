@@ -207,14 +207,17 @@ test('navigation : filtre de la sidebar, page composant, suivant, mode manuel de
   await page.goto('/');
   // Page d'accueil : tous les composants et blocs en cartes, avec pastille Figma.
   await expect(
-    page.getByRole('heading', { name: 'Composants', level: 2 }),
+    page.getByRole('heading', {
+      name: 'Un design system fidèle à son code.',
+      level: 2,
+    }),
   ).toBeVisible();
   const cards = page
-    .getByRole('region', { name: 'Composants' })
+    .getByRole('region', { name: 'Composants', exact: true })
     .getByRole('link');
   expect(await cards.count()).toBeGreaterThanOrEqual(60);
   await expect(
-    page.getByRole('region', { name: 'Blocs' }).getByRole('link'),
+    page.getByRole('region', { name: 'Blocs', exact: true }).getByRole('link'),
   ).toHaveCount(7);
   // Sur l'accueil : pas de barre Claude, mais l'accès aux deux listes.
   await expect(page.getByLabel('Votre demande')).toHaveCount(0);
@@ -369,9 +372,10 @@ test('changelog en frise et tag New sur les composants issus de Figma', async ({
   ).toBeVisible();
   await page.goto('/');
   const card = page
-    .getByRole('region', { name: 'Composants' })
+    .getByRole('region', { name: 'Composants', exact: true })
     .getByRole('link', { name: /^Button/ })
     .first();
+  await card.scrollIntoViewIfNeeded();
   await expect(card).toContainText('New');
   // La carte porte un aperçu réel du composant.
   await expect(card.locator('iframe')).toHaveAttribute('src', /id=button/);
@@ -384,7 +388,7 @@ test('changelog en frise et tag New sur les composants issus de Figma', async ({
   expect(radius).toBeGreaterThanOrEqual(height / 2);
   await expect(
     page
-      .getByRole('region', { name: 'Composants' })
+      .getByRole('region', { name: 'Composants', exact: true })
       .getByRole('link', { name: /^Accordion/ }),
   ).not.toContainText('New');
 });
@@ -668,4 +672,34 @@ test('page composant : les états sont forcés dans l’aperçu (survol, focus, 
   await expect(
     page.getByRole('heading', { name: 'États', level: 3 }),
   ).toHaveCount(0);
+});
+
+test('accueil : arguments, parcours Figma → code et questions, chiffres tirés du projet', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(
+    page.getByRole('heading', {
+      name: 'Ce que votre équipe y gagne',
+      level: 3,
+    }),
+  ).toBeVisible();
+  // Les chiffres viennent du projet, pas d'un texte figé.
+  const stats = page.getByRole('region', { name: 'En chiffres' });
+  await expect(stats).toContainText('composants documentés');
+  const n = Number(
+    (await stats.getByText(/^\d+$/).first().textContent()) ?? '0',
+  );
+  expect(n).toBeGreaterThanOrEqual(60);
+  // Les images sont à fournir : chaque emplacement le dit et donne son format.
+  await expect(page.getByRole('img', { name: /^Image à fournir/ })).toHaveCount(
+    4,
+  );
+  await page
+    .getByRole('button', { name: 'Dois-je installer un paquet ?' })
+    .click();
+  await expect(page.getByText('Vous copiez les fichiers')).toBeVisible();
+  // Un argument mène à la page qui le prouve.
+  await page.getByRole('link', { name: 'Voir Button' }).click();
+  await expect(page).toHaveURL(/#\/composants\/button$/);
 });

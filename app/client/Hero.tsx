@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { NewTag } from './NewTag.js';
 
 /** Bandeau d'ouverture de page : la navigation et le contenu commencent en dessous. */
@@ -6,10 +6,19 @@ export function Hero({
   title,
   lead,
   isNew = false,
+  eyebrow,
+  large = false,
+  children,
 }: {
   title: string;
   lead: string;
   isNew?: boolean;
+  /** Pastille d'annonce au-dessus du titre. */
+  eyebrow?: ReactNode;
+  /** Page d'accueil : titre plus grand, plus de place pour l'accroche. */
+  large?: boolean;
+  /** Appels à l'action sous l'accroche. */
+  children?: ReactNode;
 }) {
   return (
     <section className="relative isolate min-h-[25rem] overflow-hidden">
@@ -22,12 +31,17 @@ export function Hero({
           backgroundBlendMode: 'soft-light, normal',
         }}
       />
-      <div className="t-texts-reveal mx-auto grid max-w-3xl gap-4 px-6 pt-32 pb-20 text-center">
+      <div
+        className={`t-texts-reveal mx-auto grid gap-4 px-6 pt-32 pb-20 text-center ${large ? 'max-w-4xl' : 'max-w-3xl'}`}
+      >
+        {eyebrow && (
+          <div style={{ '--t-index': 0 } as CSSProperties}>{eyebrow}</div>
+        )}
         <h2
           id="ds-title"
           tabIndex={-1}
           className="text-5xl font-medium tracking-tight outline-none"
-          style={{ '--t-index': 0 } as CSSProperties}
+          style={{ '--t-index': 1 } as CSSProperties}
         >
           {title}
           {isNew && (
@@ -38,10 +52,13 @@ export function Hero({
         </h2>
         <p
           className="mx-auto max-w-xl text-base text-muted-foreground"
-          style={{ '--t-index': 1 } as CSSProperties}
+          style={{ '--t-index': 2 } as CSSProperties}
         >
           {lead}
         </p>
+        {children && (
+          <div style={{ '--t-index': 3 } as CSSProperties}>{children}</div>
+        )}
       </div>
     </section>
   );

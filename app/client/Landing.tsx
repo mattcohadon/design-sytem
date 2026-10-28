@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { statefulIds } from './componentStates.js';
+import { LandingIntro } from './LandingSections.js';
 import { isNew, NewTag } from './NewTag.js';
 import type { ManifestFamily } from './preview/manifest.js';
 
@@ -95,18 +97,59 @@ function Grid({ title, items }: { title: string; items: Item[] }) {
   );
 }
 
-/** Page d'accueil : tous les composants et blocs, par ordre alphabétique. */
+/** Blocs mis en avant : de vrais aperçus, pas des maquettes. */
+const FEATURED = [
+  ['chat-thread-01', 'Fil de conversation'],
+  ['prompt-input-01', 'Saisie du prompt'],
+  ['model-picker-01', 'Choix du modèle'],
+  ['effort-slider-01', 'Réglage de l’effort'],
+] as const;
+
+function FeaturedBlocks() {
+  const dark = useDark();
+  return (
+    <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {FEATURED.map(([id, title]) => (
+        <li key={id}>
+          <a
+            href={`#/composants/${id}`}
+            className="grid gap-2 rounded-xl border bg-card p-2 text-sm text-card-foreground outline-none transition-colors hover:bg-fill-1 focus-visible:ring-2 focus-visible:ring-ring/30"
+          >
+            <Thumb id={id} title={title} dark={dark} />
+            <span className="px-2 pb-1">{title}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Page d'accueil : arguments, parcours Figma → code, puis tous les composants et blocs. */
 export function Landing({
   components,
   blocks,
+  tokens,
 }: {
   components: Item[];
   blocks: Item[];
+  tokens: number;
 }) {
   return (
-    <div className="grid gap-8 py-8">
-      <Grid title="Composants" items={components} />
-      <Grid title="Blocs" items={blocks} />
+    <div className="grid gap-16 py-8">
+      <LandingIntro
+        components={components.length}
+        blocks={blocks.length}
+        tokens={tokens}
+        withStates={statefulIds.length}
+        preview={<FeaturedBlocks />}
+      />
+      <div className="grid gap-8">
+        <h3 className="text-3xl font-medium tracking-tight">
+          Tous les composants et blocs
+        </h3>
+        <Grid title="Composants" items={components} />
+        <Grid title="Blocs" items={blocks} />
+      </div>
     </div>
   );
 }
