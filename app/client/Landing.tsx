@@ -111,30 +111,105 @@ export function Landing({
   );
 }
 
-/** Remplace la barre de l'assistant sur l'accueil : accès direct aux deux listes. */
+const LISTS = ['Composants', 'Blocs'];
+// Ligne de lecture : juste sous la barre du haut collante.
+const READING_LINE = 96;
+
+/**
+ * Remplace la barre de l'assistant sur l'accueil : accès direct aux deux listes.
+ * Au défilement, une barre de progression remplit la liste en cours, puis passe à la suivante.
+ */
 export function HomeBar() {
+  const [active, setActive] = useState({ index: -1, progress: 0 });
+  useEffect(() => {
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      const maxScroll = document.documentElement.scrollHeight - innerHeight;
+      const starts = LISTS.map(
+        (name) =>
+          scrollY +
+          (document
+            .getElementById(`liste-${name.toLowerCase()}`)
+            ?.getBoundingClientRect().top ?? 0) -
+          READING_LINE,
+      );
+      // Une liste courte en bas de page n'atteindrait jamais la ligne de lecture : on répartit la plage.
+      const n = LISTS.length;
+      const share = (maxScroll * (n - 1)) / n;
+      const k = starts[n - 1] > share ? share / Math.max(starts[n - 1], 1) : 1;
+      const marks = [...starts.map((v) => Math.max(v, 0) * k), maxScroll];
+      let index = -1;
+      LISTS.forEach((_, i) => {
+        if (scrollY >= marks[i] - 1) index = i;
+      });
+      let progress = 0;
+      if (index >= 0) {
+        const span = Math.max(marks[index + 1] - marks[index], 1);
+        progress = Math.min(1, Math.max(0, (scrollY - marks[index]) / span));
+      }
+      progress = Math.round(progress * 200) / 200;
+      setActive((cur) =>
+        cur.index === index && cur.progress === progress
+          ? cur
+          : { index, progress },
+      );
+    };
+    const schedule = () => {
+      frame ||= requestAnimationFrame(measure);
+    };
+    measure();
+    addEventListener('scroll', schedule, { passive: true });
+    addEventListener('resize', schedule);
+    return () => {
+      removeEventListener('scroll', schedule);
+      removeEventListener('resize', schedule);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
   return (
     <div className="pointer-events-none sticky bottom-4 z-30 mt-auto flex justify-center px-4 pt-6">
       <nav
         aria-label="Listes"
         className="pointer-events-auto flex gap-1 rounded-2xl border bg-popover p-1 text-sm shadow-popover"
       >
-        {['Composants', 'Blocs'].map((name) => (
-          <a
-            key={name}
-            href={`#liste-${name.toLowerCase()}`}
-            onClick={(e) => {
-              // Le routage utilise le hash : on défile sans le changer.
-              e.preventDefault();
-              document
-                .getElementById(`liste-${name.toLowerCase()}`)
-                ?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="rounded-xl px-4 py-2 outline-none transition-colors hover:bg-fill-1 focus-visible:ring-2 focus-visible:ring-ring/30"
-          >
-            {name}
-          </a>
-        ))}
+        {LISTS.map((name, i) => {
+          const current = i === active.index;
+          return (
+            <a
+              key={name}
+              href={`#liste-${name.toLowerCase()}`}
+              aria-current={current ? 'location' : undefined}
+              onClick={(e) => {
+                // Le routage utilise le hash : on défile sans le changer.
+                e.preventDefault();
+                document
+                  .getElementById(`liste-${name.toLowerCase()}`)
+                  ?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className={`relative isolate overflow-hidden rounded-xl px-4 py-2 outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring/30 ${
+                current
+                  ? 'font-medium text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <span
+                aria-hidden
+                data-progress={current ? active.progress : undefined}
+                className="absolute inset-y-0 left-0 -z-10 rounded-xl bg-fill-3 transition-[width,opacity] duration-200 ease-out motion-reduce:transition-none"
+                style={{
+                  opacity: current ? 1 : 0,
+                  width: current
+                    ? `${Math.max(active.progress, 0.04) * 100}%`
+                    : i < active.index
+                      ? '100%'
+                      : '0%',
+                }}
+              />
+              {name}
+            </a>
+          );
+        })}
       </nav>
     </div>
   );

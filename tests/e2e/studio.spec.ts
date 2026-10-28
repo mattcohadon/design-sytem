@@ -431,6 +431,35 @@ test('sur cette page : la barre de progression suit le défilement puis passe à
   await expect(toc.locator('[data-progress]')).toHaveCount(1);
 });
 
+test('accueil : la barre Composants / Blocs se remplit au défilement', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const bar = page.getByRole('navigation', { name: 'Listes' });
+  await expect(bar).toBeVisible();
+  const current = bar.locator('a[aria-current="location"]');
+  const progress = async () =>
+    Number(
+      await current.locator('[data-progress]').getAttribute('data-progress'),
+    );
+  await page.evaluate(() => {
+    const top = document
+      .getElementById('liste-composants')!
+      .getBoundingClientRect().top;
+    scrollTo(0, scrollY + top - 96 + 300);
+  });
+  await expect(current).toContainText('Composants');
+  const first = await progress();
+  expect(first).toBeGreaterThan(0);
+  const transition = await current
+    .locator('[data-progress]')
+    .evaluate((el) => getComputedStyle(el).transitionProperty);
+  expect(transition).toContain('width');
+  await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+  await expect(current).toContainText('Blocs');
+  await expect.poll(progress).toBe(1);
+});
+
 test('sur cette page : sur une page courte, la progression traverse chaque section sans en sauter', async ({
   page,
 }) => {
