@@ -455,6 +455,14 @@ test('accueil : la barre Composants / Blocs se remplit au défilement', async ({
     .locator('[data-progress]')
     .evaluate((el) => getComputedStyle(el).transitionProperty);
   expect(transition).toContain('width');
+  // Tant que le titre Blocs est hors de la fenêtre, on reste sur Composants.
+  await page.evaluate(() => {
+    const top = document
+      .getElementById('liste-blocs')!
+      .getBoundingClientRect().top;
+    scrollTo(0, scrollY + top - innerHeight + 40);
+  });
+  await expect(current).toContainText('Composants');
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
   await expect(current).toContainText('Blocs');
   await expect.poll(progress).toBe(1);

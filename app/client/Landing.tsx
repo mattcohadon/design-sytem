@@ -126,19 +126,19 @@ export function HomeBar() {
     const measure = () => {
       frame = 0;
       const maxScroll = document.documentElement.scrollHeight - innerHeight;
-      const starts = LISTS.map(
-        (name) =>
-          scrollY +
-          (document
-            .getElementById(`liste-${name.toLowerCase()}`)
-            ?.getBoundingClientRect().top ?? 0) -
-          READING_LINE,
-      );
-      // Une liste courte en bas de page n'atteindrait jamais la ligne de lecture : on répartit la plage.
-      const n = LISTS.length;
-      const share = (maxScroll * (n - 1)) / n;
-      const k = starts[n - 1] > share ? share / Math.max(starts[n - 1], 1) : 1;
-      const marks = [...starts.map((v) => Math.max(v, 0) * k), maxScroll];
+      // Composants démarre à la ligne de lecture ; les listes suivantes dès que leur titre entre
+      // dans la fenêtre (une liste courte en bas de page n'atteindrait jamais la ligne de lecture).
+      const marks = [
+        ...LISTS.map((name, i) => {
+          const top =
+            document
+              .getElementById(`liste-${name.toLowerCase()}`)
+              ?.getBoundingClientRect().top ?? 0;
+          const line = i === 0 ? READING_LINE : innerHeight * 0.7;
+          return Math.min(Math.max(scrollY + top - line, 0), maxScroll);
+        }),
+        maxScroll,
+      ];
       let index = -1;
       LISTS.forEach((_, i) => {
         if (scrollY >= marks[i] - 1) index = i;
