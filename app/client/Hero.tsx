@@ -12,17 +12,17 @@ export function Hero({
   isNew?: boolean;
 }) {
   return (
-    <section className="relative isolate overflow-hidden">
-      {/* Grand arc : un dégradé radial centré au-dessus du bandeau, du bleu vers le fond de page. */}
+    <section className="relative isolate min-h-[25rem] overflow-hidden">
+      {/* Grand arc (maquette Figma) : radial centré en haut, bleu → rose → fond de page, avec un grain léger. */}
       <div
         aria-hidden
         className="absolute inset-0 -z-10"
         style={{
-          background:
-            'radial-gradient(ellipse 85% 135% at 50% -25%, color-mix(in srgb, var(--hero-blue) var(--hero-strength, 55%), transparent) 0%, var(--hero-mid) 80%, var(--background) 100%)',
+          backgroundImage: `var(--hero-grain), radial-gradient(ellipse 62% 92% at 50% 0%, color-mix(in srgb, var(--hero-blue) var(--hero-strength), transparent) 16.5%, var(--hero-mid) 80%, var(--background) 100%)`,
+          backgroundBlendMode: 'soft-light, normal',
         }}
       />
-      <div className="t-texts-reveal mx-auto grid max-w-3xl gap-4 px-6 pt-24 pb-20 text-center">
+      <div className="t-texts-reveal mx-auto grid max-w-3xl gap-4 px-6 pt-32 pb-20 text-center">
         <h2
           id="ds-title"
           tabIndex={-1}
