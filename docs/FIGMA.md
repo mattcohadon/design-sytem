@@ -1,12 +1,13 @@
 # Figma : source de vérité réelle, pas intégration simulée
 
-**Lecture des variables : IMPLEMENTED, essai réel en attente du jeton.** Le bouton
-« Sync Figma » lit les variables d’un fichier autorisé (API REST officielle, lecture
-seule) et prépare un diff ; rien n’est appliqué sans validation humaine. **Écriture
-vers Figma : NOT IMPLEMENTED.** Les outils Figma d’une session de développement ne
-sont pas distribués avec ce starter et ne constituent pas une connexion de l’application.
+**Lecture des variables : IMPLEMENTED, essai réel en attente du jeton.** La route `/api/figma-sync` lit
+les variables d'un fichier autorisé (API REST officielle, lecture seule) et prépare un diff ; rien n'est
+appliqué sans validation humaine. Le bouton « Sync Figma » a été retiré de l'interface. **Écriture vers
+Figma : IMPLEMENTED côté assistant Claude seulement**, sur interrupteur explicite pour une demande, par le
+serveur MCP de Figma et non par l'API REST ; voir [ASSISTANT_FIGMA](ASSISTANT_FIGMA.md). Rien n'écrit dans
+Figma sans cette autorisation.
 
-## Sync Figma (lecture seule)
+## Lecture des variables (lecture seule)
 
 1. Figma > Settings > Security > Personal access tokens : créer un jeton avec le seul
    droit `file_variables:read`. L’API des variables exige un espace Enterprise et un
@@ -16,7 +17,7 @@ sont pas distribués avec ce starter et ne constituent pas une connexion de l’
    Sans argument, `npm run figma:setup` le demande en saisie masquée. Dans les deux cas il est écrit
    dans `.ds-studio/figma.json` (mode 600, hors Git). `FIGMA_TOKEN` et `FIGMA_FILE_KEY`
    sont aussi acceptés. Redémarrer DS-Studio ; l’en-tête affiche alors Figma connecté.
-3. **Sync Figma** appelle `GET /v1/files/:key/variables/local`, compare les collections
+3. La route `/api/figma-sync` appelle `GET /v1/files/:key/variables/local`, compare les collections
    « DS-Studio · Couleurs » (modes Light / Dark) et « DS-Studio · Base » (`radius/base`,
    `font/sans`) à l’état courant, et ne propose que les tokens réellement différents,
    avec la source « Figma » dans l’historique. Les alias sont résolus, les variables

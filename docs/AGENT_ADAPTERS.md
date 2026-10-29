@@ -46,6 +46,13 @@ la proposition/validation via API et les essais sur chaque OS cible.
 - `--no-session-persistence` : conversation non conservée par le CLI ;
 - `--json-schema` : réponse `{message, changes}` imposée, `key` limitée aux 120 tokens.
 
+**Exception Figma (profil `claudeFigmaArgs`).** Quand l'utilisateur active l'interrupteur « Figma » pour une
+demande, `--mcp-config` déclare le seul serveur `plugin:figma:figma` et `--allowedTools` limite l'accès à
+`create_session`, `use_figma`, `get_screenshot` et `get_metadata`. Le reste du profil est identique, la
+sortie reste validée, tout refus d'outil (`permission_denials`) reste une erreur, et le délai passe de 3 à
+10 minutes. Réponse complétée d'un lien Figma (`withFigmaLink`). Testé à la main une fois (page créée) ;
+les tests automatiques couvrent le profil et le lien, pas Figma. Voir [ASSISTANT_FIGMA](ASSISTANT_FIGMA.md).
+
 Le processus tourne dans un dossier temporaire vide, avec une liste blanche de
 variables d’environnement ; le contexte passe par stdin. `--bare` n’est pas utilisé :
 il refuse l’authentification OAuth du CLI. Le CLI est accepté sur ses capacités
