@@ -118,7 +118,9 @@ export function AssistantBar(p: Props) {
               placeholder={
                 manual
                   ? 'Mode manuel : modifiez les tokens dans l’éditeur.'
-                  : `Demandez à ${name} : « palette plus chaleureuse, clair et sombre »`
+                  : p.figma
+                    ? 'Figma autorisé pour cette demande : décrivez ce qu’il faut créer.'
+                    : `Demandez à ${name} : « palette plus chaleureuse, clair et sombre »`
               }
               maxLength={8000}
               disabled={manual || p.thinking}
@@ -142,12 +144,13 @@ export function AssistantBar(p: Props) {
                   size="sm"
                   aria-label="Autoriser Figma pour cette demande"
                   title="Autoriser Figma pour cette demande"
+                  className="aria-pressed:border-primary/50 aria-pressed:bg-primary/10 aria-pressed:text-primary"
                   pressed={p.figma}
                   disabled={p.thinking}
                   onPressedChange={p.onFigma}
                 >
                   <PenToolIcon />
-                  Figma
+                  {p.figma ? 'Figma activé' : 'Figma'}
                 </Toggle>
               )}
             </AIChatComposerLeading>
