@@ -759,7 +759,15 @@ test('assistant : réponse en Markdown mise en forme, conversation agrandissable
   const panel = log.locator('xpath=..');
   const small = (await panel.boundingBox())!.width;
   await page.getByRole('button', { name: 'Agrandir la conversation' }).click();
-  expect((await panel.boundingBox())!.width).toBeGreaterThan(small);
+  const big = (await panel.boundingBox())!;
+  const view = page.viewportSize()!;
+  expect(big.width).toBeGreaterThan(view.width * 0.9);
+  expect(big.height).toBeGreaterThan(view.height * 0.5);
+  // La barre de saisie garde sa taille.
+  const bar = page
+    .locator('form')
+    .filter({ has: page.getByLabel('Votre demande') });
+  expect((await bar.boundingBox())!.width).toBeLessThanOrEqual(680);
   await expect(
     page.getByRole('button', { name: 'Masquer la conversation' }),
   ).toBeInViewport();

@@ -17,8 +17,17 @@ function Inline({ text }: { text: string }) {
             </code>
           );
         if (part.startsWith('**'))
-          return <strong key={i}>{part.slice(2, -2)}</strong>;
-        if (part.startsWith('*')) return <em key={i}>{part.slice(1, -1)}</em>;
+          return (
+            <strong key={i}>
+              <Inline text={part.slice(2, -2)} />
+            </strong>
+          );
+        if (part.startsWith('*'))
+          return (
+            <em key={i}>
+              <Inline text={part.slice(1, -1)} />
+            </em>
+          );
         const link = /^\[([^\]]+)\]\((https:\/\/[^\s)]+)\)$/.exec(part);
         return (
           <a

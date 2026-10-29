@@ -69,11 +69,13 @@ export function AssistantBar(p: Props) {
   const unavailable = !manual && p.info && !p.info.available;
   return (
     <div className="pointer-events-none sticky bottom-4 z-30 mt-auto flex justify-center px-4 pt-6">
-      <div
-        className={`pointer-events-auto grid w-full gap-2 ${expanded ? 'max-w-5xl' : 'max-w-2xl'}`}
-      >
+      <div className="pointer-events-auto grid w-full max-w-2xl gap-2">
         {!hidden && p.chat.length > 0 && (
-          <div className="relative">
+          <div
+            className={
+              expanded ? 'fixed inset-x-4 top-24 bottom-24' : 'relative'
+            }
+          >
             {/* Hors de la zone qui défile : toujours visible, même en bas d'une longue réponse. */}
             <div className="absolute -top-8 right-0 flex gap-1">
               <Button
@@ -101,10 +103,10 @@ export function AssistantBar(p: Props) {
               </Button>
             </div>
             <div
-              className={`grid gap-2 overflow-auto ${expanded ? 'max-h-[calc(100svh-10rem)]' : 'max-h-[40svh]'} rounded-2xl border bg-popover p-3 text-popover-foreground shadow-popover`}
+              className={`grid content-start gap-2 overflow-auto ${expanded ? 'h-full' : 'max-h-[40svh]'} rounded-2xl border bg-popover p-3 text-popover-foreground shadow-popover`}
             >
               <div
-                className="grid gap-2"
+                className="grid content-start gap-2"
                 aria-label="Conversation"
                 aria-live="polite"
               >
