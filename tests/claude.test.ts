@@ -6,6 +6,8 @@ import path from 'node:path';
 import {
   ClaudeAdapter,
   claudeArgs,
+  claudeFigmaArgs,
+  figmaTools,
   parseClaudeResult,
 } from '../connectors/agents/claude.js';
 import { tokensSchema } from '../app/shared/model.js';
@@ -70,6 +72,27 @@ test('profil Claude : aucun outil, aucun MCP, aucun réglage, aucune permission 
       /dangerously|bypassPermissions|acceptEdits|--bare/.test(a),
     ),
   );
+});
+
+test('profil Figma : seul le serveur Figma et trois outils précis, rien d’autre ne change', () => {
+  const at = (flag: string) =>
+    claudeFigmaArgs[claudeFigmaArgs.indexOf(flag) + 1];
+  assert.equal(at('--tools'), '');
+  assert.equal(at('--setting-sources'), '');
+  assert(claudeFigmaArgs.includes('--strict-mcp-config'));
+  assert.deepEqual(Object.keys(JSON.parse(at('--mcp-config')).mcpServers), [
+    'figma',
+  ]);
+  assert.equal(at('--allowedTools'), figmaTools.join(','));
+  assert(figmaTools.every((t) => t.startsWith('mcp__figma__')));
+  assert(!figmaTools.some((t) => /delete|remove/i.test(t)));
+  assert(
+    !claudeFigmaArgs.some((a) =>
+      /dangerously|bypassPermissions|acceptEdits|--bare/.test(a),
+    ),
+  );
+  // Le profil sans autorisation reste fermé.
+  assert(!claudeArgs.includes('--allowedTools'));
 });
 
 test(

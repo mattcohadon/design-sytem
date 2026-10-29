@@ -261,6 +261,7 @@ export default function App() {
     { role: 'user' | 'assistant'; text: string }[]
   >([]);
   const [thinking, setThinking] = useState(false);
+  const [figma, setFigma] = useState(false);
   const [saving, setSaving] = useState(false);
   const controller = useRef<AbortController | null>(null);
   const cancelButton = useRef<HTMLButtonElement>(null);
@@ -383,6 +384,7 @@ export default function App() {
     if (!state || !message.trim() || thinking) return;
     const text = message;
     setMessage('');
+    setFigma(false); // L'autorisation ne vaut que pour une demande.
     setThinking(true);
     clearError();
     const previous = chat.slice(-10);
@@ -395,7 +397,13 @@ export default function App() {
         proposal: Proposal | null;
       }>(
         'agent',
-        { agent, message: text, revision: state.revision, history: previous },
+        {
+          agent,
+          message: text,
+          revision: state.revision,
+          history: previous,
+          figma: figma && agent === 'claude',
+        },
         abort.signal,
       );
       setChat((c) => [...c, { role: 'assistant', text: result.message }]);
@@ -1158,6 +1166,8 @@ export default function App() {
           onMessage={setMessage}
           chat={chat}
           thinking={thinking}
+          figma={figma}
+          onFigma={setFigma}
           onSend={() => void sendMessage()}
           onStop={() => controller.current?.abort()}
         />

@@ -4,6 +4,8 @@ export interface AgentContext {
   brief: string;
   rules: string;
   history: { role: 'user' | 'assistant'; text: string }[];
+  /** Autorisation Figma donnée pour cette seule demande (Claude uniquement). */
+  figma?: boolean;
 }
 export interface AgentAdapter {
   id: string;
