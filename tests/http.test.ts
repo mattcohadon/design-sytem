@@ -72,7 +72,7 @@ async function fixture(
       headers: {
         Origin: origin,
         'Content-Type': 'application/json',
-        'X-DS-Studio': boot.csrf,
+        'X-Stride-UI': boot.csrf,
         ...headers,
       },
       body: JSON.stringify(body),
@@ -111,7 +111,7 @@ test('CSRF, origine étrangère, rebinding Host et périmètre refusés', async 
     changes: [{ key: 'light.primary', value: '#112233' }],
   };
   assert.equal(
-    (await post('proposals', body, { 'X-DS-Studio': '' })).status,
+    (await post('proposals', body, { 'X-Stride-UI': '' })).status,
     403,
   );
   assert.equal(
@@ -167,7 +167,7 @@ test('requêtes malformées et trop grandes refusées', async (t) => {
         headers: {
           Origin: origin,
           'Content-Type': 'application/json',
-          'X-DS-Studio': boot.csrf,
+          'X-Stride-UI': boot.csrf,
         },
         body: '{bad',
       })
@@ -213,7 +213,7 @@ test('brief : API fermée, révision conflictuelle et aucun fichier privé servi
     project: { ...initial.project, name: 'PFE test' },
   };
   assert.equal(
-    (await post('project', body, { 'X-DS-Studio': '' })).status,
+    (await post('project', body, { 'X-Stride-UI': '' })).status,
     403,
   );
   assert.equal((await post('project', body)).status, 200);
@@ -299,11 +299,11 @@ test('Sync Figma : non configuré refusé ; différence proposée avec la source
     meta: {
       variableCollections: {
         c: {
-          name: 'DS-Studio · Couleurs',
+          name: 'Stride UI · Couleurs',
           modes: [{ modeId: 'l', name: 'Light' }],
         },
         b: {
-          name: 'DS-Studio · Base',
+          name: 'Stride UI · Base',
           modes: [{ modeId: 'v', name: 'Value' }],
         },
       },

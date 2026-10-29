@@ -6,18 +6,18 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const [major, minor] = process.versions.node.split('.').map(Number);
 if (major < 22 || (major === 22 && minor < 12)) {
   console.error(
-    'DS-Studio nécessite Node.js 22.12 ou supérieur (LTS conseillé).',
+    'Stride UI nécessite Node.js 22.12 ou supérieur (LTS conseillé).',
   );
   process.exit(1);
 }
 if (!existsSync(path.join(root, 'node_modules/tsx/dist/cli.mjs'))) {
   console.error(
-    'Dépendances absentes. Dans le dossier DS-Studio : npm ci, puis npm run build.',
+    'Dépendances absentes. Dans le dossier Stride UI : npm ci, puis npm run build.',
   );
   process.exit(1);
 }
 if (!existsSync(path.join(root, 'dist/index.html'))) {
-  console.error('Interface non compilée. Dans DS-Studio : npm run build.');
+  console.error('Interface non compilée. Dans Stride UI : npm run build.');
   process.exit(1);
 }
 const child = spawn(

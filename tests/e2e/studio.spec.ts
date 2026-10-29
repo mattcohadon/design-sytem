@@ -157,7 +157,7 @@ test('V2 : capacité de session périmée simulée sans rejeu ambigu', async ({
           error: 'Validation de session manquante. Rechargez la page.',
         }),
       });
-    expect(route.request().headers()['x-ds-studio']).toBe(boot.csrf);
+    expect(route.request().headers()['x-stride-ui']).toBe(boot.csrf);
     return route.continue();
   });
   await page

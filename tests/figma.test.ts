@@ -61,14 +61,14 @@ function figmaFile(tokens = seed): FigmaVariablesResponse {
       variables,
       variableCollections: {
         'c-colors': {
-          name: 'DS-Studio · Couleurs',
+          name: 'Stride UI · Couleurs',
           modes: [
             { modeId: 'm-light', name: 'Light' },
             { modeId: 'm-dark', name: 'Dark' },
           ],
         },
         'c-base': {
-          name: 'DS-Studio · Base',
+          name: 'Stride UI · Base',
           modes: [{ modeId: 'm-value', name: 'Value' }],
         },
       },

@@ -10,7 +10,6 @@ import {
   MenuIcon,
   SearchIcon,
   PaletteIcon,
-  SwatchBookIcon,
   UploadIcon,
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -425,7 +424,7 @@ export default function App() {
   if (!state)
     return (
       <main className="grid min-h-svh place-content-center gap-2 p-6 text-center">
-        <h1 className="text-lg font-semibold">DS-Studio</h1>
+        <h1 className="text-lg font-semibold">Stride UI</h1>
         <p role="alert" className="text-sm">
           {stateError || 'Ouverture du Design System…'}
         </p>
@@ -787,7 +786,7 @@ export default function App() {
           },
           welcome: {
             title: 'Bienvenue',
-            lead: 'DS-Studio est un atelier local pour explorer et faire évoluer un design system : une seule source de tokens, toutes les vues.',
+            lead: 'Stride UI est un atelier local pour explorer et faire évoluer un design system : une seule source de tokens, toutes les vues.',
           },
           start: {
             title: 'Démarrage',
@@ -836,8 +835,9 @@ export default function App() {
             href="#/"
             className="-mx-1.5 flex items-center gap-2 rounded-lg px-1.5 py-2 outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
           >
-            <SwatchBookIcon className="size-4" />
-            <h1 className="text-sm font-medium tracking-tight">Stride UI</h1>
+            <span className="text-sm font-medium tracking-tight">
+              Stride UI
+            </span>
             <span className="text-xs text-muted-foreground italic">
               v{pkg.version}
             </span>

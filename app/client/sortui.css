@@ -1,5 +1,5 @@
 /* Styles SortUI (https://sortui.dev, MIT), chargés uniquement dans les aperçus.
-   Les valeurs de couleur, --radius et --font-sans viennent des tokens DS-Studio,
+   Les valeurs de couleur, --radius et --font-sans viennent des tokens Stride UI,
    posées sur <html> par SortUIRoot. Le chrome de l’atelier n’utilise pas ce fichier. */
 @import 'tailwindcss';
 @import 'tw-animate-css';

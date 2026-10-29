@@ -1,4 +1,4 @@
-# DS-Studio — instructions communes
+# Stride UI — instructions communes
 
 Lire [START_HERE.md](START_HERE.md). Le contexte appartient à l’étudiant.
 

@@ -78,7 +78,7 @@ const requiredFlags = [
   '--no-session-persistence',
   '--json-schema',
 ];
-const instruction = `Tu es l'assistant de DS-Studio, un atelier de Design System basé sur SortUI (shadcn/ui).
+const instruction = `Tu es l'assistant de Stride UI, un atelier de Design System basé sur SortUI (shadcn/ui).
 Tu peux proposer des changements sur n'importe lequel des tokens fournis : couleurs des modes clair (light.*) et sombre (dark.*), radius.base (pixels, 0 à 128) et font.sans (system-ui, Arial, Georgia ou Verdana).
 Couleurs : oklch(L C H) ou oklch(L C H / A%), L de 0 à 1, C de 0 à 0.5, H de 0 à 360 ; #RRGGBB accepté.
 Pense aux deux modes et au contraste WCAG (4,5:1 pour le texte courant) quand tu touches une paire texte / fond.
@@ -130,7 +130,7 @@ export class ClaudeAdapter implements AgentAdapter {
     if (!status.available) throw new Error(status.detail);
     // Dossier vide : aucun CLAUDE.md ni réglage de projet n'est découvert.
     const cwd = await mkdtemp(path.join(tmpdir(), 'ds-studio-agent-'));
-    // Variables transmises telles quelles au CLI ; DS-Studio n'en lit aucune.
+    // Variables transmises telles quelles au CLI ; Stride UI n'en lit aucune.
     const names = [
       'PATH',
       'HOME',

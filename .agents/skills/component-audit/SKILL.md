@@ -1,6 +1,6 @@
 ---
 name: component-audit
-description: Auditer la cohérence et les interactions des composants DS-Studio dans le catalogue et le viewport responsive, notamment après un changement de token ou de composant.
+description: Auditer la cohérence et les interactions des composants Stride UI dans le catalogue et le viewport responsive, notamment après un changement de token ou de composant.
 ---
 
 # Auditer les composants partagés

@@ -1,4 +1,4 @@
-# DS-Studio V2 — rapport de livraison
+# Stride UI V2 — rapport de livraison
 
 Date : **27 octobre 2026**. Base : `ed6ead0` / `v1.1.0-launchers`, initialement
 publiée et propre. Développement sur `codex/v2` ; tags V1 préservés. Aucun fichier

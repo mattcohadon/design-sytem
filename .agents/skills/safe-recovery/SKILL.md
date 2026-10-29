@@ -1,6 +1,6 @@
 ---
 name: safe-recovery
-description: Diagnostiquer une panne de lancement ou un état DS-Studio invalide en préservant les données, puis vérifier une reprise sans remise à zéro.
+description: Diagnostiquer une panne de lancement ou un état Stride UI invalide en préservant les données, puis vérifier une reprise sans remise à zéro.
 ---
 
 # Récupérer sans effacer

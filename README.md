@@ -1,4 +1,4 @@
-# DS-Studio V2
+# Stride UI V2
 
 Un atelier **web local** pour explorer, modifier et faire évoluer un Design System.
 Ce starter pédagogique est conçu pour devenir **votre outil**, pas pour dicter vos
@@ -21,9 +21,9 @@ Figma ou abonnement IA n’est nécessaire pour démarrer.
 
    | Système | Fichier                                                                                             |
    | ------- | --------------------------------------------------------------------------------------------------- |
-   | Linux   | **DS-Studio.desktop** (icône de développement ; autoriser l’exécution / faire confiance si demandé) |
-   | macOS   | **DS-Studio.app**, à laisser dans le dossier du projet                                              |
-   | Windows | **DS-Studio.vbs**, sans fenêtre de console                                                          |
+   | Linux   | **Stride-UI.desktop** (icône de développement ; autoriser l’exécution / faire confiance si demandé) |
+   | macOS   | **Stride-UI.app**, à laisser dans le dossier du projet                                              |
+   | Windows | **Stride-UI.vbs**, sans fenêtre de console                                                          |
 
 2. Si Node manque, le guide graphique local s’ouvre. Le lanceur cherche aussi les
    installations utilisateur hors PATH, sans exécuter vos profils shell.
@@ -31,11 +31,11 @@ Figma ou abonnement IA n’est nécessaire pour démarrer.
 3. Au premier lancement, cliquez **Installer / compiler…**, puis confirmez
    explicitement le téléchargement des dépendances et la compilation. Internet
    est nécessaire. Le journal et les erreurs restent visibles dans le panneau.
-4. Cliquez **Démarrer DS-Studio**, puis **Ouvrir DS-Studio**. Aux lancements suivants,
+4. Cliquez **Démarrer Stride UI**, puis **Ouvrir Stride UI**. Aux lancements suivants,
    un double-clic ouvre le panneau et démarre / ouvre automatiquement l’atelier
    s’il est prêt et arrêté. S’il est déjà actif, il retrouve son panneau sans
    créer un second serveur.
-5. Cliquez **Arrêter DS-Studio** dans le panneau pour arrêter le vrai serveur.
+5. Cliquez **Arrêter Stride UI** dans le panneau pour arrêter le vrai serveur.
    **Redémarrer** conserve les données. **Arrêter et quitter le lanceur** ferme
    aussi son petit service local. Fermer le navigateur n’arrête pas le serveur :
    un nouveau double-clic retrouve les commandes.
@@ -137,7 +137,7 @@ Dans votre CLI (Codex, Claude Code, Gemini CLI, etc.), depuis le dossier du proj
 
 `AGENTS.md`, `CLAUDE.md` et `GEMINI.md` partagent le même point d’entrée.
 Le développement via une CLI externe et le chat embarqué sont **deux choses différentes**.
-L’agent externe a ses propres permissions ; DS-Studio ne les contrôle pas.
+L’agent externe a ses propres permissions ; Stride UI ne les contrôle pas.
 
 Codex découvre les skills dans `.agents/skills/` : demandez `$token-change` ou
 `$component-audit`. Un autre agent peut lire le `SKILL.md` explicitement. Pour
@@ -155,8 +155,8 @@ Inspirez-vous des deux skills fournis, sans copier vos identifiants ou vos conve
 | Chat Codex, JSON proposé avant acceptation                          | **TESTED**, CLI 0.164.0, compte enseignant disponible pendant la qualification ; quota non garanti                                                   |
 | Claude Code dans l’application, propositions sur tous les tokens    | **TESTED**, macOS, CLI 2.1.311 connecté + tests unitaires (faux CLI)                                                                                 |
 | Gemini dans l’application                                           | **NOT IMPLEMENTED**, adaptateur indisponible et contrat documenté                                                                                    |
-| Figma → DS-Studio : variables en lecture (route `/api/figma-sync`)  | **IMPLEMENTED**, tests unitaires et valeurs réelles ; plus de bouton dans l’interface ; appel réseau réel en attente du jeton                        |
-| DS-Studio → Figma (écriture)                                        | **IMPLEMENTED** pour Claude seul, sur autorisation à chaque demande ; testé à la main (une page créée) ; garde-fous dans le prompt, pas dans le code |
+| Figma → Stride UI : variables en lecture (route `/api/figma-sync`)  | **IMPLEMENTED**, tests unitaires et valeurs réelles ; plus de bouton dans l’interface ; appel réseau réel en attente du jeton                        |
+| Stride UI → Figma (écriture)                                        | **IMPLEMENTED** pour Claude seul, sur autorisation à chaque demande ; testé à la main (une page créée) ; garde-fous dans le prompt, pas dans le code |
 | Skills et harness personnalisable                                   | **IMPLEMENTED**, structure et liens vérifiés ; pas une validation des choix d’un étudiant                                                            |
 | Qualification automatisée Windows / macOS                           | **TESTED en CI** pour API, navigateur et contrôleur ; **PARTIAL** pour Finder/WSH natifs                                                             |
 | Application desktop installable                                     | **NOT IMPLEMENTED**, application web locale uniquement                                                                                               |

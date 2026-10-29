@@ -70,7 +70,7 @@ async function session() {
       headers: {
         Origin: origin,
         'Content-Type': 'application/json',
-        'X-DS-Studio': csrf,
+        'X-Stride-UI': csrf,
       },
       body: JSON.stringify(body),
     });

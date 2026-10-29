@@ -55,5 +55,5 @@ await writeFile(file, JSON.stringify({ fileKey, token }) + '\n', {
 });
 await chmod(file, 0o600);
 console.log(
-  `Enregistré : ${file} (fichier ${fileKey}, jeton de ${token.length} caractères, privé, hors Git). Redémarrez DS-Studio puis cliquez « Sync Figma ».`,
+  `Enregistré : ${file} (fichier ${fileKey}, jeton de ${token.length} caractères, privé, hors Git). Redémarrez Stride UI puis cliquez « Sync Figma ».`,
 );

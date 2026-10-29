@@ -1,14 +1,14 @@
-# Votre DS-Studio, pas celui de votre voisin
+# Votre Stride UI, pas celui de votre voisin
 
 ## Ouvrir et fermer son atelier
 
-Double-cliquez sur **DS-Studio.desktop** (Linux), **DS-Studio.app** (Mac) ou
-**DS-Studio.vbs** (Windows), en gardant le fichier dans le projet. Au premier
+Double-cliquez sur **Stride-UI.desktop** (Linux), **Stride-UI.app** (Mac) ou
+**Stride-UI.vbs** (Windows), en gardant le fichier dans le projet. Au premier
 lancement, le panneau vous demande de confirmer **Installer / compiler…** si
 nécessaire. Si Node.js manque, un guide graphique explique son installation ;
-DS-Studio n’installe rien avec des droits administrateur.
+Stride UI n’installe rien avec des droits administrateur.
 
-Après préparation : **Démarrer DS-Studio**, puis **Ouvrir DS-Studio**. Les doubles-clics
+Après préparation : **Démarrer Stride UI**, puis **Ouvrir Stride UI**. Les doubles-clics
 suivants démarrent et ouvrent l’atelier prêt. Le panneau reste l’endroit où cliquer
 sur **Arrêter** ou **Redémarrer**. Vos tokens et votre historique sont conservés.
 Fermer le navigateur n’arrête pas le serveur : retrouvez le panneau par un nouveau

@@ -16,9 +16,9 @@ Figma sans cette autorisation.
    le jeton passe par l’entrée standard, sans être tapé ni gardé dans l’historique du shell.
    Sans argument, `npm run figma:setup` le demande en saisie masquée. Dans les deux cas il est écrit
    dans `.ds-studio/figma.json` (mode 600, hors Git). `FIGMA_TOKEN` et `FIGMA_FILE_KEY`
-   sont aussi acceptés. Redémarrer DS-Studio ; l’en-tête affiche alors Figma connecté.
+   sont aussi acceptés. Redémarrer Stride UI ; l’en-tête affiche alors Figma connecté.
 3. La route `/api/figma-sync` appelle `GET /v1/files/:key/variables/local`, compare les collections
-   « DS-Studio · Couleurs » (modes Light / Dark) et « DS-Studio · Base » (`radius/base`,
+   « Stride UI · Couleurs » (modes Light / Dark) et « Stride UI · Base » (`radius/base`,
    `font/sans`) à l’état courant, et ne propose que les tokens réellement différents,
    avec la source « Figma » dans l’historique. Les alias sont résolus, les variables
    inconnues sont ignorées, une police hors liste est refusée.
@@ -32,7 +32,7 @@ simulée détectée), route HTTP avec Figma simulé. Non testé : appel réseau 
 
 La [documentation Figma officielle du serveur distant](https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/)
 indique que seuls les clients du catalogue autorisé peuvent se connecter. Un
-nouveau client doit passer par la procédure d’admission. DS-Studio n’est pas déclaré
+nouveau client doit passer par la procédure d’admission. Stride UI n’est pas déclaré
 client autorisé. Ne jamais usurper un client, extraire un jeton, réutiliser une session
 Codex ou recopier des cookies pour contourner cette restriction.
 
@@ -43,7 +43,7 @@ Codex ou recopier des cookies pour contourner cette restriction.
    vous contrôlez les droits. Ne pas confondre un export de composants avec leur
    comportement responsive dans du code.
 3. Convertir explicitement les tokens vers le [format local](TOKENS.md), puis importer
-   le fichier dans DS-Studio et accepter le diff. V2 ne fournit pas ce convertisseur.
+   le fichier dans Stride UI et accepter le diff. V2 ne fournit pas ce convertisseur.
 4. Tester vos décisions localement. Exporter les tokens courants pour documenter un
    rapprochement manuel avec Figma. L’export ne modifie pas votre fichier Figma.
 

@@ -10,9 +10,9 @@ npm, Python, Rust, Electron ou compte IA n’est requis par ce lanceur.
 
 | Système | Point d’entrée                                                       | Limite connue                                                                      |
 | ------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Linux   | `DS-Studio.desktop`, icône système, `Terminal=false`                 | Autorisation d’exécution / confiance propre au bureau ; fichiers à garder ensemble |
-| macOS   | `DS-Studio.app`, petit bundle shell Finder                           | Non signé / non notarié, quarantaine et translocation à qualifier sur Mac          |
-| Windows | `DS-Studio.vbs`, Windows Script Host, `windowsHide` pour les enfants | VBScript peut être absent ou désactivé ; aucune activation automatique             |
+| Linux   | `Stride-UI.desktop`, icône système, `Terminal=false`                 | Autorisation d’exécution / confiance propre au bureau ; fichiers à garder ensemble |
+| macOS   | `Stride-UI.app`, petit bundle shell Finder                           | Non signé / non notarié, quarantaine et translocation à qualifier sur Mac          |
+| Windows | `Stride-UI.vbs`, Windows Script Host, `windowsHide` pour les enfants | VBScript peut être absent ou désactivé ; aucune activation automatique             |
 
 Le cycle contrôleur/serveur est qualifié automatiquement par CI ; les essais natifs
 Finder/Windows Script Host restent distincts. Voir DELIVERY_REPORT.md pour les résultats. Le bundle Mac et le script Windows ne
@@ -108,7 +108,7 @@ programme malveillant exécuté sous le même compte utilisateur.
 | npm absent de la distribution Node    | Réinstaller une distribution officielle comprenant npm                                                                      |
 | Installation échouée                  | Lire le journal du panneau ; vérifier Internet et les droits d’écriture, puis réessayer                                     |
 | Port application occupé               | Arrêter son ancien serveur via le panneau ou identifier l’application dans le gestionnaire système ; ne pas tuer un inconnu |
-| Port de protection occupé             | Fermer l’autre DS-Studio concerné ; faire identifier l’occupant par l’enseignant si nécessaire                              |
+| Port de protection occupé             | Fermer l’autre Stride UI concerné ; faire identifier l’occupant par l’enseignant si nécessaire                              |
 | PID actif mais identité non confirmée | Réessayer après démarrage ; utiliser l’ancien terminal ou demander un diagnostic, jamais supprimer l’état                   |
 | `state.json` invalide                 | Original préservé ; faire une sauvegarde privée avant réparation, aucune remise à zéro                                      |
 | Navigateur non ouvert                 | Vérifier le navigateur par défaut ; utiliser le lien direct dans le panneau si disponible                                   |
