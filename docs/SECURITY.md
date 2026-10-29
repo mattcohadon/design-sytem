@@ -14,6 +14,12 @@
 - Codex : version qualifiée unique, configuration utilisateur ignorée sans toucher
   l’authentification, dossier temporaire vide, outils shell/plugins/apps/MCP désactivés,
   sandbox read-only, aucun mécanisme d’approbation automatique.
+- Claude Code : aucun outil par défaut. **Exception, pour une seule demande et sur interrupteur explicite** :
+  le serveur MCP `plugin:figma:figma` et quatre outils (`figmaTools` dans `connectors/agents/claude.ts`).
+  Ces écritures **ne passent ni par le diff ni par une relecture**, et `use_figma` exécute du code dans le
+  fichier Figma. Les interdits (suppression, page « Pas touch ») sont dans le prompt, pas dans le code.
+  Un texte non fiable collé dans une demande pourrait pousser le modèle à écrire : n'activez l'interrupteur
+  que sur un fichier ou une page de travail. Détail : [ASSISTANT_FIGMA](ASSISTANT_FIGMA.md).
 
 Les variables d’environnement envoyées à Codex sont une liste limitée de chemins,
 paramètres système et proxy/TLS nécessaires. Les clés d’API OpenAI/Codex ne sont
@@ -42,7 +48,7 @@ nécessaire. Les parents de dossiers sélectionnés par l’opérateur sont de c
 les checks de symlink ne protègent pas d’un acteur local qui modifie les chemins
 pendant l’opération. Aucun téléversement personnel n’est nécessaire à la qualification.
 
-Le chat est du texte React échappé, pas du HTML exécuté. Les propositions ne permettent
+Le chat est rendu en éléments React (le Markdown des réponses : titres, listes, code, gras, liens https), jamais en HTML exécuté. Les propositions ne permettent
 ni URLs CSS, ni code, ni nouveaux noms de token. Les réponses et stderr CLI bruts ne
 sont pas stockés. Le chat reste en mémoire de l’onglet ; `--ephemeral` évite les
 rollouts de cette session agent, sans promettre l’absence de télémétrie fournisseur.
