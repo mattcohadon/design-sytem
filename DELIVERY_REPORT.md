@@ -12,8 +12,8 @@ visibles, le renouvellement de session, la copie précédente et une restauratio
 confirmée qui archive l’original. Le serveur est indépendant du panneau. Le mode
 manuel reste disponible sans compte IA, sans Figma et hors ligne après installation.
 
-[Audit et backlog](docs/V2_AUDIT.md) · [Changelog et décisions](docs/V2_CHANGELOG.md) ·
-[Tests reproductibles](docs/TESTING.md) · [Guide étudiant](docs/STUDENT_GUIDE.md).
+[Audit et backlog](V2_AUDIT.md) · [Changelog et décisions](V2_CHANGELOG.md) ·
+[Tests reproductibles](TESTING.md) · [Guide étudiant](STUDENT_GUIDE.md).
 
 ## Audit CI de départ
 

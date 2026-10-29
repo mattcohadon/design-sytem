@@ -112,7 +112,7 @@ proposition/acceptation et relecture. Une interface définie ne compte pas comme
 - Lanceur : onglet conservé pendant un **vrai redémarrage**, récupération de session
   et diff sans écriture ; restauration réelle et refus sans confirmation.
 
-Les résultats exacts et les échecs corrigés sont dans [DELIVERY_REPORT](../DELIVERY_REPORT.md).
+Les résultats exacts et les échecs corrigés sont dans [DELIVERY_REPORT](DELIVERY_REPORT.md).
 La CI conserve sept jours les traces/captures de données fictives. Les tests normaux
 ne contactent aucun fournisseur IA. `npm audit` complète le scan heuristique local ;
 il consulte le registre npm, sans ouvrir les fichiers d’authentification de la machine.

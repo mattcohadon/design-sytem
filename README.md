@@ -79,7 +79,7 @@ contenant des espaces est accepté. N’utilisez ni `sudo` ni installation de se
   depuis le lanceur, avec archivage de l’original. Aucun reset silencieux.
 - Serveur indépendant du panneau, contrôles de fichiers renforcés, tests de crash
   et qualification automatisée sur les trois OS. Les lanceurs natifs restent à
-  qualifier sur les postes réels (voir [rapport](DELIVERY_REPORT.md)).
+  qualifier sur les postes réels (voir [rapport](docs/DELIVERY_REPORT.md)).
 
 [Changelog V1/V2](docs/V2_CHANGELOG.md) · [Audit et priorités](docs/V2_AUDIT.md)
 
@@ -161,7 +161,7 @@ Inspirez-vous des deux skills fournis, sans copier vos identifiants ou vos conve
 | Qualification automatisée Windows / macOS                           | **TESTED en CI** pour API, navigateur et contrôleur ; **PARTIAL** pour Finder/WSH natifs                                                             |
 | Application desktop installable                                     | **NOT IMPLEMENTED**, application web locale uniquement                                                                                               |
 
-Preuves précises et réserves : [DELIVERY_REPORT.md](DELIVERY_REPORT.md).
+Preuves précises et réserves : [DELIVERY_REPORT.md](docs/DELIVERY_REPORT.md).
 
 ### Codex embarqué (facultatif)
 
