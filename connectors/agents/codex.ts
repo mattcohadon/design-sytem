@@ -3,7 +3,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { agentReplySchema } from '../../app/shared/model.js';
-import { dsScope } from './scope.js';
+import { dsScope, guardReply } from './scope.js';
 import type { AgentAdapter, AgentContext } from './types.js';
 
 const supportedVersion = '0.164.0';
@@ -220,9 +220,11 @@ export class CodexAdapter implements AgentAdapter {
             'Échec Codex. Vérifiez votre authentification et votre quota.',
           );
       }
-      return agentReplySchema.parse(
-        JSON.parse(
-          final.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, ''),
+      return guardReply(
+        agentReplySchema.parse(
+          JSON.parse(
+            final.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, ''),
+          ),
         ),
       );
     } finally {

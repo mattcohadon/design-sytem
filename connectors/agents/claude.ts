@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { agentReplySchema, tokenKeys } from '../../app/shared/model.js';
 import { runCli } from './codex.js';
-import { dsScope } from './scope.js';
+import { dsScope, guardReply } from './scope.js';
 import type { AgentAdapter, AgentContext } from './types.js';
 
 const cli = { name: 'Claude Code', login: 'claude auth status' };
@@ -177,7 +177,7 @@ export class ClaudeAdapter implements AgentAdapter {
         context.figma ? 600_000 : 180_000,
         cli,
       );
-      const result = parseClaudeResult(raw);
+      const result = guardReply(parseClaudeResult(raw));
       return context.figma
         ? { ...result, message: withFigmaLink(result.message, message) }
         : result;

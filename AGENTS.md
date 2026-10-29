@@ -19,12 +19,23 @@ accessibilité et contrastes, synchro et fichier Figma du DS, tests, CI et hygi�
 ## Si vous développez ce dépôt
 
 **Pile :** React 19, TypeScript, Vite, Tailwind v4, Base UI. Composants importés de SortUI (MIT).
-**Commandes :** `npm start` (atelier local, port 4310), `npm run dev`, `npm run check` (types), `npm test`,
+**Commandes :** `npm start` (atelier local, port 4310, variable `PORT` pour en changer), `npm run dev`, `npm run check` (types), `npm test`,
 `npm run build`, `npm run test:e2e`, `npx prettier --check .`, `npm run scan`.
 `npm run test:live` contacte un service IA : ne le lancez pas sans besoin.
 
 **Où est la vérité :** le code fait foi pour le comportement et l'accessibilité ; Figma fait foi pour
 l'apparence. Ce que le code change et que Figma possède va dans « À reporter dans Figma ».
+
+**Barre de qualité DS** (à tenir avant de rendre la main)
+
+- Aucune couleur en dur : tokens et classes de token (`bg-primary`, `text-muted-foreground`), variables CSS pour le
+  reste. Un test (`tests/no-hardcoded-colors.test.ts`) le vérifie.
+- Deux modes : tout changement de couleur est vérifié en clair **et** en sombre. Contraste : 4,5:1 pour le texte
+  courant, 3:1 pour les éléments d'interface (fonction `contrast`).
+- Un composant interactif montre ses états (repos, survol, appui, focus clavier, désactivé, invalide) et reste
+  utilisable au clavier. Un bouton icône a un `aria-label`.
+- Largeurs vérifiées : 320, 768 et 1440 px, sans défilement horizontal. Respecter `prefers-reduced-motion`.
+- Une preuve exécutée vaut mieux qu'une affirmation : capture, mesure ou test, pas « ça devrait marcher ».
 
 **Carte du dépôt**
 
@@ -41,16 +52,17 @@ l'apparence. Ce que le code change et que Figma possède va dans « À reporter 
   ne les éditez pas.
 - `workspace/` : PFE, règles de design, décisions, DS d'exemple. `docs/` : documentation.
 
-**Recettes**
+**Skills** (détail pas à pas, dans `.agents/skills/` ; Claude Code et Gemini les lisent explicitement, Codex les
+découvre) :
 
-- _Changer un token_ : skill `.agents/skills/token-change/SKILL.md`. Deux modes (`light.*`, `dark.*`) et contraste
-  vérifié avec la fonction `contrast`.
-- _Documenter ou ajouter un composant_ : démo dans `app/client/preview/demos/`, entrée dans `manifest.ts`, contenu
-  dans `docContent.ts` et `docDetails.ts`, règles d'usage dans `dosDonts.ts` ; gardez `tests/catalogue.test.ts` vert.
-- _Ajouter les états_ d'un composant interactif : une entrée dans `app/client/componentStates.ts`.
-- _Nommage Figma → code_ : `Famille/Composant/Variante/Taille` donne un composant en kebab-case,
-  `Variant=Primary` → `variant="default"`, `Size=Large` → `size="lg"`.
-- _Audit des composants_ : skill `.agents/skills/component-audit/SKILL.md`. _Récupération_ : `safe-recovery`.
+| Skill                | Pour                                                                |
+| -------------------- | ------------------------------------------------------------------- |
+| `token-change`       | changer un token : deux modes, contraste, impact, annulation        |
+| `document-component` | ajouter ou mettre à jour la page de doc d'un composant ou d'un bloc |
+| `component-states`   | états forcés d'un composant interactif                              |
+| `component-audit`    | auditer les composants et les interactions                          |
+| `figma-sync-review`  | relire ou préparer une PR de synchro Figma, nommage Figma → code    |
+| `safe-recovery`      | réparer un état ou un lancement sans rien effacer                   |
 
 **Règles de collaboration**
 

@@ -26,7 +26,8 @@
     "format": "prettier --write .",
     "figma:setup": "node scripts/figma-setup.mjs",
     "figma:snapshot": "tsx figma-sync/snapshot.ts",
-    "figma:diff": "tsx figma-sync/diff.ts"
+    "figma:diff": "tsx figma-sync/diff.ts",
+    "test:scope": "tsx scripts/eval-agent-scope.ts"
   },
   "dependencies": {
     "@base-ui/react": "1.9.0",

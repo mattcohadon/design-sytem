@@ -40,7 +40,7 @@ export function Hero({
         <h2
           id="ds-title"
           tabIndex={-1}
-          className="text-5xl font-medium tracking-tight text-[#0a0a0a] outline-none dark:text-foreground"
+          className="text-5xl font-medium tracking-tight text-[var(--hero-fg)] outline-none"
           style={{ '--t-index': 1 } as CSSProperties}
         >
           {title}
@@ -51,7 +51,7 @@ export function Hero({
           )}
         </h2>
         <p
-          className="mx-auto max-w-xl text-base text-[#4a4a4a] dark:text-muted-foreground"
+          className="mx-auto max-w-xl text-base text-[var(--hero-fg-muted)]"
           style={{ '--t-index': 2 } as CSSProperties}
         >
           {lead}
