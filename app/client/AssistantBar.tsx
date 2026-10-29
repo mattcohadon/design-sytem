@@ -72,18 +72,18 @@ export function AssistantBar(p: Props) {
       <div
         className={`pointer-events-auto gap-2 ${
           expanded
-            ? 'fixed inset-x-0 top-24 bottom-4 mx-auto flex w-[calc(100%-1.5rem)] max-w-6xl flex-col'
+            ? 'fixed inset-x-0 top-30 bottom-4 mx-auto flex w-[calc(100%-1.5rem)] max-w-6xl flex-col'
             : 'grid w-full max-w-2xl'
         }`}
       >
         {!hidden && p.chat.length > 0 && (
           <div className={expanded ? 'relative min-h-0 flex-1' : 'relative'}>
             {/* Hors de la zone qui défile : toujours visible, même en bas d'une longue réponse. */}
-            <div className="absolute -top-8 right-0 flex gap-1">
+            <div className="absolute -top-11 right-0 flex gap-2">
               <Button
                 variant="outline"
-                size="icon-xs"
-                className="rounded-full bg-popover shadow-popover"
+                size="icon"
+                className="size-9 rounded-full bg-popover shadow-popover [&_svg:not([class*='size-'])]:size-4.5"
                 aria-label={
                   expanded
                     ? 'Réduire la conversation'
@@ -96,8 +96,8 @@ export function AssistantBar(p: Props) {
               </Button>
               <Button
                 variant="outline"
-                size="icon-xs"
-                className="rounded-full bg-popover shadow-popover"
+                size="icon"
+                className="size-9 rounded-full bg-popover shadow-popover [&_svg:not([class*='size-'])]:size-4.5"
                 aria-label="Masquer la conversation"
                 onClick={() => setHidden(true)}
               >
