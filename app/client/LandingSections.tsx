@@ -102,17 +102,6 @@ function SectionTitle({
   );
 }
 
-function Stat({ value, label }: { value: number; label: string }) {
-  return (
-    <div className="grid gap-1 px-4 py-5 text-center">
-      <span className="text-4xl font-medium tracking-tight tabular-nums">
-        {value}
-      </span>
-      <span className="text-sm text-muted-foreground">{label}</span>
-    </div>
-  );
-}
-
 function Argument({
   icon,
   title,
@@ -186,15 +175,11 @@ const faq = [
 /** Arguments, parcours Figma → code, blocs et questions : tout ce qui précède la liste des composants. */
 export function LandingIntro({
   components,
-  blocks,
   tokens,
-  withStates,
   preview,
 }: {
   components: number;
-  blocks: number;
   tokens: number;
-  withStates: number;
   /** Aperçus réels des blocs mis en avant (iframe en vignette). */
   preview: ReactNode;
 }) {
@@ -205,16 +190,6 @@ export function LandingIntro({
         ratio="16/9"
         className="mx-auto w-full max-w-5xl"
       />
-
-      <section
-        aria-label="En chiffres"
-        className="grid grid-cols-2 divide-x divide-y rounded-2xl border bg-card sm:grid-cols-4 sm:divide-y-0"
-      >
-        <Stat value={components} label="composants documentés" />
-        <Stat value={blocks} label="blocs prêts à copier" />
-        <Stat value={tokens} label="tokens pour tout piloter" />
-        <Stat value={withStates} label="composants avec leurs états" />
-      </section>
 
       <section aria-labelledby="atouts" className="grid gap-6">
         <SectionTitle

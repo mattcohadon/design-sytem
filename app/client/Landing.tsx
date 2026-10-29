@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { statefulIds } from './componentStates.js';
 import { LandingIntro } from './LandingSections.js';
 import { isNew, NewTag } from './NewTag.js';
 import type { ManifestFamily } from './preview/manifest.js';
@@ -138,9 +137,7 @@ export function Landing({
     <div className="grid gap-16 py-8">
       <LandingIntro
         components={components.length}
-        blocks={blocks.length}
         tokens={tokens}
-        withStates={statefulIds.length}
         preview={<FeaturedBlocks />}
       />
       <div className="grid gap-8">

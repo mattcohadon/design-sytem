@@ -674,7 +674,7 @@ test('page composant : les états sont forcés dans l’aperçu (survol, focus, 
   ).toHaveCount(0);
 });
 
-test('accueil : arguments, parcours Figma → code et questions, chiffres tirés du projet', async ({
+test('accueil : arguments, parcours Figma → code et questions', async ({
   page,
 }) => {
   await page.goto('/');
@@ -684,13 +684,6 @@ test('accueil : arguments, parcours Figma → code et questions, chiffres tirés
       level: 3,
     }),
   ).toBeVisible();
-  // Les chiffres viennent du projet, pas d'un texte figé.
-  const stats = page.getByRole('region', { name: 'En chiffres' });
-  await expect(stats).toContainText('composants documentés');
-  const n = Number(
-    (await stats.getByText(/^\d+$/).first().textContent()) ?? '0',
-  );
-  expect(n).toBeGreaterThanOrEqual(60);
   // Les images sont à fournir : chaque emplacement le dit et donne son format.
   await expect(page.getByRole('img', { name: /^Image à fournir/ })).toHaveCount(
     4,
