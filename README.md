@@ -147,19 +147,19 @@ Inspirez-vous des deux skills fournis, sans copier vos identifiants ou vos conve
 
 ## État réel de V2
 
-| Fonction                                                            | État et portée                                                                                     |
-| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Édition manuelle, diff, commit, persistance et annulation sélective | **TESTED**, Linux, API + navigateur + redémarrage processus                                        |
-| Catalogue SortUI (66 composants, 7 blocs), clair / sombre           | **TESTED**, e2e Chromium macOS (10/10) + revue manuelle des 73 démos                               |
-| Import/export JSON local                                            | **TESTED**, API + navigateur                                                                       |
-| Chat Codex, JSON proposé avant acceptation                          | **TESTED**, CLI 0.164.0, compte enseignant disponible pendant la qualification ; quota non garanti |
-| Claude Code dans l’application, propositions sur tous les tokens    | **TESTED**, macOS, CLI 2.1.311 connecté + tests unitaires (faux CLI)                               |
-| Gemini dans l’application                                           | **NOT IMPLEMENTED**, adaptateur indisponible et contrat documenté                                  |
-| Figma → DS-Studio : bouton « Sync Figma », variables en lecture     | **IMPLEMENTED**, tests unitaires et valeurs réelles ; appel réseau réel en attente du jeton        |
-| DS-Studio → Figma (écriture)                                        | **NOT IMPLEMENTED**, contrat documenté                                                             |
-| Skills et harness personnalisable                                   | **IMPLEMENTED**, structure et liens vérifiés ; pas une validation des choix d’un étudiant          |
-| Qualification automatisée Windows / macOS                           | **TESTED en CI** pour API, navigateur et contrôleur ; **PARTIAL** pour Finder/WSH natifs           |
-| Application desktop installable                                     | **NOT IMPLEMENTED**, application web locale uniquement                                             |
+| Fonction                                                            | État et portée                                                                                                                                       |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Édition manuelle, diff, commit, persistance et annulation sélective | **TESTED**, Linux, API + navigateur + redémarrage processus                                                                                          |
+| Catalogue SortUI (66 composants, 7 blocs), clair / sombre           | **TESTED**, e2e Chromium macOS (24/24) + revue manuelle des 73 démos                                                                                 |
+| Import/export JSON local                                            | **TESTED**, API + navigateur                                                                                                                         |
+| Chat Codex, JSON proposé avant acceptation                          | **TESTED**, CLI 0.164.0, compte enseignant disponible pendant la qualification ; quota non garanti                                                   |
+| Claude Code dans l’application, propositions sur tous les tokens    | **TESTED**, macOS, CLI 2.1.311 connecté + tests unitaires (faux CLI)                                                                                 |
+| Gemini dans l’application                                           | **NOT IMPLEMENTED**, adaptateur indisponible et contrat documenté                                                                                    |
+| Figma → DS-Studio : variables en lecture (route `/api/figma-sync`)  | **IMPLEMENTED**, tests unitaires et valeurs réelles ; plus de bouton dans l’interface ; appel réseau réel en attente du jeton                        |
+| DS-Studio → Figma (écriture)                                        | **IMPLEMENTED** pour Claude seul, sur autorisation à chaque demande ; testé à la main (une page créée) ; garde-fous dans le prompt, pas dans le code |
+| Skills et harness personnalisable                                   | **IMPLEMENTED**, structure et liens vérifiés ; pas une validation des choix d’un étudiant                                                            |
+| Qualification automatisée Windows / macOS                           | **TESTED en CI** pour API, navigateur et contrôleur ; **PARTIAL** pour Finder/WSH natifs                                                             |
+| Application desktop installable                                     | **NOT IMPLEMENTED**, application web locale uniquement                                                                                               |
 
 Preuves précises et réserves : [DELIVERY_REPORT.md](DELIVERY_REPORT.md).
 
@@ -175,16 +175,16 @@ Choisir Codex puis **Envoyer** transmet les tokens, `PFE.md`, `DESIGN_RULES.md`,
 et au plus dix messages précédents. Ne mettez pas de données sensibles dans ce contexte.
 Le brief privé est également transmis. Le chat ne persiste pas après recharge. Codex ne peut pas exécuter vos commandes dans
 ce profil : le contrôleur valide les propositions de tokens, l’utilisateur accepte le diff.
-Les MCP, plugins et outils shell sont désactivés, et le contexte est transmis en JSON
+Les MCP, plugins et outils shell sont désactivés (seule exception : l’interrupteur « Figma » ouvre, pour une demande à Claude, le serveur Figma et quatre outils, voir [ASSISTANT_FIGMA](docs/ASSISTANT_FIGMA.md)), et le contexte est transmis en JSON
 depuis un dossier temporaire vide. L’authentification reste gérée par le CLI officiel.
 Détails et limites : [SECURITY](docs/SECURITY.md), [AGENTS](docs/AGENT_ADAPTERS.md).
 
 ### Figma
 
 Figma reste la source de vérité du DS réel de votre PFE. Lisière est un exemple local,
-pas une copie de votre fichier. `npm run figma:setup` puis **Sync Figma** relisent les
+pas une copie de votre fichier. `npm run figma:setup` configure la lecture des
 variables d’un fichier que vous autorisez, en lecture seule, avec diff et validation.
-Rien n’est écrit vers Figma. Pas de contournement ni réutilisation de session :
+L’assistant n’écrit dans Figma que si vous activez l’interrupteur « Figma » pour une demande : pas de relecture avant écriture, utilisez un fichier de travail ([ASSISTANT_FIGMA](docs/ASSISTANT_FIGMA.md)). Pas de contournement ni réutilisation de session :
 [contrat d’intégration](docs/FIGMA.md).
 
 ## Vérifier et développer
