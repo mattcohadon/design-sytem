@@ -99,3 +99,35 @@ ou de nouvelle qualification cloud Codex pendant cette livraison.
 - Composant Figma `Alert` (nouveau dans la bibliothèque) : rattaché au composant existant
   `alert.tsx` et à sa démo, sans modification de code. Aucune variante ni propriété
   ajoutée côté code (écarts : propriété `Flip Icon`, correspondance `Type` → `variant`).
+
+## Page d'accueil
+
+- Nouvelle landing : pastille « Nouveau », titre « Un design system fidèle à son code. », deux actions,
+  six arguments (chacun mène à la page qui le prouve), parcours « Du Figma au code » en trois étapes,
+  trois blocs en aperçu et une carte « Voir tous les blocs », FAQ de cinq questions, puis la liste complète.
+- Le contenu suit la grille de la barre de navigation (`max-w-6xl`) ; pas de barre latérale sur l'accueil.
+- Les chiffres cités (composants, tokens) sont calculés depuis le projet, pas écrits à la main.
+- À fournir : quatre images (une en 16/9, trois en 4/3), emplacements « Image à fournir » dans
+  `app/client/LandingSections.tsx`.
+- Limite : vérifiée sur ordinateur ; mobile contrôlé en haut de page seulement.
+
+## États des composants
+
+- 47 composants interactifs ont une section « États » : repos, survol, appui, focus clavier, désactivé,
+  invalide, sélectionné. Les états sont forcés par attribut (`data-force-*`) sur le vrai CSS du composant.
+  Les fenêtres et menus montrent les états de leur déclencheur, avec une note.
+- Table des états : `app/client/componentStates.ts` ; test dédié dans `tests/componentStates.test.ts`.
+- Côté Figma : 37 ensembles ont une propriété `interaction` alignée sur ces états. Button n'y est pas encore
+  (page « Pas touch »), et plusieurs valeurs de survol sont estimées.
+
+## Assistant Figma
+
+- Avec Claude, l'interrupteur « Figma » de la barre d'assistant autorise, pour une seule demande, l'écriture
+  dans Figma (serveur `plugin:figma:figma`, quatre outils). Il se referme après l'envoi. Sans lien dans la
+  demande, l'assistant travaille dans le fichier par défaut `figmaDefaultFile`.
+- La réponse confirme ce qui est fait et redonne toujours un lien Figma ; les réponses sont mises en forme
+  (Markdown sans HTML injecté) et la conversation peut être agrandie.
+- Éditeur de tokens : les couleurs opaques s'affichent en `#rrggbb` ; les couleurs avec opacité restent en OKLCH.
+- Mise en place et limites : [ASSISTANT_FIGMA](ASSISTANT_FIGMA.md). Les interdits (suppression, page
+  « Pas touch ») sont dans le prompt seulement ; aucune relecture avant écriture. Testé à la main une fois
+  (page de test créée) ; les tests automatiques couvrent le profil, le lien et l'interface, pas Figma.
