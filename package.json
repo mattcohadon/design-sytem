@@ -15,7 +15,7 @@
     "test:launcher": "node --test tests/launcher.test.mjs",
     "qualify:desktop": "node scripts/qualify-desktop.mjs",
     "check": "tsc --noEmit",
-    "test": "tsx --test tests/*.test.ts",
+    "test": "tsx --test tests/*.test.ts tests/*.test.tsx",
     "test:e2e": "playwright test",
     "test:live": "tsx scripts/check-codex.ts",
     "scan": "node scripts/scan-public.mjs",

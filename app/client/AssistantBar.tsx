@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { ArrowUpIcon, SquareIcon, XIcon } from 'lucide-react';
+import {
+  ArrowUpIcon,
+  Maximize2Icon,
+  Minimize2Icon,
+  SquareIcon,
+  XIcon,
+} from 'lucide-react';
 import {
   AIChatComposer,
   AIChatComposerLeading,
@@ -10,6 +16,7 @@ import {
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Markdown } from './MiniMarkdown.js';
 import { Message, MessageContent } from '@/components/ui/message';
 import {
   NativeSelect,
@@ -56,25 +63,46 @@ function linkify(text: string) {
 /** Barre d'assistant flottante, centrée en bas : propose des tokens ; n'écrit dans Figma que si l'autorisation de la demande est cochée. */
 export function AssistantBar(p: Props) {
   const [hidden, setHidden] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const manual = p.agent === 'manual';
   const name = p.agent === 'claude' ? 'Claude' : 'Codex';
   const unavailable = !manual && p.info && !p.info.available;
   return (
     <div className="pointer-events-none sticky bottom-4 z-30 mt-auto flex justify-center px-4 pt-6">
-      <div className="pointer-events-auto grid w-full max-w-2xl gap-2">
+      <div
+        className={`pointer-events-auto grid w-full gap-2 ${expanded ? 'max-w-5xl' : 'max-w-2xl'}`}
+      >
         {!hidden && p.chat.length > 0 && (
           <div className="relative">
             {/* Hors de la zone qui défile : toujours visible, même en bas d'une longue réponse. */}
-            <Button
-              variant="outline"
-              size="icon-xs"
-              className="absolute -top-8 right-0 rounded-full bg-popover shadow-popover"
-              aria-label="Masquer la conversation"
-              onClick={() => setHidden(true)}
+            <div className="absolute -top-8 right-0 flex gap-1">
+              <Button
+                variant="outline"
+                size="icon-xs"
+                className="rounded-full bg-popover shadow-popover"
+                aria-label={
+                  expanded
+                    ? 'Réduire la conversation'
+                    : 'Agrandir la conversation'
+                }
+                aria-pressed={expanded}
+                onClick={() => setExpanded(!expanded)}
+              >
+                {expanded ? <Minimize2Icon /> : <Maximize2Icon />}
+              </Button>
+              <Button
+                variant="outline"
+                size="icon-xs"
+                className="rounded-full bg-popover shadow-popover"
+                aria-label="Masquer la conversation"
+                onClick={() => setHidden(true)}
+              >
+                <XIcon />
+              </Button>
+            </div>
+            <div
+              className={`grid gap-2 overflow-auto ${expanded ? 'max-h-[calc(100svh-10rem)]' : 'max-h-[40svh]'} rounded-2xl border bg-popover p-3 text-popover-foreground shadow-popover`}
             >
-              <XIcon />
-            </Button>
-            <div className="grid max-h-[40svh] gap-2 overflow-auto rounded-2xl border bg-popover p-3 text-popover-foreground shadow-popover">
               <div
                 className="grid gap-2"
                 aria-label="Conversation"
@@ -88,9 +116,20 @@ export function AssistantBar(p: Props) {
                       </span>
                       <Bubble
                         variant={c.role === 'user' ? 'secondary' : 'default'}
+                        className={
+                          c.role === 'user'
+                            ? undefined
+                            : 'max-w-[min(100%,44rem)]'
+                        }
                       >
                         <BubbleContent className="text-xs whitespace-pre-wrap">
-                          {linkify(c.text)}
+                          {c.role === 'user' ? (
+                            linkify(c.text)
+                          ) : (
+                            <div className="whitespace-normal">
+                              <Markdown text={c.text} />
+                            </div>
+                          )}
                         </BubbleContent>
                       </Bubble>
                     </MessageContent>
