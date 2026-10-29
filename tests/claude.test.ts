@@ -7,6 +7,7 @@ import {
   ClaudeAdapter,
   claudeArgs,
   claudeFigmaArgs,
+  figmaDefaultFile,
   figmaServer,
   figmaTools,
   parseClaudeResult,
@@ -84,7 +85,10 @@ test('demande Figma : la réponse redonne toujours un lien', () => {
   );
   const own = 'Fait : https://www.figma.com/design/abc/DS?node-id=3-4';
   assert.equal(withFigmaLink(own, `Dans ${url}`), own);
-  assert.equal(withFigmaLink('Fait.', 'sans lien'), 'Fait.');
+  assert.equal(
+    withFigmaLink('Fait.', 'sans lien'),
+    `Fait.\n\nFichier Figma : ${figmaDefaultFile}`,
+  );
 });
 
 test('profil Figma : seul le serveur Figma et trois outils précis, rien d’autre ne change', () => {

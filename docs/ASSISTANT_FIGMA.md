@@ -6,7 +6,7 @@ Par défaut l'assistant n'a aucun outil. Avec Claude, un interrupteur « Autoris
 
 1. Installez le plugin Figma de Claude Code.
 2. Dans un `claude` interactif, lancez `/mcp`, choisissez `plugin:figma:figma` et connectez-vous. L'assistant reprend ce nom de serveur pour retrouver la connexion.
-3. Collez le lien du fichier Figma dans la demande : l'assistant ne travaille que dans ce fichier.
+3. Sans lien dans la demande, l'assistant travaille dans le fichier par défaut (`figmaDefaultFile` dans `connectors/agents/claude.ts`). Avec un lien, il travaille dans ce fichier.
 
 ## À savoir
 
