@@ -7,6 +7,7 @@ import {
   ClaudeAdapter,
   claudeArgs,
   claudeFigmaArgs,
+  figmaServer,
   figmaTools,
   parseClaudeResult,
 } from '../connectors/agents/claude.js';
@@ -81,10 +82,10 @@ test('profil Figma : seul le serveur Figma et trois outils précis, rien d’aut
   assert.equal(at('--setting-sources'), '');
   assert(claudeFigmaArgs.includes('--strict-mcp-config'));
   assert.deepEqual(Object.keys(JSON.parse(at('--mcp-config')).mcpServers), [
-    'figma',
+    figmaServer,
   ]);
   assert.equal(at('--allowedTools'), figmaTools.join(','));
-  assert(figmaTools.every((t) => t.startsWith('mcp__figma__')));
+  assert(figmaTools.every((t) => t.startsWith('mcp__plugin_figma_figma__')));
   assert(!figmaTools.some((t) => /delete|remove/i.test(t)));
   assert(
     !claudeFigmaArgs.some((a) =>
