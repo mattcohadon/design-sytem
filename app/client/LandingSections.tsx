@@ -120,7 +120,7 @@ function Argument({
   cta?: string;
 }) {
   return (
-    <li className="grid content-start gap-3 rounded-2xl border bg-card p-5 text-card-foreground">
+    <li className="grid content-start gap-3 bg-background p-6 text-foreground md:p-8">
       <span className="grid size-9 place-items-center rounded-lg bg-fill-2 [&>svg]:size-4">
         {icon}
       </span>
@@ -201,7 +201,7 @@ export function LandingIntro({
           title="Ce que votre équipe y gagne"
           lead="Un design system se juge à l’usage. Voici ce qui change, concrètement, entre le dessin, le code et la doc."
         />
-        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid gap-px bg-border md:grid-cols-2 xl:grid-cols-3">
           <Argument
             icon={<FileCodeIcon />}
             title="Une doc qui ne ment pas"
