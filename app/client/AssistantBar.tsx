@@ -69,13 +69,15 @@ export function AssistantBar(p: Props) {
   const unavailable = !manual && p.info && !p.info.available;
   return (
     <div className="pointer-events-none sticky bottom-4 z-30 mt-auto flex justify-center px-4 pt-6">
-      <div className="pointer-events-auto grid w-full max-w-2xl gap-2">
+      <div
+        className={`pointer-events-auto gap-2 ${
+          expanded
+            ? 'fixed inset-x-0 top-24 bottom-4 mx-auto flex w-[calc(100%-1.5rem)] max-w-6xl flex-col'
+            : 'grid w-full max-w-2xl'
+        }`}
+      >
         {!hidden && p.chat.length > 0 && (
-          <div
-            className={
-              expanded ? 'fixed inset-x-4 top-24 bottom-24' : 'relative'
-            }
-          >
+          <div className={expanded ? 'relative min-h-0 flex-1' : 'relative'}>
             {/* Hors de la zone qui défile : toujours visible, même en bas d'une longue réponse. */}
             <div className="absolute -top-8 right-0 flex gap-1">
               <Button
@@ -117,12 +119,7 @@ export function AssistantBar(p: Props) {
                         {c.role === 'user' ? 'Vous' : name} :
                       </span>
                       <Bubble
-                        variant={c.role === 'user' ? 'secondary' : 'default'}
-                        className={
-                          c.role === 'user'
-                            ? undefined
-                            : 'max-w-[min(100%,44rem)]'
-                        }
+                        variant={c.role === 'user' ? 'secondary' : 'ghost'}
                       >
                         <BubbleContent className="text-xs whitespace-pre-wrap">
                           {c.role === 'user' ? (
@@ -150,6 +147,7 @@ export function AssistantBar(p: Props) {
           </p>
         )}
         <form
+          className={expanded ? 'mx-auto w-full max-w-2xl shrink-0' : undefined}
           onSubmit={(e) => {
             e.preventDefault();
             setHidden(false);
