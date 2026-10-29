@@ -87,13 +87,17 @@ function SectionTitle({
   id,
   title,
   lead,
+  center,
 }: {
   id: string;
   title: string;
   lead: string;
+  center?: boolean;
 }) {
   return (
-    <header className="grid max-w-2xl gap-2">
+    <header
+      className={`grid max-w-2xl gap-2 ${center ? 'mx-auto text-center' : ''}`}
+    >
       <h3 id={id} className="text-3xl font-medium tracking-tight">
         {title}
       </h3>
@@ -293,9 +297,10 @@ export function LandingIntro({
         <SectionTitle
           id="questions"
           title="Questions fréquentes"
+          center
           lead="Ce qu’on nous demande avant de copier le premier composant."
         />
-        <Accordion className="max-w-3xl">
+        <Accordion className="mx-auto w-full max-w-3xl">
           {faq.map(([q, a]) => (
             <AccordionItem key={q} value={q}>
               <AccordionTrigger>{q}</AccordionTrigger>
