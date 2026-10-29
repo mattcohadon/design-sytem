@@ -1,12 +1,12 @@
 # Assistant : écrire dans Figma (sur autorisation)
 
-Par défaut l'assistant n'a aucun outil. Avec Claude, un interrupteur « Autoriser Figma pour cette demande » ouvre, pour cette seule demande, le serveur MCP de Figma et trois outils : `use_figma`, `get_screenshot`, `get_metadata`. L'interrupteur se referme après l'envoi.
+Par défaut l'assistant n'a aucun outil. Avec Claude, un interrupteur « Autoriser Figma pour cette demande » ouvre, pour cette seule demande, le serveur MCP de Figma et quatre outils : `create_session`, `use_figma`, `get_screenshot`, `get_metadata`. L'interrupteur se referme après l'envoi.
 
 ## Mise en place (une fois)
 
-1. `claude mcp add --transport http figma https://mcp.figma.com/mcp`
-2. Dans un `claude` interactif, lancez `/mcp`, choisissez `figma` et connectez-vous.
-3. Collez le lien du fichier Figma dans la demande : l'assistant ne travaille que dans ce fichier.
+1. Installez le plugin Figma de Claude Code.
+2. Dans un `claude` interactif, lancez `/mcp`, choisissez `plugin:figma:figma` et connectez-vous. L'assistant reprend ce nom de serveur pour retrouver la connexion.
+3. Sans lien dans la demande, l'assistant travaille dans le fichier par défaut (`figmaDefaultFile` dans `connectors/agents/claude.ts`). Avec un lien, il travaille dans ce fichier.
 
 ## À savoir
 

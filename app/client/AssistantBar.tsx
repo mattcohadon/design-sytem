@@ -34,6 +34,25 @@ interface Props {
   onStop: () => void;
 }
 
+/** Rend cliquables les liens https d'une réponse. */
+function linkify(text: string) {
+  return text.split(/(https:\/\/[^\s)]+)/).map((part, i) =>
+    i % 2 ? (
+      <a
+        key={i}
+        href={part}
+        target="_blank"
+        rel="noreferrer"
+        className="underline underline-offset-2"
+      >
+        {part}
+      </a>
+    ) : (
+      part
+    ),
+  );
+}
+
 /** Barre d'assistant flottante, centrée en bas : propose des tokens ; n'écrit dans Figma que si l'autorisation de la demande est cochée. */
 export function AssistantBar(p: Props) {
   const [hidden, setHidden] = useState(false);
@@ -44,37 +63,40 @@ export function AssistantBar(p: Props) {
     <div className="pointer-events-none sticky bottom-4 z-30 mt-auto flex justify-center px-4 pt-6">
       <div className="pointer-events-auto grid w-full max-w-2xl gap-2">
         {!hidden && p.chat.length > 0 && (
-          <div className="grid max-h-[40svh] gap-2 overflow-auto rounded-2xl border bg-popover p-3 text-popover-foreground shadow-popover">
+          <div className="relative">
+            {/* Hors de la zone qui défile : toujours visible, même en bas d'une longue réponse. */}
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon-xs"
-              className="justify-self-end"
+              className="absolute -top-8 right-0 rounded-full bg-popover shadow-popover"
               aria-label="Masquer la conversation"
               onClick={() => setHidden(true)}
             >
               <XIcon />
             </Button>
-            <div
-              className="grid gap-2"
-              aria-label="Conversation"
-              aria-live="polite"
-            >
-              {p.chat.map((c, i) => (
-                <Message key={i} align={c.role === 'user' ? 'end' : 'start'}>
-                  <MessageContent>
-                    <span className="sr-only">
-                      {c.role === 'user' ? 'Vous' : name} :
-                    </span>
-                    <Bubble
-                      variant={c.role === 'user' ? 'secondary' : 'default'}
-                    >
-                      <BubbleContent className="text-xs whitespace-pre-wrap">
-                        {c.text}
-                      </BubbleContent>
-                    </Bubble>
-                  </MessageContent>
-                </Message>
-              ))}
+            <div className="grid max-h-[40svh] gap-2 overflow-auto rounded-2xl border bg-popover p-3 text-popover-foreground shadow-popover">
+              <div
+                className="grid gap-2"
+                aria-label="Conversation"
+                aria-live="polite"
+              >
+                {p.chat.map((c, i) => (
+                  <Message key={i} align={c.role === 'user' ? 'end' : 'start'}>
+                    <MessageContent>
+                      <span className="sr-only">
+                        {c.role === 'user' ? 'Vous' : name} :
+                      </span>
+                      <Bubble
+                        variant={c.role === 'user' ? 'secondary' : 'default'}
+                      >
+                        <BubbleContent className="text-xs whitespace-pre-wrap">
+                          {linkify(c.text)}
+                        </BubbleContent>
+                      </Bubble>
+                    </MessageContent>
+                  </Message>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -85,18 +107,6 @@ export function AssistantBar(p: Props) {
           >
             {p.info!.detail}
           </p>
-        )}
-        {p.agent === 'claude' && (
-          <label className="flex items-center gap-2 justify-self-end rounded-full bg-popover px-3 py-1.5 text-xs text-muted-foreground shadow-popover">
-            <Switch
-              size="sm"
-              aria-label="Autoriser Figma pour cette demande"
-              checked={p.figma}
-              disabled={p.thinking}
-              onCheckedChange={p.onFigma}
-            />
-            Autoriser Figma pour cette demande
-          </label>
         )}
         <form
           onSubmit={(e) => {
@@ -111,7 +121,9 @@ export function AssistantBar(p: Props) {
               placeholder={
                 manual
                   ? 'Mode manuel : modifiez les tokens dans l’éditeur.'
-                  : `Demandez à ${name} : « palette plus chaleureuse, clair et sombre »`
+                  : p.figma
+                    ? 'Figma autorisé pour cette demande : décrivez ce qu’il faut créer.'
+                    : `Demander à ${name} une modification`
               }
               maxLength={8000}
               disabled={manual || p.thinking}
@@ -129,6 +141,21 @@ export function AssistantBar(p: Props) {
                 <NativeSelectOption value="codex">Codex</NativeSelectOption>
                 <NativeSelectOption value="manual">Manuel</NativeSelectOption>
               </NativeSelect>
+              {p.agent === 'claude' && (
+                <label
+                  title="Autoriser Figma pour cette demande"
+                  className="flex cursor-pointer items-center gap-2 px-1 text-xs text-muted-foreground has-data-checked:text-foreground"
+                >
+                  <Switch
+                    size="sm"
+                    aria-label="Autoriser Figma pour cette demande"
+                    checked={p.figma}
+                    disabled={p.thinking}
+                    onCheckedChange={p.onFigma}
+                  />
+                  Figma
+                </label>
+              )}
             </AIChatComposerLeading>
             <AIChatComposerTrailing>
               {p.thinking ? (

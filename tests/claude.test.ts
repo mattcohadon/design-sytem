@@ -7,8 +7,11 @@ import {
   ClaudeAdapter,
   claudeArgs,
   claudeFigmaArgs,
+  figmaDefaultFile,
+  figmaServer,
   figmaTools,
   parseClaudeResult,
+  withFigmaLink,
 } from '../connectors/agents/claude.js';
 import { tokensSchema } from '../app/shared/model.js';
 
@@ -74,6 +77,20 @@ test('profil Claude : aucun outil, aucun MCP, aucun réglage, aucune permission 
   );
 });
 
+test('demande Figma : la réponse redonne toujours un lien', () => {
+  const url = 'https://www.figma.com/design/abc/DS?node-id=1-2&t=x';
+  assert.match(
+    withFigmaLink('Page créée.', `Dans ${url} fais X`),
+    /Fichier Figma : https:\/\/www\.figma\.com\/design\/abc/,
+  );
+  const own = 'Fait : https://www.figma.com/design/abc/DS?node-id=3-4';
+  assert.equal(withFigmaLink(own, `Dans ${url}`), own);
+  assert.equal(
+    withFigmaLink('Fait.', 'sans lien'),
+    `Fait.\n\nFichier Figma : ${figmaDefaultFile}`,
+  );
+});
+
 test('profil Figma : seul le serveur Figma et trois outils précis, rien d’autre ne change', () => {
   const at = (flag: string) =>
     claudeFigmaArgs[claudeFigmaArgs.indexOf(flag) + 1];
@@ -81,10 +98,10 @@ test('profil Figma : seul le serveur Figma et trois outils précis, rien d’aut
   assert.equal(at('--setting-sources'), '');
   assert(claudeFigmaArgs.includes('--strict-mcp-config'));
   assert.deepEqual(Object.keys(JSON.parse(at('--mcp-config')).mcpServers), [
-    'figma',
+    figmaServer,
   ]);
   assert.equal(at('--allowedTools'), figmaTools.join(','));
-  assert(figmaTools.every((t) => t.startsWith('mcp__figma__')));
+  assert(figmaTools.every((t) => t.startsWith('mcp__plugin_figma_figma__')));
   assert(!figmaTools.some((t) => /delete|remove/i.test(t)));
   assert(
     !claudeFigmaArgs.some((a) =>

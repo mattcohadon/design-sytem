@@ -707,3 +707,29 @@ test('accueil : arguments, parcours Figma → code et questions', async ({
   await page.getByRole('link', { name: 'Voir Button' }).click();
   await expect(page).toHaveURL(/#\/composants\/button$/);
 });
+
+test('assistant : la croix de la conversation reste visible quand la réponse défile', async ({
+  page,
+}) => {
+  await page.route('**/api/agent', (route) =>
+    route.fulfill({
+      json: {
+        message: Array.from({ length: 40 }, (_, i) => `Ligne ${i}`).join('\n'),
+        proposal: null,
+      },
+    }),
+  );
+  await page.goto('/#/composants/button');
+  await page.getByLabel('Votre demande').fill('test');
+  await page.getByRole('button', { name: 'Envoyer à Claude' }).click();
+  const log = page.locator('[aria-label="Conversation"][aria-live]');
+  await expect(log).toContainText('Ligne 39');
+  const panel = log.locator('xpath=..');
+  await panel.evaluate((el) => el.scrollTo(0, el.scrollHeight));
+  const close = page.getByRole('button', { name: 'Masquer la conversation' });
+  await expect(close).toBeInViewport();
+  const [c, p] = await Promise.all([close.boundingBox(), panel.boundingBox()]);
+  expect(c!.y + c!.height).toBeLessThanOrEqual(p!.y + 1);
+  await close.click();
+  await expect(log).toHaveCount(0);
+});
