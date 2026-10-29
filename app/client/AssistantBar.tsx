@@ -120,7 +120,7 @@ export function AssistantBar(p: Props) {
                   ? 'Mode manuel : modifiez les tokens dans l’éditeur.'
                   : p.figma
                     ? 'Figma autorisé pour cette demande : décrivez ce qu’il faut créer.'
-                    : `Demandez à ${name} : « palette plus chaleureuse, clair et sombre »`
+                    : `Demander à ${name} une modification`
               }
               maxLength={8000}
               disabled={manual || p.thinking}
