@@ -219,6 +219,7 @@ export async function createStudioServer(options: {
               agent: z.enum(['codex', 'claude', 'gemini']),
               message: z.string().trim().min(1).max(8000),
               revision: z.number().int().nonnegative(),
+              figma: z.boolean().optional(),
               history: z
                 .array(
                   z
@@ -237,6 +238,8 @@ export async function createStudioServer(options: {
               'DS modifié depuis votre dernier affichage. Réessayez.',
               409,
             );
+          if (b.figma && b.agent !== 'claude')
+            throw new StudioError('L’accès Figma est réservé à Claude.');
           if (busy)
             throw new StudioError('Une demande IA est déjà en cours.', 429);
           busy = true;
@@ -264,6 +267,7 @@ export async function createStudioServer(options: {
                   JSON.stringify((await project.read()).project),
                 rules: await context('DESIGN_RULES.md'),
                 history: b.history,
+                figma: b.figma,
               },
               controller.signal,
             );

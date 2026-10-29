@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/ai-chat-composer';
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Message, MessageContent } from '@/components/ui/message';
 import {
   NativeSelect,
@@ -27,11 +28,13 @@ interface Props {
   onMessage: (message: string) => void;
   chat: ChatLine[];
   thinking: boolean;
+  figma: boolean;
+  onFigma: (on: boolean) => void;
   onSend: () => void;
   onStop: () => void;
 }
 
-/** Barre d'assistant flottante, centrée en bas : propose des tokens, jamais d'écriture directe. */
+/** Barre d'assistant flottante, centrée en bas : propose des tokens ; n'écrit dans Figma que si l'autorisation de la demande est cochée. */
 export function AssistantBar(p: Props) {
   const [hidden, setHidden] = useState(false);
   const manual = p.agent === 'manual';
@@ -82,6 +85,18 @@ export function AssistantBar(p: Props) {
           >
             {p.info!.detail}
           </p>
+        )}
+        {p.agent === 'claude' && (
+          <label className="flex items-center gap-2 justify-self-end rounded-full bg-popover px-3 py-1.5 text-xs text-muted-foreground shadow-popover">
+            <Switch
+              size="sm"
+              aria-label="Autoriser Figma pour cette demande"
+              checked={p.figma}
+              disabled={p.thinking}
+              onCheckedChange={p.onFigma}
+            />
+            Autoriser Figma pour cette demande
+          </label>
         )}
         <form
           onSubmit={(e) => {
