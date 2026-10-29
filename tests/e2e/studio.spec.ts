@@ -757,9 +757,25 @@ test('assistant : réponse en Markdown mise en forme, conversation agrandissable
     'https://www.figma.com/design/abc/DS',
   );
   const panel = log.locator('xpath=..');
+  const bar = page
+    .locator('form')
+    .filter({ has: page.getByLabel('Votre demande') });
+  const gap = async () =>
+    (await bar.boundingBox())!.y -
+    ((await panel.boundingBox())!.y + (await panel.boundingBox())!.height);
   const small = (await panel.boundingBox())!.width;
+  const gapBefore = await gap();
   await page.getByRole('button', { name: 'Agrandir la conversation' }).click();
-  expect((await panel.boundingBox())!.width).toBeGreaterThan(small);
+  const big = (await panel.boundingBox())!;
+  const view = page.viewportSize()!;
+  expect(big.width).toBeGreaterThan(small);
+  expect(big.height).toBeGreaterThan(view.height * 0.5);
+  // La conversation suit la largeur de la barre de navigation, la barre de saisie garde la sienne.
+  const nav = (await page.locator('header').first().boundingBox())!;
+  expect(Math.abs(big.width - nav.width)).toBeLessThan(3);
+  expect((await bar.boundingBox())!.width).toBeLessThanOrEqual(680);
+  // Même écart entre la barre et la conversation, agrandie ou non.
+  expect(Math.abs((await gap()) - gapBefore)).toBeLessThan(1.5);
   await expect(
     page.getByRole('button', { name: 'Masquer la conversation' }),
   ).toBeInViewport();

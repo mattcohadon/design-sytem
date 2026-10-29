@@ -70,16 +70,20 @@ export function AssistantBar(p: Props) {
   return (
     <div className="pointer-events-none sticky bottom-4 z-30 mt-auto flex justify-center px-4 pt-6">
       <div
-        className={`pointer-events-auto grid w-full gap-2 ${expanded ? 'max-w-5xl' : 'max-w-2xl'}`}
+        className={`pointer-events-auto gap-2 ${
+          expanded
+            ? 'fixed inset-x-0 top-30 bottom-4 mx-auto flex w-[calc(100%-1.5rem)] max-w-6xl flex-col'
+            : 'grid w-full max-w-2xl'
+        }`}
       >
         {!hidden && p.chat.length > 0 && (
-          <div className="relative">
+          <div className={expanded ? 'relative min-h-0 flex-1' : 'relative'}>
             {/* Hors de la zone qui défile : toujours visible, même en bas d'une longue réponse. */}
-            <div className="absolute -top-8 right-0 flex gap-1">
+            <div className="absolute -top-11 right-0 flex gap-2">
               <Button
                 variant="outline"
-                size="icon-xs"
-                className="rounded-full bg-popover shadow-popover"
+                size="icon"
+                className="size-9 rounded-full bg-popover shadow-popover [&_svg:not([class*='size-'])]:size-4.5"
                 aria-label={
                   expanded
                     ? 'Réduire la conversation'
@@ -92,8 +96,8 @@ export function AssistantBar(p: Props) {
               </Button>
               <Button
                 variant="outline"
-                size="icon-xs"
-                className="rounded-full bg-popover shadow-popover"
+                size="icon"
+                className="size-9 rounded-full bg-popover shadow-popover [&_svg:not([class*='size-'])]:size-4.5"
                 aria-label="Masquer la conversation"
                 onClick={() => setHidden(true)}
               >
@@ -101,10 +105,10 @@ export function AssistantBar(p: Props) {
               </Button>
             </div>
             <div
-              className={`grid gap-2 overflow-auto ${expanded ? 'max-h-[calc(100svh-10rem)]' : 'max-h-[40svh]'} rounded-2xl border bg-popover p-3 text-popover-foreground shadow-popover`}
+              className={`grid content-start gap-2 overflow-auto ${expanded ? 'h-full' : 'max-h-[40svh]'} rounded-2xl border bg-popover p-3 text-popover-foreground shadow-popover`}
             >
               <div
-                className="grid gap-2"
+                className="grid content-start gap-2"
                 aria-label="Conversation"
                 aria-live="polite"
               >
@@ -115,12 +119,7 @@ export function AssistantBar(p: Props) {
                         {c.role === 'user' ? 'Vous' : name} :
                       </span>
                       <Bubble
-                        variant={c.role === 'user' ? 'secondary' : 'default'}
-                        className={
-                          c.role === 'user'
-                            ? undefined
-                            : 'max-w-[min(100%,44rem)]'
-                        }
+                        variant={c.role === 'user' ? 'secondary' : 'ghost'}
                       >
                         <BubbleContent className="text-xs whitespace-pre-wrap">
                           {c.role === 'user' ? (
@@ -148,6 +147,7 @@ export function AssistantBar(p: Props) {
           </p>
         )}
         <form
+          className={expanded ? 'mx-auto w-full max-w-2xl shrink-0' : undefined}
           onSubmit={(e) => {
             e.preventDefault();
             setHidden(false);
