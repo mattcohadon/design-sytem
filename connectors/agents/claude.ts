@@ -92,6 +92,7 @@ Exception pour cette demande : l'utilisateur t'a autorisé à écrire dans Figma
 Travaille uniquement dans le fichier dont le lien figure dans la demande ; s'il manque, n'écris rien et demande-le.
 Crée ou modifie uniquement ce qui est demandé. Ne supprime jamais rien. Ne touche jamais la page « Pas touch ».
 Lie les couleurs aux variables du fichier, sans hexadécimal en dur. Le message dit ce que tu as créé (page, composants, variantes) ou pourquoi tu n'as rien fait.
+Termine toujours le message par une phrase de confirmation (ce qui est fait) et par le lien Figma de ce que tu as créé : https://www.figma.com/design/<fileKey>/<nom>?node-id=<id avec un tiret au lieu des deux-points>.
 Ton affirmation précédente « aucun outil » ne vaut pas pour Figma ici ; ne prétends jamais avoir écrit sans appel d'outil réussi.`;
 
 export class ClaudeAdapter implements AgentAdapter {
@@ -171,11 +172,21 @@ export class ClaudeAdapter implements AgentAdapter {
         context.figma ? 600_000 : 180_000,
         cli,
       );
-      return parseClaudeResult(raw);
+      const result = parseClaudeResult(raw);
+      return context.figma
+        ? { ...result, message: withFigmaLink(result.message, message) }
+        : result;
     } finally {
       await rm(cwd, { recursive: true, force: true });
     }
   }
+}
+
+/** Garantit que la réponse d'une demande Figma redonne un lien : celui du fichier cité dans la demande si le modèle n'en a mis aucun. */
+export function withFigmaLink(reply: string, request: string) {
+  if (/figma\.com\/design\//.test(reply)) return reply;
+  const link = /https:\/\/www\.figma\.com\/design\/[^\s)]+/.exec(request)?.[0];
+  return link ? `${reply.trim()}\n\nFichier Figma : ${link}` : reply;
 }
 
 /** Lit la sortie `--output-format json` ; refuse tout usage d'outil ou erreur. */

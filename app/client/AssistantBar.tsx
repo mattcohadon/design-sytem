@@ -34,6 +34,25 @@ interface Props {
   onStop: () => void;
 }
 
+/** Rend cliquables les liens https d'une réponse. */
+function linkify(text: string) {
+  return text.split(/(https:\/\/[^\s)]+)/).map((part, i) =>
+    i % 2 ? (
+      <a
+        key={i}
+        href={part}
+        target="_blank"
+        rel="noreferrer"
+        className="underline underline-offset-2"
+      >
+        {part}
+      </a>
+    ) : (
+      part
+    ),
+  );
+}
+
 /** Barre d'assistant flottante, centrée en bas : propose des tokens ; n'écrit dans Figma que si l'autorisation de la demande est cochée. */
 export function AssistantBar(p: Props) {
   const [hidden, setHidden] = useState(false);
@@ -69,7 +88,7 @@ export function AssistantBar(p: Props) {
                       variant={c.role === 'user' ? 'secondary' : 'default'}
                     >
                       <BubbleContent className="text-xs whitespace-pre-wrap">
-                        {c.text}
+                        {linkify(c.text)}
                       </BubbleContent>
                     </Bubble>
                   </MessageContent>

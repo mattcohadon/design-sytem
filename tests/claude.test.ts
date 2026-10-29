@@ -10,6 +10,7 @@ import {
   figmaServer,
   figmaTools,
   parseClaudeResult,
+  withFigmaLink,
 } from '../connectors/agents/claude.js';
 import { tokensSchema } from '../app/shared/model.js';
 
@@ -73,6 +74,17 @@ test('profil Claude : aucun outil, aucun MCP, aucun réglage, aucune permission 
       /dangerously|bypassPermissions|acceptEdits|--bare/.test(a),
     ),
   );
+});
+
+test('demande Figma : la réponse redonne toujours un lien', () => {
+  const url = 'https://www.figma.com/design/abc/DS?node-id=1-2&t=x';
+  assert.match(
+    withFigmaLink('Page créée.', `Dans ${url} fais X`),
+    /Fichier Figma : https:\/\/www\.figma\.com\/design\/abc/,
+  );
+  const own = 'Fait : https://www.figma.com/design/abc/DS?node-id=3-4';
+  assert.equal(withFigmaLink(own, `Dans ${url}`), own);
+  assert.equal(withFigmaLink('Fait.', 'sans lien'), 'Fait.');
 });
 
 test('profil Figma : seul le serveur Figma et trois outils précis, rien d’autre ne change', () => {
