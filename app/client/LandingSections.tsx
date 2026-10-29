@@ -106,6 +106,10 @@ function SectionTitle({
   );
 }
 
+/** Teinte douce tirée du dégradé du hero (bleu vers rose), claire et sombre. */
+const tint =
+  'bg-[linear-gradient(135deg,color-mix(in_srgb,var(--hero-blue)_32%,transparent),color-mix(in_srgb,var(--hero-mid)_75%,transparent))] text-[color-mix(in_srgb,var(--hero-blue)_75%,black)] dark:text-[var(--hero-blue)]';
+
 function Argument({
   icon,
   title,
@@ -121,7 +125,9 @@ function Argument({
 }) {
   return (
     <li className="grid content-start gap-3 bg-background p-6 text-foreground md:p-8">
-      <span className="grid size-9 place-items-center rounded-lg bg-fill-2 [&>svg]:size-4">
+      <span
+        className={`grid size-9 place-items-center rounded-lg [&>svg]:size-4 ${tint}`}
+      >
         {icon}
       </span>
       <h4 className="text-base font-medium">{title}</h4>
@@ -273,7 +279,9 @@ export function LandingIntro({
             <li key={s.title} className="grid content-start gap-3">
               <ImageSlot label={s.image} ratio="4/3" />
               <h4 className="flex items-center gap-2 text-base font-medium">
-                <span className="grid size-6 place-items-center rounded-full bg-fill-3 text-xs tabular-nums">
+                <span
+                  className={`grid size-6 place-items-center rounded-full text-xs font-medium tabular-nums ${tint}`}
+                >
                   {i + 1}
                 </span>
                 {s.title}
@@ -328,12 +336,19 @@ export function LandingIntro({
 
       <section
         aria-labelledby="debut"
-        className="grid justify-items-center gap-4 rounded-2xl border bg-fill-1 px-6 py-12 text-center"
+        className="grid justify-items-center gap-4 rounded-2xl border px-6 py-14 text-center"
+        style={{
+          backgroundImage:
+            'radial-gradient(ellipse 62% 92% at 50% 100%, color-mix(in srgb, var(--hero-blue) var(--hero-strength), transparent) 16.5%, var(--hero-mid) 80%, var(--background) 100%)',
+        }}
       >
-        <h3 id="debut" className="text-3xl font-medium tracking-tight">
+        <h3
+          id="debut"
+          className="text-3xl font-medium tracking-tight text-[#0a0a0a] dark:text-foreground"
+        >
           Parcourez les {components} composants
         </h3>
-        <p className="max-w-xl text-base text-muted-foreground">
+        <p className="max-w-xl text-base text-[#4a4a4a] dark:text-muted-foreground">
           Choisissez-en un : vous verrez son exemple, ses états, ses règles
           d’usage et son code, prêts à copier.
         </p>
