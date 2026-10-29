@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { ArrowRightIcon } from 'lucide-react';
 import { LandingIntro } from './LandingSections.js';
 import { isNew, NewTag } from './NewTag.js';
 import type { ManifestFamily } from './preview/manifest.js';
@@ -101,10 +102,9 @@ const FEATURED = [
   ['chat-thread-01', 'Fil de conversation'],
   ['prompt-input-01', 'Saisie du prompt'],
   ['model-picker-01', 'Choix du modèle'],
-  ['effort-slider-01', 'Réglage de l’effort'],
 ] as const;
 
-function FeaturedBlocks() {
+function FeaturedBlocks({ count }: { count: number }) {
   const dark = useDark();
   return (
     <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -119,6 +119,24 @@ function FeaturedBlocks() {
           </a>
         </li>
       ))}
+      <li>
+        <a
+          href="#liste-blocs"
+          onClick={(e) => {
+            // Le routage utilise le hash : on défile sans le changer.
+            e.preventDefault();
+            document
+              .getElementById('liste-blocs')
+              ?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="grid h-full grid-rows-[1fr_auto] gap-2 rounded-xl border bg-card p-2 text-sm text-card-foreground outline-none transition-colors hover:bg-fill-1 focus-visible:ring-2 focus-visible:ring-ring/30"
+        >
+          <span className="flex items-center justify-center rounded-lg border bg-fill-1 text-muted-foreground">
+            <ArrowRightIcon className="size-6" aria-hidden />
+          </span>
+          <span className="px-2 pb-1">Voir les {count} blocs</span>
+        </a>
+      </li>
     </ul>
   );
 }
@@ -138,7 +156,7 @@ export function Landing({
       <LandingIntro
         components={components.length}
         tokens={tokens}
-        preview={<FeaturedBlocks />}
+        preview={<FeaturedBlocks count={blocks.length} />}
       />
       <div className="grid gap-8">
         <h3 className="text-3xl font-medium tracking-tight">
