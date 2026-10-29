@@ -1,0 +1,14 @@
+[
+  {
+    "date": "2026-10-28T00:00:00.000Z",
+    "changes": [
+      {
+        "kind": "componentSet",
+        "action": "created",
+        "name": "Button",
+        "details": [],
+        "breaking": false
+      }
+    ]
+  }
+]

@@ -3,7 +3,6 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   DownloadIcon,
-  RefreshCwIcon,
   HistoryIcon,
   MoonIcon,
   SunIcon,
@@ -57,6 +56,7 @@ import { AssistantBar } from './AssistantBar.js';
 import { FigmaSpec } from './FigmaSpec.js';
 import { GetStarted, Welcome } from './Docs.js';
 import { Changelog } from './Changelog.js';
+import { FigmaChangelog } from './FigmaChangelog.js';
 import { Hero } from './Hero.js';
 import { HeroActions, HeroEyebrow } from './LandingSections.js';
 import { NextPage, type NextTarget } from './NextPage.js';
@@ -68,6 +68,8 @@ import { OnThisPage } from './OnThisPage.js';
 import { Search } from './Search.js';
 import { inScope, useComponentTokens } from './useComponentTokens.js';
 import { manifest } from './preview/manifest.js';
+import { siGithub } from 'simple-icons';
+import { SimpleIcon } from '@/components/ui/simple-icon';
 import pkg from '../../package.json';
 import { useTokenDraft } from './useTokenDraft.js';
 import { announceChange, useDesignState } from './useDesignState.js';
@@ -253,7 +255,6 @@ export default function App() {
   const [menu, setMenu] = useState(false);
   const [showTokens, setShowTokens] = useState(false);
   const [navQuery, setNavQuery] = useState('');
-  const [syncing, setSyncing] = useState(false);
   const [message, setMessage] = useState('');
   const [chat, setChat] = useState<
     { role: 'user' | 'assistant'; text: string }[]
@@ -282,9 +283,20 @@ export default function App() {
   // La liste est longue : on amène la page active dans le champ de la barre latérale.
   const ready = !!state;
   useEffect(() => {
-    document
-      .querySelector('nav[aria-label="Navigation"] a[aria-current="page"]')
-      ?.scrollIntoView({ block: 'nearest' });
+    // On ne fait défiler que la barre latérale : scrollIntoView ferait aussi défiler la page.
+    const link = document.querySelector(
+      'nav[aria-label="Navigation"] a[aria-current="page"]',
+    );
+    const box = link?.closest('aside');
+    if (!link || !box) return;
+    const l = link.getBoundingClientRect();
+    const b = box.getBoundingClientRect();
+    if (l.top < b.top) box.scrollTop -= b.top - l.top;
+    else {
+      // La barre latérale peut dépasser l'écran quand la page est en haut : on vise ce qui est visible.
+      const limit = Math.min(b.bottom, innerHeight);
+      if (l.bottom > limit) box.scrollTop += l.bottom - limit;
+    }
   }, [route, ready]);
   useEffect(() => {
     const item =
@@ -854,6 +866,22 @@ export default function App() {
           <Button
             variant="ghost"
             size="icon-sm"
+            className="max-sm:hidden"
+            aria-label="Composants sur GitHub"
+            title="Composants sur GitHub"
+            render={
+              <a
+                href="https://github.com/mattcohadon/design-sytem/tree/main/app/client/sortui/components/ui"
+                target="_blank"
+                rel="noopener noreferrer"
+              />
+            }
+          >
+            <SimpleIcon icon={siGithub} className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
             aria-label={
               dark ? 'Passer au thème clair' : 'Passer au thème sombre'
             }
@@ -949,6 +977,7 @@ export default function App() {
                     )
                   }
                 />
+                <FigmaChangelog />
               </section>
             ) : route.kind === 'welcome' ? (
               <Welcome />
@@ -1013,43 +1042,6 @@ export default function App() {
                       )}
                       {!found && route.kind === 'tokens' && (
                         <>
-                          <Button
-                            variant="ghost"
-                            title={
-                              boot?.figma.connected
-                                ? 'Lire les variables Figma et proposer les différences'
-                                : 'Figma non configuré : npm run figma:setup'
-                            }
-                            disabled={syncing}
-                            onClick={() =>
-                              void perform(async () => {
-                                setSyncing(true);
-                                try {
-                                  const result = await request<{
-                                    proposal: Proposal | null;
-                                  }>('figma-sync', {
-                                    revision: state.revision,
-                                  });
-                                  if (result.proposal)
-                                    setProposal(result.proposal);
-                                  else
-                                    setNotice(
-                                      'Figma et DS-Studio sont déjà identiques.',
-                                    );
-                                } finally {
-                                  setSyncing(false);
-                                }
-                              })
-                            }
-                          >
-                            <RefreshCwIcon
-                              data-icon="inline-start"
-                              className={syncing ? 'animate-spin' : undefined}
-                            />
-                            <span className="max-sm:sr-only">
-                              {syncing ? 'Lecture de Figma…' : 'Sync Figma'}
-                            </span>
-                          </Button>
                           <label
                             className={buttonVariants({ variant: 'ghost' })}
                           >

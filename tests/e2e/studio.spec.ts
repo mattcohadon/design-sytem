@@ -571,6 +571,8 @@ test('fin de page : continuer à défiler remplit la barre puis ouvre la page su
   await expect(
     page.getByRole('heading', { name: 'Démarrage', level: 2 }),
   ).toBeVisible();
+  // On atterrit en haut de la page suivante, malgré l'élan de la molette.
+  expect(await page.evaluate(() => scrollY)).toBe(0);
 });
 
 test('nouvelle page : le titre et l’accroche se révèlent en décalé (Texts reveal)', async ({

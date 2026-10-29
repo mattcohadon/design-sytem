@@ -56,7 +56,7 @@ export function Welcome() {
         <List
           items={[
             'Quand vous publiez la bibliothèque Figma, une pull request met à jour la spécification des composants.',
-            'Les valeurs des variables Figma ne sont pas lues automatiquement : le bouton « Sync Figma » ne fonctionne qu’avec un plan Enterprise.',
+            'Les valeurs des variables Figma ne sont pas lues automatiquement : modifiez-les dans l’éditeur de tokens ou importez un JSON.',
             'Le code fait foi pour le comportement et l’accessibilité ; Figma fait foi pour l’apparence.',
           ]}
         />
