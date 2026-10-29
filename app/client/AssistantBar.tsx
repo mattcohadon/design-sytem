@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowUpIcon, SquareIcon, XIcon } from 'lucide-react';
+import { ArrowUpIcon, PenToolIcon, SquareIcon, XIcon } from 'lucide-react';
 import {
   AIChatComposer,
   AIChatComposerLeading,
@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/ai-chat-composer';
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import { Toggle } from '@/components/ui/toggle';
 import { Message, MessageContent } from '@/components/ui/message';
 import {
   NativeSelect,
@@ -105,18 +105,6 @@ export function AssistantBar(p: Props) {
             {p.info!.detail}
           </p>
         )}
-        {p.agent === 'claude' && (
-          <label className="flex items-center gap-2 justify-self-end rounded-full bg-popover px-3 py-1.5 text-xs text-muted-foreground shadow-popover">
-            <Switch
-              size="sm"
-              aria-label="Autoriser Figma pour cette demande"
-              checked={p.figma}
-              disabled={p.thinking}
-              onCheckedChange={p.onFigma}
-            />
-            Autoriser Figma pour cette demande
-          </label>
-        )}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -148,6 +136,20 @@ export function AssistantBar(p: Props) {
                 <NativeSelectOption value="codex">Codex</NativeSelectOption>
                 <NativeSelectOption value="manual">Manuel</NativeSelectOption>
               </NativeSelect>
+              {p.agent === 'claude' && (
+                <Toggle
+                  variant="outline"
+                  size="sm"
+                  aria-label="Autoriser Figma pour cette demande"
+                  title="Autoriser Figma pour cette demande"
+                  pressed={p.figma}
+                  disabled={p.thinking}
+                  onPressedChange={p.onFigma}
+                >
+                  <PenToolIcon />
+                  Figma
+                </Toggle>
+              )}
             </AIChatComposerLeading>
             <AIChatComposerTrailing>
               {p.thinking ? (
