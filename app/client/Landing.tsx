@@ -129,12 +129,23 @@ function FeaturedBlocks({ count }: { count: number }) {
               .getElementById('liste-blocs')
               ?.scrollIntoView({ behavior: 'smooth' });
           }}
-          className="grid h-full grid-rows-[1fr_auto] gap-2 rounded-xl border bg-card p-2 text-sm text-card-foreground outline-none transition-colors hover:bg-fill-1 focus-visible:ring-2 focus-visible:ring-ring/30"
+          className="group/all grid h-full grid-rows-[1fr_auto] gap-2 rounded-xl bg-primary p-2 text-sm text-primary-foreground outline-none transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/30"
         >
-          <span className="flex items-center justify-center rounded-lg border bg-fill-1 text-muted-foreground">
-            <ArrowRightIcon className="size-6" aria-hidden />
+          <span className="grid content-center justify-items-center gap-1 rounded-lg bg-primary-foreground/10 p-4">
+            <span className="text-5xl font-medium tracking-tight tabular-nums">
+              {count}
+            </span>
+            <span className="text-primary-foreground/80">
+              blocs prêts à copier
+            </span>
           </span>
-          <span className="px-2 pb-1">Voir les {count} blocs</span>
+          <span className="flex items-center justify-between px-2 pb-1">
+            Voir tous les blocs
+            <ArrowRightIcon
+              className="size-4 transition-transform group-hover/all:translate-x-0.5"
+              aria-hidden
+            />
+          </span>
         </a>
       </li>
     </ul>
