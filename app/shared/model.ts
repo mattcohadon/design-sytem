@@ -319,6 +319,11 @@ export function toHex(value: string): string | null {
     )
     .join('')}`.toUpperCase();
 }
+/** Affichage par défaut d'une couleur : #rrggbb si elle est opaque (un #RRGGBB ne porte pas d'alpha), sinon inchangée. */
+export function displayValue(value: string): string {
+  const color = parseColor(value);
+  return color && color.alpha >= 1 ? toHex(value)!.toLowerCase() : value;
+}
 /** Remplace la teinte d’une couleur par un #RRGGBB choisi, en gardant son alpha. */
 export function withHex(value: string, hex: string): string {
   const picked = parseColor(hex);
