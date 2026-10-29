@@ -87,6 +87,7 @@ import {
   parseColor,
   tokenKeys,
   tokenMode,
+  displayValue,
   toHex,
   withHex,
   type ColorName,
@@ -450,7 +451,7 @@ export default function App() {
   const pickerHex =
     token.$type === 'color' ? (toHex(draft) ?? toHex(String(current))) : null;
   const iframeQuery = `preview=1&mode=${mode}`;
-  const dirty = draft !== String(current);
+  const dirty = draft !== displayValue(String(current));
   const found =
     route.kind === 'component'
       ? manifest
@@ -650,7 +651,7 @@ export default function App() {
         )}
         <span>
           {token.$type === 'color'
-            ? 'oklch(L C H) ou oklch(L C H / A%), #RRGGBB accepté · '
+            ? '#RRGGBB, oklch(L C H) ou oklch(L C H / A%) · '
             : token.$type === 'dimension'
               ? 'Pixels, de 0 à 128 · '
               : ''}

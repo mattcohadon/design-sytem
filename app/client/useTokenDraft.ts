@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import type { TokenKey, TokenValue } from '../shared/model.js';
+import {
+  displayValue,
+  type TokenKey,
+  type TokenValue,
+} from '../shared/model.js';
 
 const storageKey = 'ds-studio-token-draft-v2';
 export function useTokenDraft(key: TokenKey, current: TokenValue | undefined) {
@@ -7,7 +11,7 @@ export function useTokenDraft(key: TokenKey, current: TokenValue | undefined) {
   const [recovered, setRecovered] = useState(false);
   useEffect(() => {
     if (current === undefined) return;
-    let value = String(current);
+    let value = displayValue(String(current));
     let restored = false;
     try {
       const saved = JSON.parse(sessionStorage.getItem(storageKey) || 'null');
@@ -30,7 +34,8 @@ export function useTokenDraft(key: TokenKey, current: TokenValue | undefined) {
     setDraft(value);
     setRecovered(false);
     try {
-      if (value === String(current)) sessionStorage.removeItem(storageKey);
+      if (value === displayValue(String(current)))
+        sessionStorage.removeItem(storageKey);
       else sessionStorage.setItem(storageKey, JSON.stringify({ key, value }));
     } catch {
       /* Mode privé / stockage refusé : édition en mémoire seulement. */

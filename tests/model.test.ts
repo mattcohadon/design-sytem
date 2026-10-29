@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import {
   colorNames,
   contrast,
+  displayValue,
   formatOklch,
   pairContrast,
   parseColor,
@@ -82,4 +83,14 @@ test('variables CSS SortUI par mode', () => {
   assert.equal(light['--radius'], '10px');
   assert.match(light['--font-sans'], /^system-ui/);
   assert.equal(Object.keys(light).length, colorNames.length + 2);
+});
+
+test('displayValue : #rrggbb en minuscules pour une couleur opaque, inchangé sinon', () => {
+  assert.equal(displayValue('oklch(0 0 0)'), '#000000');
+  assert.equal(displayValue('oklch(1 0 0)'), '#ffffff');
+  assert.equal(
+    displayValue('oklch(0.5 0.1 200 / 40%)'),
+    'oklch(0.5 0.1 200 / 40%)',
+  );
+  assert.equal(displayValue('12'), '12');
 });
