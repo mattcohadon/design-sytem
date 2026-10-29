@@ -733,3 +733,36 @@ test('assistant : la croix de la conversation reste visible quand la réponse d�
   await close.click();
   await expect(log).toHaveCount(0);
 });
+
+test('assistant : réponse en Markdown mise en forme, conversation agrandissable', async ({
+  page,
+}) => {
+  await page.route('**/api/agent', (route) =>
+    route.fulfill({
+      json: {
+        message:
+          'Fait : **page créée**.\n\n- une frame\n- un lien https://www.figma.com/design/abc/DS',
+        proposal: null,
+      },
+    }),
+  );
+  await page.goto('/#/composants/button');
+  await page.getByLabel('Votre demande').fill('test');
+  await page.getByRole('button', { name: 'Envoyer à Claude' }).click();
+  const log = page.locator('[aria-label="Conversation"][aria-live]');
+  await expect(log.locator('strong')).toHaveText('page créée');
+  await expect(log.locator('li')).toHaveCount(2);
+  await expect(log.getByRole('link')).toHaveAttribute(
+    'href',
+    'https://www.figma.com/design/abc/DS',
+  );
+  const panel = log.locator('xpath=..');
+  const small = (await panel.boundingBox())!.width;
+  await page.getByRole('button', { name: 'Agrandir la conversation' }).click();
+  expect((await panel.boundingBox())!.width).toBeGreaterThan(small);
+  await expect(
+    page.getByRole('button', { name: 'Masquer la conversation' }),
+  ).toBeInViewport();
+  await page.getByRole('button', { name: 'Réduire la conversation' }).click();
+  expect((await panel.boundingBox())!.width).toBe(small);
+});
