@@ -63,37 +63,40 @@ export function AssistantBar(p: Props) {
     <div className="pointer-events-none sticky bottom-4 z-30 mt-auto flex justify-center px-4 pt-6">
       <div className="pointer-events-auto grid w-full max-w-2xl gap-2">
         {!hidden && p.chat.length > 0 && (
-          <div className="grid max-h-[40svh] gap-2 overflow-auto rounded-2xl border bg-popover p-3 text-popover-foreground shadow-popover">
+          <div className="relative">
+            {/* Hors de la zone qui défile : toujours visible, même en bas d'une longue réponse. */}
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon-xs"
-              className="justify-self-end"
+              className="absolute -top-8 right-0 rounded-full bg-popover shadow-popover"
               aria-label="Masquer la conversation"
               onClick={() => setHidden(true)}
             >
               <XIcon />
             </Button>
-            <div
-              className="grid gap-2"
-              aria-label="Conversation"
-              aria-live="polite"
-            >
-              {p.chat.map((c, i) => (
-                <Message key={i} align={c.role === 'user' ? 'end' : 'start'}>
-                  <MessageContent>
-                    <span className="sr-only">
-                      {c.role === 'user' ? 'Vous' : name} :
-                    </span>
-                    <Bubble
-                      variant={c.role === 'user' ? 'secondary' : 'default'}
-                    >
-                      <BubbleContent className="text-xs whitespace-pre-wrap">
-                        {linkify(c.text)}
-                      </BubbleContent>
-                    </Bubble>
-                  </MessageContent>
-                </Message>
-              ))}
+            <div className="grid max-h-[40svh] gap-2 overflow-auto rounded-2xl border bg-popover p-3 text-popover-foreground shadow-popover">
+              <div
+                className="grid gap-2"
+                aria-label="Conversation"
+                aria-live="polite"
+              >
+                {p.chat.map((c, i) => (
+                  <Message key={i} align={c.role === 'user' ? 'end' : 'start'}>
+                    <MessageContent>
+                      <span className="sr-only">
+                        {c.role === 'user' ? 'Vous' : name} :
+                      </span>
+                      <Bubble
+                        variant={c.role === 'user' ? 'secondary' : 'default'}
+                      >
+                        <BubbleContent className="text-xs whitespace-pre-wrap">
+                          {linkify(c.text)}
+                        </BubbleContent>
+                      </Bubble>
+                    </MessageContent>
+                  </Message>
+                ))}
+              </div>
             </div>
           </div>
         )}
