@@ -3,6 +3,11 @@ import assert from 'node:assert/strict';
 import { buildSnapshot, type Fetcher } from '../figma-sync/snapshot.js';
 import { diffSnapshots } from '../figma-sync/diff.js';
 import { appendEntry } from '../figma-sync/changelog.js';
+import {
+  describe as sentence,
+  markdown,
+  tally,
+} from '../figma-sync/describe.js';
 
 const json = (
   body: unknown,
@@ -121,4 +126,56 @@ test('changelog : une entrée par diff non vide, rien si vide', async () => {
     true,
   );
   assert.deepEqual(appendEntry(log, diffSnapshots(a, a)), log);
+});
+
+test('journal : phrases lisibles, décompte et bloc de PR', () => {
+  const base = { details: [] as string[], breaking: false };
+  const changes = [
+    {
+      kind: 'componentSet' as const,
+      action: 'created' as const,
+      name: 'Alert',
+      ...base,
+    },
+    {
+      kind: 'componentSet' as const,
+      action: 'modified' as const,
+      name: 'Button',
+      details: ['variante ajoutée : ghost'],
+      breaking: false,
+    },
+    {
+      kind: 'componentSet' as const,
+      action: 'renamed' as const,
+      name: 'Toggle',
+      from: 'Switch',
+      details: [],
+      breaking: true,
+    },
+    {
+      kind: 'style' as const,
+      action: 'deleted' as const,
+      name: 'Fill',
+      details: [],
+      breaking: true,
+    },
+  ];
+  assert.equal(sentence(changes[0]), 'Nouveau composant « Alert »');
+  assert.equal(sentence(changes[1]), 'Composant « Button » modifié');
+  assert.equal(
+    sentence(changes[2]),
+    'Composant « Switch » renommé en « Toggle »',
+  );
+  assert.equal(sentence(changes[3]), 'Style « Fill » supprimé');
+  assert.equal(
+    tally(changes),
+    '1 ajout · 1 modification · 1 renommage · 1 suppression · 2 changements cassants',
+  );
+  assert.equal(tally(changes.slice(0, 1)), '1 ajout');
+  const md = markdown(changes);
+  assert.match(md, /## Entrée du Changelog/);
+  assert.match(md, /- Nouveau composant « Alert »/);
+  assert.match(md, /  - variante ajoutée : ghost/);
+  assert.match(md, /- ⚠️ Composant « Switch » renommé en « Toggle »/);
+  assert.equal(markdown([]), '');
 });

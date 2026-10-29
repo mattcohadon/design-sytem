@@ -13,6 +13,10 @@ cron horaire (ou « Run workflow ») → snapshot Figma → diff avec figma-sync
 Périmètre : composants, variantes, propriétés et styles (API REST). Les valeurs des variables ne sont pas lisibles
 sans plan Enterprise : leur export reste manuel.
 
+Chaque PR de synchro se termine par un bloc **« Entrée du Changelog »** (généré par `changelog.ts --markdown`) qui
+liste, en phrases (« Nouveau composant « Alert » », « Composant « Button » modifié : variante ajoutée : ghost »…), ce
+qui apparaîtra dans la page Changelog après la fusion, avec un décompte (ajouts, modifications, changements cassants).
+
 Le journal `figma-sync/changelog.json` est écrit par un script (pas par Claude) : une entrée par synchro, avec les
 composants ajoutés, supprimés, renommés ou modifiés et les changements cassants. La page Changelog de l'app l'affiche
 sous la frise des révisions de tokens.
