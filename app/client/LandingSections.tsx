@@ -188,7 +188,7 @@ export function LandingIntro({
       <ImageSlot
         label="La page d’un composant : aperçu, états côte à côte, code"
         ratio="16/9"
-        className="mx-auto w-full max-w-5xl"
+        className="w-full"
       />
 
       <section aria-labelledby="atouts" className="grid gap-6">

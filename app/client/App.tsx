@@ -920,10 +920,10 @@ export default function App() {
         </Hero>
       )}
       <div
-        className={`mx-auto grid w-full max-w-[90rem] flex-1 gap-8 px-4 ${
+        className={`mx-auto grid flex-1 gap-8 ${
           route.kind === 'home'
-            ? ''
-            : 'lg:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)_11rem]'
+            ? 'w-[calc(100%-1.5rem)] max-w-6xl'
+            : 'w-full max-w-[90rem] px-4 lg:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)_11rem]'
         }`}
       >
         {route.kind !== 'home' && (
