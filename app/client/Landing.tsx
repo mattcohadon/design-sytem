@@ -135,7 +135,7 @@ function FeaturedBlocks({ count }: { count: number }) {
             <span className="text-4xl font-medium tracking-tight text-foreground tabular-nums">
               {count - FEATURED.length}
             </span>
-            <span className="">blocs supplémentaires</span>
+            <span>blocs supplémentaires</span>
           </span>
           <span className="flex items-center justify-between px-2 pb-1">
             Voir tous les blocs
