@@ -44,6 +44,7 @@ jobs:
             echo "Aucun changement de composant ou de style : pas de PR." >> "$GITHUB_STEP_SUMMARY"
           else
             mv figma-sync/snapshot.new.json figma-sync/snapshot.json
+            npx tsx figma-sync/changelog.ts figma-sync/diff.json figma-sync/changelog.json
             echo "changed=true" >> "$GITHUB_OUTPUT"
             echo "branch=figma-sync-$(sha256sum figma-sync/snapshot.json | cut -c1-10)" >> "$GITHUB_OUTPUT"
           fi
@@ -67,7 +68,7 @@ jobs:
             - Garde le comportement et l'accessibilité existants. Mets à jour la doc (démos dans app/client/preview, manifest.ts) et docs/V2_CHANGELOG.md.
             - Vérifie avec npm run build et npm test avant de finir.
             - Ambiguïté : signale-la dans la PR, ne devine pas.
-            - N'écris rien dans figma-sync/snapshot.json, figma-sync/diff.json, figma-sync/diff.md.
+            - N'écris rien dans figma-sync/snapshot.json, figma-sync/diff.json, figma-sync/diff.md, figma-sync/changelog.json (le journal affiché dans la page Changelog est déjà à jour).
             Sortie : écris la description de la PR, en français, dans figma-sync/pr-body.md avec les sections
             « Ce qui change », « Changements cassants », « À relire en priorité », « À reporter dans Figma » (cases à cocher) et « Incertitudes ».
             Les valeurs des variables Figma ne sont pas lisibles ici : ne les modifie pas.

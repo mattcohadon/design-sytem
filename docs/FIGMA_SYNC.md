@@ -6,11 +6,16 @@ code et doc. Rien n'est jamais poussé sur `main`.
 ```
 cron horaire (ou « Run workflow ») → snapshot Figma → diff avec figma-sync/snapshot.json
   → aucun changement : fin, pas de PR
+  → changements : entrée ajoutée à figma-sync/changelog.json (page Changelog de l'app)
   → changements : Claude adapte code + doc → PR (résumé, changements cassants, checklist « à reporter dans Figma »)
 ```
 
 Périmètre : composants, variantes, propriétés et styles (API REST). Les valeurs des variables ne sont pas lisibles
 sans plan Enterprise : leur export reste manuel.
+
+Le journal `figma-sync/changelog.json` est écrit par un script (pas par Claude) : une entrée par synchro, avec les
+composants ajoutés, supprimés, renommés ou modifiés et les changements cassants. La page Changelog de l'app l'affiche
+sous la frise des révisions de tokens.
 
 ## Mise en place (une fois)
 

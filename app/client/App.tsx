@@ -3,7 +3,6 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   DownloadIcon,
-  RefreshCwIcon,
   HistoryIcon,
   MoonIcon,
   SunIcon,
@@ -57,7 +56,9 @@ import { AssistantBar } from './AssistantBar.js';
 import { FigmaSpec } from './FigmaSpec.js';
 import { GetStarted, Welcome } from './Docs.js';
 import { Changelog } from './Changelog.js';
+import { FigmaChangelog } from './FigmaChangelog.js';
 import { Hero } from './Hero.js';
+import { HeroActions, HeroEyebrow } from './LandingSections.js';
 import { NextPage, type NextTarget } from './NextPage.js';
 import { isNew, NewTag } from './NewTag.js';
 import { ComponentDocs, CopyExampleButton } from './ComponentDocs.js';
@@ -67,6 +68,8 @@ import { OnThisPage } from './OnThisPage.js';
 import { Search } from './Search.js';
 import { inScope, useComponentTokens } from './useComponentTokens.js';
 import { manifest } from './preview/manifest.js';
+import { siGithub } from 'simple-icons';
+import { SimpleIcon } from '@/components/ui/simple-icon';
 import pkg from '../../package.json';
 import { useTokenDraft } from './useTokenDraft.js';
 import { announceChange, useDesignState } from './useDesignState.js';
@@ -252,7 +255,6 @@ export default function App() {
   const [menu, setMenu] = useState(false);
   const [showTokens, setShowTokens] = useState(false);
   const [navQuery, setNavQuery] = useState('');
-  const [syncing, setSyncing] = useState(false);
   const [message, setMessage] = useState('');
   const [chat, setChat] = useState<
     { role: 'user' | 'assistant'; text: string }[]
@@ -281,9 +283,20 @@ export default function App() {
   // La liste est longue : on amène la page active dans le champ de la barre latérale.
   const ready = !!state;
   useEffect(() => {
-    document
-      .querySelector('nav[aria-label="Navigation"] a[aria-current="page"]')
-      ?.scrollIntoView({ block: 'nearest' });
+    // On ne fait défiler que la barre latérale : scrollIntoView ferait aussi défiler la page.
+    const link = document.querySelector(
+      'nav[aria-label="Navigation"] a[aria-current="page"]',
+    );
+    const box = link?.closest('aside');
+    if (!link || !box) return;
+    const l = link.getBoundingClientRect();
+    const b = box.getBoundingClientRect();
+    if (l.top < b.top) box.scrollTop -= b.top - l.top;
+    else {
+      // La barre latérale peut dépasser l'écran quand la page est en haut : on vise ce qui est visible.
+      const limit = Math.min(b.bottom, innerHeight);
+      if (l.bottom > limit) box.scrollTop += l.bottom - limit;
+    }
   }, [route, ready]);
   useEffect(() => {
     const item =
@@ -757,8 +770,8 @@ export default function App() {
     : (
         {
           home: {
-            title: 'Composants',
-            lead: `${components.length} composants et ${blocks.length} blocs SortUI, pilotés par vos tokens. Choisissez-en un pour voir ses exemples et sa spécification Figma.`,
+            title: 'Un design system fidèle à son code.',
+            lead: `${components.length} composants et ${blocks.length} blocs accessibles. Leur documentation est lue dans le code, leurs tokens se changent en un clic et leur bibliothèque Figma reste synchronisée.`,
           },
           welcome: {
             title: 'Bienvenue',
@@ -853,6 +866,22 @@ export default function App() {
           <Button
             variant="ghost"
             size="icon-sm"
+            className="max-sm:hidden"
+            aria-label="Composants sur GitHub"
+            title="Composants sur GitHub"
+            render={
+              <a
+                href="https://github.com/mattcohadon/design-sytem/tree/main/app/client/sortui/components/ui"
+                target="_blank"
+                rel="noopener noreferrer"
+              />
+            }
+          >
+            <SimpleIcon icon={siGithub} className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
             aria-label={
               dark ? 'Passer au thème clair' : 'Passer au thème sombre'
             }
@@ -912,18 +941,24 @@ export default function App() {
           title={hero.title}
           lead={hero.lead}
           isNew={!!found && isNew(found.id)}
-        />
+          large={route.kind === 'home'}
+          eyebrow={route.kind === 'home' ? <HeroEyebrow /> : undefined}
+        >
+          {route.kind === 'home' && <HeroActions />}
+        </Hero>
       )}
       <div
-        className={`mx-auto grid w-full max-w-[90rem] flex-1 gap-8 px-4 lg:grid-cols-[13rem_minmax(0,1fr)] ${
+        className={`mx-auto grid flex-1 gap-8 ${
           route.kind === 'home'
-            ? ''
-            : 'xl:grid-cols-[13rem_minmax(0,1fr)_11rem]'
+            ? 'w-[calc(100%-1.5rem)] max-w-6xl'
+            : 'w-full max-w-[90rem] px-4 lg:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)_11rem]'
         }`}
       >
-        <aside className="sticky top-20 hidden max-h-[calc(100svh-5rem)] self-start overflow-auto py-6 pr-4 lg:block">
-          {navList}
-        </aside>
+        {route.kind !== 'home' && (
+          <aside className="sticky top-20 hidden max-h-[calc(100svh-5rem)] self-start overflow-auto py-6 pr-4 lg:block">
+            {navList}
+          </aside>
+        )}
         <main className="min-w-0">
           <div key={`${route.kind}:${found?.id ?? ''}`} className="page-enter">
             {route.kind === 'history' ? (
@@ -942,13 +977,18 @@ export default function App() {
                     )
                   }
                 />
+                <FigmaChangelog />
               </section>
             ) : route.kind === 'welcome' ? (
               <Welcome />
             ) : route.kind === 'start' ? (
               <GetStarted />
             ) : route.kind === 'home' ? (
-              <Landing components={components} blocks={blocks} />
+              <Landing
+                components={components}
+                blocks={blocks}
+                tokens={tokenKeys.length}
+              />
             ) : (
               <div className={'grid gap-6 p-4'}>
                 <section
@@ -1002,43 +1042,6 @@ export default function App() {
                       )}
                       {!found && route.kind === 'tokens' && (
                         <>
-                          <Button
-                            variant="ghost"
-                            title={
-                              boot?.figma.connected
-                                ? 'Lire les variables Figma et proposer les différences'
-                                : 'Figma non configuré : npm run figma:setup'
-                            }
-                            disabled={syncing}
-                            onClick={() =>
-                              void perform(async () => {
-                                setSyncing(true);
-                                try {
-                                  const result = await request<{
-                                    proposal: Proposal | null;
-                                  }>('figma-sync', {
-                                    revision: state.revision,
-                                  });
-                                  if (result.proposal)
-                                    setProposal(result.proposal);
-                                  else
-                                    setNotice(
-                                      'Figma et DS-Studio sont déjà identiques.',
-                                    );
-                                } finally {
-                                  setSyncing(false);
-                                }
-                              })
-                            }
-                          >
-                            <RefreshCwIcon
-                              data-icon="inline-start"
-                              className={syncing ? 'animate-spin' : undefined}
-                            />
-                            <span className="max-sm:sr-only">
-                              {syncing ? 'Lecture de Figma…' : 'Sync Figma'}
-                            </span>
-                          </Button>
                           <label
                             className={buttonVariants({ variant: 'ghost' })}
                           >
@@ -1091,6 +1094,7 @@ export default function App() {
                         id={found.id}
                         title={found.title}
                         scope={scope}
+                        statesSrc={`/?${iframeQuery}&view=states&id=${found.id}`}
                       />
                       <FigmaSpec id={found.id} />
                     </>

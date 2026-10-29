@@ -11,9 +11,11 @@ const THRESHOLD = 1000;
 const FOLLOW = 0.14;
 // Verrou partagé entre les pages : la nouvelle page crée son propre composant, mais l'élan de la
 // molette qui a ouvert la précédente ne doit pas en ouvrir une troisième.
+// Marge de bas de page : l'étiquette change de hauteur pendant le geste, on reste « en bas ».
+const BOTTOM_SLACK = 64;
 const gesture = { locked: false, lastWheel: 0 };
 const atBottom = () =>
-  innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
+  innerHeight + scrollY >= document.documentElement.scrollHeight - BOTTOM_SLACK;
 
 /**
  * Fin de page : continuer à défiler en bas remplit une barre de progression sous le nom de la page
@@ -69,10 +71,17 @@ export function NextPage({ next }: { next: NextTarget }) {
       // Après un changement de page, l'élan de la molette est ignoré jusqu'à un nouveau geste.
       if (gesture.locked) {
         if (pause > 250) gesture.locked = false;
-        else return;
+        else {
+          // L'élan ne doit pas faire défiler la nouvelle page : on atterrit en haut.
+          e.preventDefault();
+          return;
+        }
       }
       if (ignored(e.target)) return;
       if (e.deltaY > 0 && atBottom()) {
+        // Le geste est consommé ici : son animation de défilement ne doit pas se poursuivre
+        // sur la page qui s'ouvre.
+        e.preventDefault();
         const value = s.pull + e.deltaY;
         if (value >= THRESHOLD) advance();
         else set(value);
@@ -93,7 +102,7 @@ export function NextPage({ next }: { next: NextTarget }) {
       gesture.locked = false;
       if (s.pull < THRESHOLD) set(0);
     };
-    addEventListener('wheel', onWheel, { passive: true });
+    addEventListener('wheel', onWheel, { passive: false });
     addEventListener('touchstart', onTouchStart, { passive: true });
     addEventListener('touchmove', onTouchMove, { passive: true });
     addEventListener('touchend', onTouchEnd, { passive: true });

@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { ArrowRightIcon } from 'lucide-react';
+import { LandingIntro } from './LandingSections.js';
 import { isNew, NewTag } from './NewTag.js';
 import type { ManifestFamily } from './preview/manifest.js';
 
@@ -95,18 +97,83 @@ function Grid({ title, items }: { title: string; items: Item[] }) {
   );
 }
 
-/** Page d'accueil : tous les composants et blocs, par ordre alphabétique. */
+/** Blocs mis en avant : de vrais aperçus, pas des maquettes. */
+const FEATURED = [
+  ['chat-thread-01', 'Fil de conversation'],
+  ['prompt-input-01', 'Saisie du prompt'],
+  ['model-picker-01', 'Choix du modèle'],
+] as const;
+
+function FeaturedBlocks({ count }: { count: number }) {
+  const dark = useDark();
+  return (
+    <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {FEATURED.map(([id, title]) => (
+        <li key={id}>
+          <a
+            href={`#/composants/${id}`}
+            className="grid gap-2 rounded-xl border bg-card p-2 text-sm text-card-foreground outline-none transition-colors hover:bg-fill-1 focus-visible:ring-2 focus-visible:ring-ring/30"
+          >
+            <Thumb id={id} title={title} dark={dark} />
+            <span className="px-2 pb-1">{title}</span>
+          </a>
+        </li>
+      ))}
+      <li>
+        <a
+          href="#liste-blocs"
+          onClick={(e) => {
+            // Le routage utilise le hash : on défile sans le changer.
+            e.preventDefault();
+            document
+              .getElementById('liste-blocs')
+              ?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="group/all grid h-full grid-rows-[1fr_auto] gap-2 rounded-xl border border-dashed p-2 text-sm text-muted-foreground outline-none transition-colors hover:bg-fill-1 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
+        >
+          <span className="grid content-center justify-items-center gap-1 rounded-lg p-4">
+            <span className="text-4xl font-medium tracking-tight text-foreground tabular-nums">
+              {count - FEATURED.length}
+            </span>
+            <span>blocs supplémentaires</span>
+          </span>
+          <span className="flex items-center justify-between px-2 pb-1">
+            Voir tous les blocs
+            <ArrowRightIcon
+              className="size-4 transition-transform group-hover/all:translate-x-0.5"
+              aria-hidden
+            />
+          </span>
+        </a>
+      </li>
+    </ul>
+  );
+}
+
+/** Page d'accueil : arguments, parcours Figma → code, puis tous les composants et blocs. */
 export function Landing({
   components,
   blocks,
+  tokens,
 }: {
   components: Item[];
   blocks: Item[];
+  tokens: number;
 }) {
   return (
-    <div className="grid gap-8 py-8">
-      <Grid title="Composants" items={components} />
-      <Grid title="Blocs" items={blocks} />
+    <div className="grid gap-16 py-8">
+      <LandingIntro
+        components={components.length}
+        tokens={tokens}
+        preview={<FeaturedBlocks count={blocks.length} />}
+      />
+      <div className="grid gap-8">
+        <h3 className="text-3xl font-medium tracking-tight">
+          Tous les composants et blocs
+        </h3>
+        <Grid title="Composants" items={components} />
+        <Grid title="Blocs" items={blocks} />
+      </div>
     </div>
   );
 }
