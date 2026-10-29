@@ -23,12 +23,12 @@ export const syncedAt = (snapshot as { syncedAt?: string }).syncedAt;
 
 /** Identifiants de pages qui existent aussi dans la bibliothèque Figma. */
 export const figmaIds = new Set(
-  (snapshot.componentSets as FigmaSet[]).map((x) => slug(x.name)),
+  (snapshot.componentSets as unknown as FigmaSet[]).map((x) => slug(x.name)),
 );
 
 /** Ce que Figma décrit pour ce composant : mis à jour par chaque PR « Figma sync » fusionnée. */
 export function FigmaSpec({ id }: { id: string }) {
-  const set = (snapshot.componentSets as FigmaSet[]).find(
+  const set = (snapshot.componentSets as unknown as FigmaSet[]).find(
     (s) => slug(s.name) === id,
   );
   if (!set) return null;
