@@ -692,9 +692,17 @@ test('accueil : arguments, parcours Figma → code et questions', async ({
   await expect(
     page.getByRole('heading', {
       name: 'Ce que votre équipe y gagne',
-      level: 3,
+      level: 2,
     }),
   ).toBeVisible();
+  await expect(page).toHaveTitle(/Un design system fidèle à son code/);
+  // Plan de titres sans saut de niveau (h2 → h4 par exemple).
+  const levels = await page
+    .locator('main h2, main h3, main h4')
+    .evaluateAll((hs) => hs.map((h) => Number(h.tagName[1])));
+  levels.forEach((l, i) => {
+    if (i > 0) expect(l - levels[i - 1]).toBeLessThanOrEqual(1);
+  });
   // Les images sont à fournir : chaque emplacement le dit et donne son format.
   await expect(page.getByRole('img', { name: /^Image à fournir/ })).toHaveCount(
     4,

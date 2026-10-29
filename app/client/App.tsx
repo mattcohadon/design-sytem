@@ -305,7 +305,10 @@ export default function App() {
       route.kind === 'component'
         ? manifest.flatMap((f) => f.items).find((i) => i.id === route.id)
         : undefined;
-    document.title = `${item?.title ?? pageLabels[route.kind] ?? 'Tokens'} · Stride UI`;
+    document.title =
+      route.kind === 'home'
+        ? 'Stride UI · Un design system fidèle à son code'
+        : `${item?.title ?? pageLabels[route.kind] ?? 'Tokens'} · Stride UI`;
   }, [route]);
   useEffect(() => {
     if (agent !== 'manual')
@@ -780,7 +783,7 @@ export default function App() {
         {
           home: {
             title: 'Un design system fidèle à son code.',
-            lead: `${components.length} composants et ${blocks.length} blocs accessibles. Leur documentation est lue dans le code, leurs tokens se changent en un clic et leur bibliothèque Figma reste synchronisée.`,
+            lead: `${components.length} composants et ${blocks.length} blocs. Leur documentation est lue dans le code, leurs tokens se modifient avec un contrôle du contraste et leur bibliothèque Figma reste synchronisée.`,
           },
           welcome: {
             title: 'Bienvenue',

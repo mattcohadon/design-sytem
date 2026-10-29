@@ -67,7 +67,7 @@ export function Search({
         type="button"
         aria-label="Rechercher"
         onClick={() => setOpen(true)}
-        className="flex h-8 items-center gap-2 rounded-lg bg-fill-1 px-2.5 text-sm text-muted-foreground transition-colors outline-none hover:bg-fill-2 focus-visible:ring-2 focus-visible:ring-ring/30 sm:w-52"
+        className="flex h-8 items-center gap-2 rounded-lg bg-fill-1 px-2.5 text-sm text-muted-foreground transition-colors outline-none hover:bg-fill-2 focus-visible:ring-2 focus-visible:ring-ring/30 sm:w-40 lg:w-52"
       >
         <SearchIcon className="size-4 shrink-0" />
         <span className="max-sm:hidden">Rechercher…</span>
