@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowUpIcon, PenToolIcon, SquareIcon, XIcon } from 'lucide-react';
+import { ArrowUpIcon, SquareIcon, XIcon } from 'lucide-react';
 import {
   AIChatComposer,
   AIChatComposerLeading,
@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/ai-chat-composer';
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { Button } from '@/components/ui/button';
-import { Toggle } from '@/components/ui/toggle';
+import { Switch } from '@/components/ui/switch';
 import { Message, MessageContent } from '@/components/ui/message';
 import {
   NativeSelect,
@@ -142,19 +142,19 @@ export function AssistantBar(p: Props) {
                 <NativeSelectOption value="manual">Manuel</NativeSelectOption>
               </NativeSelect>
               {p.agent === 'claude' && (
-                <Toggle
-                  variant="outline"
-                  size="sm"
-                  aria-label="Autoriser Figma pour cette demande"
+                <label
                   title="Autoriser Figma pour cette demande"
-                  className="aria-pressed:border-primary/50 aria-pressed:bg-primary/10 aria-pressed:text-primary"
-                  pressed={p.figma}
-                  disabled={p.thinking}
-                  onPressedChange={p.onFigma}
+                  className="flex cursor-pointer items-center gap-2 px-1 text-xs text-muted-foreground has-data-checked:text-foreground"
                 >
-                  <PenToolIcon />
-                  {p.figma ? 'Figma activé' : 'Figma'}
-                </Toggle>
+                  <Switch
+                    size="sm"
+                    aria-label="Autoriser Figma pour cette demande"
+                    checked={p.figma}
+                    disabled={p.thinking}
+                    onCheckedChange={p.onFigma}
+                  />
+                  Figma
+                </label>
               )}
             </AIChatComposerLeading>
             <AIChatComposerTrailing>
