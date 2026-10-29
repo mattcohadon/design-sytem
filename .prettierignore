@@ -4,3 +4,5 @@ dist/
 test-results/
 package-lock.json
 app/client/sortui/
+# Écrits par le workflow de synchro Figma : ne pas reformater.
+figma-sync/*.json
