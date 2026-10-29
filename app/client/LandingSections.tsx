@@ -98,9 +98,9 @@ function SectionTitle({
     <header
       className={`grid max-w-2xl gap-2 ${center ? 'mx-auto text-center' : ''}`}
     >
-      <h3 id={id} className="text-3xl font-medium tracking-tight">
+      <h2 id={id} className="text-3xl font-medium tracking-tight">
         {title}
-      </h3>
+      </h2>
       <p className="text-base text-muted-foreground">{lead}</p>
     </header>
   );
@@ -130,12 +130,12 @@ function Argument({
       >
         {icon}
       </span>
-      <h4 className="text-base font-medium">{title}</h4>
+      <h3 className="text-base font-medium">{title}</h3>
       <p className="text-sm text-muted-foreground">{children}</p>
       {href && cta && (
         <a
           href={href}
-          className="inline-flex w-fit items-center gap-1 rounded-md text-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring/30"
+          className="inline-flex min-h-8 w-fit items-center gap-1 rounded-md text-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring/30"
         >
           {cta}
           <ArrowRightIcon className="size-3.5" aria-hidden />
@@ -278,14 +278,15 @@ export function LandingIntro({
           {steps.map((s, i) => (
             <li key={s.title} className="grid content-start gap-3">
               <ImageSlot label={s.image} ratio="4/3" />
-              <h4 className="flex items-center gap-2 text-base font-medium">
+              <h3 className="flex items-center gap-2 text-base font-medium">
                 <span
+                  aria-hidden
                   className={`grid size-6 place-items-center rounded-full text-xs font-medium tabular-nums ${tint}`}
                 >
                   {i + 1}
                 </span>
                 {s.title}
-              </h4>
+              </h3>
               <p className="text-sm text-muted-foreground">{s.text}</p>
             </li>
           ))}
@@ -296,7 +297,7 @@ export function LandingIntro({
         <SectionTitle
           id="blocs-vedette"
           title="Des blocs pour aller plus vite"
-          lead="Des assemblages complets, prêts à copier : une conversation, une saisie, un choix de modèle, un réglage d’effort. Ce sont les vrais composants, pas des maquettes."
+          lead="Des assemblages complets, prêts à copier : une conversation, une saisie, un choix de modèle. Ce sont les vrais composants, pas des maquettes."
         />
         {preview}
       </section>
@@ -342,12 +343,12 @@ export function LandingIntro({
             'radial-gradient(ellipse 62% 92% at 50% 100%, color-mix(in srgb, var(--hero-blue) var(--hero-strength), transparent) 16.5%, var(--hero-mid) 80%, var(--background) 100%)',
         }}
       >
-        <h3
+        <h2
           id="debut"
           className="text-3xl font-medium tracking-tight text-[#0a0a0a] dark:text-foreground"
         >
           Parcourez les {components} composants
-        </h3>
+        </h2>
         <p className="max-w-xl text-base text-[#4a4a4a] dark:text-muted-foreground">
           Choisissez-en un : vous verrez son exemple, ses états, ses règles
           d’usage et son code, prêts à copier.

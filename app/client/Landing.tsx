@@ -168,9 +168,9 @@ export function Landing({
         preview={<FeaturedBlocks count={blocks.length} />}
       />
       <div className="grid gap-8">
-        <h3 className="text-3xl font-medium tracking-tight">
+        <h2 className="text-3xl font-medium tracking-tight">
           Tous les composants et blocs
-        </h3>
+        </h2>
         <Grid title="Composants" items={components} />
         <Grid title="Blocs" items={blocks} />
       </div>
