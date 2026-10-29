@@ -225,12 +225,21 @@ test('navigation : filtre de la sidebar, page composant, suivant, mode manuel de
   await expect(
     page.getByRole('navigation', { name: 'Sur cette page' }),
   ).toHaveCount(0);
-  await page.getByLabel('Filtrer les composants').fill('dialog');
-  await page
-    .getByRole('navigation', { name: 'Navigation' })
-    .getByRole('link', { name: 'Dialog', exact: true })
+  // Pas de barre latérale sur l'accueil : on y entre par les cartes.
+  await expect(
+    page.getByRole('navigation', { name: 'Navigation' }),
+  ).toHaveCount(0);
+  await cards
+    .filter({ hasText: /^Dialog/ })
+    .first()
     .click();
   await expect(page).toHaveURL(/#\/composants\/dialog$/);
+  await page.getByLabel('Filtrer les composants').fill('dialog');
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Navigation' })
+      .getByRole('link', { name: 'Dialog', exact: true }),
+  ).toBeVisible();
   // Barre latérale ouverte : la barre Claude reste centrée sur la fenêtre (1600 px).
   const bar = await page
     .locator('form')
@@ -274,7 +283,7 @@ test('page composant : spécification Figma issue du snapshot', async ({
 test('pages Bienvenue et Démarrage dans la navigation flottante', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/#/composants/button');
   const nav = page.getByRole('navigation', { name: 'Navigation' });
   await nav.getByRole('link', { name: 'Bienvenue', exact: true }).click();
   await expect(

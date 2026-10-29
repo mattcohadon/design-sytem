@@ -920,15 +920,17 @@ export default function App() {
         </Hero>
       )}
       <div
-        className={`mx-auto grid w-full max-w-[90rem] flex-1 gap-8 px-4 lg:grid-cols-[13rem_minmax(0,1fr)] ${
+        className={`mx-auto grid w-full max-w-[90rem] flex-1 gap-8 px-4 ${
           route.kind === 'home'
             ? ''
-            : 'xl:grid-cols-[13rem_minmax(0,1fr)_11rem]'
+            : 'lg:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)_11rem]'
         }`}
       >
-        <aside className="sticky top-20 hidden max-h-[calc(100svh-5rem)] self-start overflow-auto py-6 pr-4 lg:block">
-          {navList}
-        </aside>
+        {route.kind !== 'home' && (
+          <aside className="sticky top-20 hidden max-h-[calc(100svh-5rem)] self-start overflow-auto py-6 pr-4 lg:block">
+            {navList}
+          </aside>
+        )}
         <main className="min-w-0">
           <div key={`${route.kind}:${found?.id ?? ''}`} className="page-enter">
             {route.kind === 'history' ? (
