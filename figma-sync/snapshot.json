@@ -1,6 +1,6 @@
 {
   "fileKey": "b9693Sr72RWJUDUNfK2xuM",
-  "syncedAt": "2026-10-28T00:00:00.000Z",
+  "syncedAt": "2026-10-29T04:57:22.275Z",
   "components": [],
   "componentSets": [
     {
@@ -266,6 +266,59 @@
         "Variant=Secondary, Size=Small, Roundness=Round, State=Disabled",
         "Variant=Secondary, Size=Small, Roundness=Round, State=Focus",
         "Variant=Secondary, Size=Small, Roundness=Round, State=Hover & Active"
+      ]
+    },
+    {
+      "key": "df1669470896f6a388dbf71623fa050b81065ece",
+      "name": "Alert",
+      "description": "",
+      "properties": {
+        "Show Line 2#58:0": {
+          "type": "BOOLEAN",
+          "default": "false"
+        },
+        "Show Icon#61:61": {
+          "type": "BOOLEAN",
+          "default": "true"
+        },
+        "Show Button#279:1": {
+          "type": "BOOLEAN",
+          "default": "false"
+        },
+        "⮑ Icon#1530:0": {
+          "type": "INSTANCE_SWAP",
+          "default": "16:83"
+        },
+        "Line 1#1530:5": {
+          "type": "TEXT",
+          "default": "Line 1"
+        },
+        "⮑  Line 2#1530:10": {
+          "type": "TEXT",
+          "default": "Line 2"
+        },
+        "Type": {
+          "type": "VARIANT",
+          "default": "Neutral",
+          "options": [
+            "Error",
+            "Neutral"
+          ]
+        },
+        "Flip Icon": {
+          "type": "VARIANT",
+          "default": "False",
+          "options": [
+            "False",
+            "True"
+          ]
+        }
+      },
+      "variants": [
+        "Type=Error, Flip Icon=False",
+        "Type=Error, Flip Icon=True",
+        "Type=Neutral, Flip Icon=False",
+        "Type=Neutral, Flip Icon=True"
       ]
     }
   ],

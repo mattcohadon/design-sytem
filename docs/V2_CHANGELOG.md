@@ -93,3 +93,9 @@ ou de nouvelle qualification cloud Codex pendant cette livraison.
 - Catalogue et scénarios rendus en iframe (`?preview=1`), isolés du chrome de l’atelier.
   Nouveaux scénarios : assistant (blocs chat), accueil assistant, widgets.
 - Migration automatique et archivée des états V1 (voir [TOKENS](TOKENS.md)).
+
+## Synchro Figma
+
+- Composant Figma `Alert` (nouveau dans la bibliothèque) : rattaché au composant existant
+  `alert.tsx` et à sa démo, sans modification de code. Aucune variante ni propriété
+  ajoutée côté code (écarts : propriété `Flip Icon`, correspondance `Type` → `variant`).
