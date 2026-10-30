@@ -1,6 +1,6 @@
 ---
 name: token-change
-description: Préparer et vérifier une modification de token dans DS-Studio avec diff, contrôle d’impact et validation humaine. Utiliser pour les évolutions de couleurs, espaces ou typographie du starter.
+description: Préparer et vérifier une modification de token dans Stride UI avec diff, contrôle d’impact et validation humaine. Utiliser pour les évolutions de couleurs, espaces ou typographie du starter.
 ---
 
 # Changer un token

@@ -1,4 +1,4 @@
-# Stride UI / DS-Studio — instructions pour les agents
+# Stride UI / Stride UI — instructions pour les agents
 
 Ce dépôt est un **Design System** : tokens (couleurs claires et sombres, rayon, police), composants et blocs
 SortUI, documentation lue dans le code, bibliothèque Figma synchronisée. Lire d'abord

@@ -20,14 +20,14 @@ export async function request<T>(
       headers:
         body === undefined
           ? {}
-          : { 'Content-Type': 'application/json', 'X-DS-Studio': csrf },
+          : { 'Content-Type': 'application/json', 'X-Stride-UI': csrf },
       body: body === undefined ? undefined : JSON.stringify(body),
       signal,
     });
   } catch (e) {
     if (signal?.aborted) throw e;
     throw new Error(
-      'Serveur local inaccessible. Relancez DS-Studio depuis son panneau. Votre dernière validation reste sur disque.',
+      'Serveur local inaccessible. Relancez Stride UI depuis son panneau. Votre dernière validation reste sur disque.',
     );
   }
   const result = await response.json();

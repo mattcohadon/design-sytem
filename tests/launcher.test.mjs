@@ -96,7 +96,7 @@ test(
       'vite.config.ts',
       'index.html',
       'start.sh',
-      'DS-Studio.desktop',
+      'Stride-UI.desktop',
     ])
       await fs.cp(path.join(source, name), path.join(root, name), {
         recursive: true,
@@ -254,7 +254,7 @@ test(
         // Un essai séparé exécute aussi le navigateur système et le vrai .desktop.
         await page.goto(launcher.url + '/#' + launcher.token);
         await page
-          .getByRole('button', { name: 'Démarrer DS-Studio', exact: true })
+          .getByRole('button', { name: 'Démarrer Stride UI', exact: true })
           .click();
         await page
           .getByRole('status')
@@ -271,7 +271,7 @@ test(
         await link.click();
         const popup = await popupPromise;
         await popup.waitForLoadState();
-        assert.match(await popup.title(), /DS-Studio/);
+        assert.match(await popup.title(), /Stride UI/);
         await popup.close();
         await page.close();
         await browser.close();
@@ -291,7 +291,7 @@ test(
           );
           const result = await action('prepare', { confirm: true });
           assert.equal(result.phase, 'erreur');
-          assert.match(result.error, /Arrêtez DS-Studio/);
+          assert.match(result.error, /Arrêtez Stride UI/);
           assert.equal(
             await fs.readFile(path.join(data, 'server.lock'), 'utf8'),
             original,
@@ -314,7 +314,7 @@ test(
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'X-DS-Studio': csrf,
+                'X-Stride-UI': csrf,
               },
               body: JSON.stringify(body),
             });
@@ -452,7 +452,7 @@ test(
         },
       );
       await t.test(
-        'PID réutilisé / processus non DS-Studio : aucun signal, verrou conservé',
+        'PID réutilisé / processus non Stride UI : aucun signal, verrou conservé',
         async () => {
           await action('stop');
           unrelated = spawn(

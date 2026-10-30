@@ -1,6 +1,6 @@
 # Réutiliser ce dépôt pour votre propre Design System
 
-DS-Studio est un atelier **local** : il tourne sur votre machine, sans serveur ni
+Stride UI est un atelier **local** : il tourne sur votre machine, sans serveur ni
 compte. Cette page explique comment le reprendre pour **votre** DS. Pour l'usage
 en classe, voir le [guide étudiant](STUDENT_GUIDE.md).
 
@@ -20,7 +20,7 @@ npm start
 ```
 
 Ouvrez **http://127.0.0.1:4310** (pas `localhost`). Ctrl+C arrête le serveur.
-Le lanceur à double-clic (`DS-Studio.app`, `.vbs`, `.desktop`) est un confort, pas
+Le lanceur à double-clic (`Stride-UI.app`, `.vbs`, `.desktop`) est un confort, pas
 une obligation : voir le [README](../README.md#installer-et-lancer).
 
 ## 2. Mettre vos tokens à la place de SortUI

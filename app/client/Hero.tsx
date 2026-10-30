@@ -37,7 +37,7 @@ export function Hero({
         {eyebrow && (
           <div style={{ '--t-index': 0 } as CSSProperties}>{eyebrow}</div>
         )}
-        <h2
+        <h1
           id="ds-title"
           tabIndex={-1}
           className="text-5xl font-medium tracking-tight text-[var(--hero-fg)] outline-none"
@@ -49,7 +49,7 @@ export function Hero({
               <NewTag large />
             </span>
           )}
-        </h2>
+        </h1>
         <p
           className="mx-auto max-w-xl text-base text-[var(--hero-fg-muted)]"
           style={{ '--t-index': 2 } as CSSProperties}

@@ -44,7 +44,7 @@ try {
     'tsconfig.json',
     'vite.config.ts',
     'index.html',
-    'DS-Studio.desktop',
+    'Stride-UI.desktop',
   ])
     await fs.cp(path.join(source, name), path.join(root, name), {
       recursive: true,
@@ -67,7 +67,7 @@ try {
     DS_STUDIO_DATA_DIR: data,
     PORT: '4327',
   };
-  await exec('gio', ['launch', path.join(root, 'DS-Studio.desktop')], { env });
+  await exec('gio', ['launch', path.join(root, 'Stride-UI.desktop')], { env });
   record = await until(async () => {
     const r = await readRecord(data, 'launcher');
     return (await control(r)) && r;
@@ -86,13 +86,13 @@ try {
   const firstPID = (await status()).pid;
   const saved = await fs.readFile(path.join(data, 'state.json'));
   await until(
-    async () => (await exec('wmctrl', ['-l'])).stdout.includes('DS-Studio'),
+    async () => (await exec('wmctrl', ['-l'])).stdout.includes('Stride UI'),
     'Fenêtre du navigateur système non observée',
   );
   console.log(
     'PASS : vrai .desktop via GIO, chemin déplacé avec espaces/apostrophe/$, Node absent du PATH, démarrage et navigateur système observés.',
   );
-  await exec('gio', ['launch', path.join(root, 'DS-Studio.desktop')], { env });
+  await exec('gio', ['launch', path.join(root, 'Stride-UI.desktop')], { env });
   assert.equal((await readRecord(data, 'launcher')).pid, record.pid);
   assert.equal((await status()).pid, firstPID);
   browser = await chromium.launch();
@@ -101,14 +101,14 @@ try {
   });
   await page.goto(origin + '/#' + record.token);
   await page
-    .getByRole('button', { name: 'Redémarrer DS-Studio', exact: true })
+    .getByRole('button', { name: 'Redémarrer Stride UI', exact: true })
     .click();
   await until(async () => {
     const s = await status();
     return s.phase === 'actif' && !s.busy && s.pid !== firstPID;
   }, 'Redémarrage graphique échoué');
   await page
-    .getByRole('button', { name: 'Ouvrir DS-Studio', exact: true })
+    .getByRole('button', { name: 'Ouvrir Stride UI', exact: true })
     .click();
   await until(
     async () => !(await status()).busy,
@@ -124,7 +124,7 @@ try {
     fullPage: true,
   });
   await page
-    .getByRole('button', { name: 'Arrêter DS-Studio', exact: true })
+    .getByRole('button', { name: 'Arrêter Stride UI', exact: true })
     .click();
   await until(async () => {
     const s = await status();
@@ -132,7 +132,7 @@ try {
   }, 'Arrêt par bouton échoué');
   assert.deepEqual(await fs.readFile(path.join(data, 'state.json')), saved);
   // Le contrôleur existe encore : un autre double-clic doit aussi relancer.
-  await exec('gio', ['launch', path.join(root, 'DS-Studio.desktop')], { env });
+  await exec('gio', ['launch', path.join(root, 'Stride-UI.desktop')], { env });
   await until(async () => {
     const s = await status();
     return s.phase === 'actif' && !s.busy;

@@ -1,6 +1,6 @@
 # Commencer ici — pour l’agent de l’étudiant
 
-DS-Studio est un starter pédagogique évolutif, pas un produit fini à figer.
+Stride UI est un starter pédagogique évolutif, pas un produit fini à figer.
 Votre rôle est d’aider l’étudiant à faire ses propres recherches et choix, sans
 uniformiser les 19 projets. Lisez AGENTS.md, README.md, workspace/PFE.md,
 workspace/DESIGN_RULES.md et workspace/DECISIONS.md avant une intervention utile.

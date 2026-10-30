@@ -132,7 +132,7 @@ export async function createStudioServer(options: {
         }
         if (req.method !== 'POST')
           throw new StudioError('Méthode non autorisée.', 405);
-        if (req.headers['x-ds-studio'] !== csrf)
+        if (req.headers['x-stride-ui'] !== csrf)
           throw new StudioError(
             'Validation de session manquante. Rechargez la page.',
             403,
@@ -173,7 +173,7 @@ export async function createStudioServer(options: {
           const config = await loadFigmaConfig(store.directory);
           if (!config && !options.figmaFetch)
             throw new StudioError(
-              'Figma non configuré : lancez « npm run figma:setup » dans le dossier du projet, puis redémarrez DS-Studio.',
+              'Figma non configuré : lancez « npm run figma:setup » dans le dossier du projet, puis redémarrez Stride UI.',
             );
           const data = options.figmaFetch
             ? await options.figmaFetch()
@@ -263,7 +263,7 @@ export async function createStudioServer(options: {
                 tokens: store.snapshot().tokens,
                 brief:
                   (await context('PFE.md')) +
-                  '\nBrief privé DS-Studio :\n' +
+                  '\nBrief privé Stride UI :\n' +
                   JSON.stringify((await project.read()).project),
                 rules: await context('DESIGN_RULES.md'),
                 history: b.history,

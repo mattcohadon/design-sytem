@@ -58,7 +58,7 @@ async function launch() {
         child.unref();
         reject(
           new Error(
-            'Le panneau de lancement ne répond pas. Relancez DS-Studio.',
+            'Le panneau de lancement ne répond pas. Relancez Stride UI.',
           ),
         );
       }, 12000);
@@ -145,7 +145,7 @@ async function serve() {
     if (await control(record)) return record;
     if (alive(record.pid))
       throw new Error(
-        'Le PID enregistré ne répond pas comme DS-Studio. Aucun arrêt forcé. Réessayez ou consultez le guide.',
+        'Le PID enregistré ne répond pas comme Stride UI. Aucun arrêt forcé. Réessayez ou consultez le guide.',
       );
     return null;
   }
@@ -221,7 +221,7 @@ async function serve() {
         } else if (phase === 'actif') {
           phase = 'erreur';
           error =
-            'DS-Studio s’est arrêté de façon inattendue. Cliquez sur Démarrer.';
+            'Stride UI s’est arrêté de façon inattendue. Cliquez sur Démarrer.';
         }
       } catch (e) {
         if (busy || observedGeneration !== generation) return status();
@@ -245,7 +245,7 @@ async function serve() {
     const record = await serverRecord();
     if (record) {
       if (!(await control(record, 'stop')))
-        throw new Error('Identité DS-Studio non confirmée : arrêt refusé.');
+        throw new Error('Identité Stride UI non confirmée : arrêt refusé.');
       for (let i = 0; i < 100; i++) {
         const current = await readRecord(directory, 'server');
         if ((!current || current.id !== record.id) && !alive(record.pid)) {
@@ -384,7 +384,7 @@ async function serve() {
           'Confirmation explicite requise avant installation et compilation.',
         );
       if (await serverRecord())
-        throw new Error('Arrêtez DS-Studio avant de préparer l’application.');
+        throw new Error('Arrêtez Stride UI avant de préparer l’application.');
       phase = 'démarrage';
       output = '';
       const preparation = await acquireLease(directory, 'server', {
@@ -403,7 +403,7 @@ async function serve() {
       if (body.confirm !== true)
         throw new Error('Confirmation requise avant restauration.');
       if (await serverRecord())
-        throw new Error('Arrêtez DS-Studio avant de restaurer.');
+        throw new Error('Arrêtez Stride UI avant de restaurer.');
       const recovery = await acquireLease(directory, 'server', {
         root,
         directory,
@@ -455,7 +455,7 @@ async function serve() {
       await startServer();
     } else if (name === 'open') {
       const record = await serverRecord();
-      if (!record) throw new Error('Démarrez DS-Studio avant de l’ouvrir.');
+      if (!record) throw new Error('Démarrez Stride UI avant de l’ouvrir.');
       await openBrowser(`http://127.0.0.1:${record.port}`);
     } else if (name === 'quit') {
       await stopServer();
@@ -513,7 +513,7 @@ async function serve() {
       if (req.headers.authorization !== `Bearer ${lease.record.token}`)
         return send(403, {
           error:
-            'Session du lanceur absente. Double-cliquez de nouveau sur DS-Studio.',
+            'Session du lanceur absente. Double-cliquez de nouveau sur Stride UI.',
         });
       if (req.method === 'GET' && req.url === '/api/status')
         return send(200, await status());

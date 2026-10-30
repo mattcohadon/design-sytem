@@ -41,13 +41,13 @@ For Each candidate In candidates.Items
   End If
 Next
 If Len(node) = 0 Then
-  MsgBox "Installez Node.js LTS avec npm (22.12 ou superieur), puis double-cliquez de nouveau sur DS-Studio. Le guide va s'ouvrir. Aucun reglage systeme n'est modifie par le lanceur.", vbInformation, "DS-Studio"
+  MsgBox "Installez Node.js LTS avec npm (22.12 ou superieur), puis double-cliquez de nouveau sur Stride UI. Le guide va s'ouvrir. Aucun reglage systeme n'est modifie par le lanceur.", vbInformation, "Stride UI"
   shell.Run Quote(root & "\launcher\INSTALLATION.html"), 1, False
   WScript.Quit 1
 End If
 shell.CurrentDirectory = root
 result = shell.Run(Quote(node) & " " & Quote(root & "\scripts\launcher.mjs"), 0, True)
 If result <> 0 Then
-  MsgBox "Le lanceur n'a pas pu demarrer. Consultez le guide de depannage. Aucun processus inconnu n'a ete arrete.", vbExclamation, "DS-Studio"
+  MsgBox "Le lanceur n'a pas pu demarrer. Consultez le guide de depannage. Aucun processus inconnu n'a ete arrete.", vbExclamation, "Stride UI"
   shell.Run Quote(root & "\launcher\INSTALLATION.html"), 1, False
 End If

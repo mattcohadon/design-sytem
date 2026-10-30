@@ -50,7 +50,7 @@ for (const button of document.querySelectorAll('[data-action]'))
     if (
       name === 'prepare' &&
       !confirm(
-        'Autoriser npm ci (téléchargement et scripts des dépendances de ce projet) puis npm run build ? Les données DS-Studio sont conservées. Aucun droit administrateur demandé.',
+        'Autoriser npm ci (téléchargement et scripts des dépendances de ce projet) puis npm run build ? Les données Stride UI sont conservées. Aucun droit administrateur demandé.',
       )
     )
       return;
@@ -70,7 +70,7 @@ for (const button of document.querySelectorAll('[data-action]'))
       if (name === 'quit') {
         quitting = true;
         document.querySelector('#feedback').textContent =
-          'Arrêt en cours. Ce panneau peut être fermé lorsque DS-Studio est arrêté.';
+          'Arrêt en cours. Ce panneau peut être fermé lorsque Stride UI est arrêté.';
         // Le statut reste lisible jusqu'à ce que le contrôleur ferme sa socket.
         quitting = false;
         const timer = setInterval(async () => {
@@ -82,7 +82,7 @@ for (const button of document.querySelectorAll('[data-action]'))
             document.querySelector('#status').textContent = 'État : arrêté';
             document.querySelector('#error').textContent = '';
             document.querySelector('#feedback').textContent =
-              'DS-Studio et son lanceur sont arrêtés. Vous pouvez fermer cet onglet.';
+              'Stride UI et son lanceur sont arrêtés. Vous pouvez fermer cet onglet.';
             for (const b of document.querySelectorAll('button'))
               b.disabled = true;
           }

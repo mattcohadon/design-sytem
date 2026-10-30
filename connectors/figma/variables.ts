@@ -14,8 +14,8 @@ import {
 // Lecture seule des variables Figma : aucune écriture vers Figma n'existe ici.
 // Les noms reprennent la planche créée dans Figma (collections et modes).
 export const figmaCollections = {
-  colors: 'DS-Studio · Couleurs',
-  base: 'DS-Studio · Base',
+  colors: 'Stride UI · Couleurs',
+  base: 'Stride UI · Base',
 };
 export interface FigmaConfig {
   token: string;
