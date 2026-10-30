@@ -14,7 +14,7 @@
 - Codex : version qualifiée unique, configuration utilisateur ignorée sans toucher
   l’authentification, dossier temporaire vide, outils shell/plugins/apps/MCP désactivés,
   sandbox read-only, aucun mécanisme d’approbation automatique.
-- Claude Code : aucun outil par défaut. **Exception, pour une seule demande et sur interrupteur explicite** :
+- Claude Code : aucun outil par défaut. **Exception, sur interrupteur explicite, désactivé à chaque ouverture de la page et qui reste activé tant que l'utilisateur ne le coupe pas** :
   le serveur MCP `plugin:figma:figma` et quatre outils (`figmaTools` dans `connectors/agents/claude.ts`).
   Ces écritures **ne passent ni par le diff ni par une relecture**, et `use_figma` exécute du code dans le
   fichier Figma. Les interdits (suppression, page « Pas touch ») sont dans le prompt, pas dans le code.

@@ -122,8 +122,8 @@ ou de nouvelle qualification cloud Codex pendant cette livraison.
 
 ## Assistant Figma
 
-- Avec Claude, l'interrupteur « Figma » de la barre d'assistant autorise, pour une seule demande, l'écriture
-  dans Figma (serveur `plugin:figma:figma`, quatre outils). Il se referme après l'envoi. Sans lien dans la
+- Avec Claude, l'interrupteur « Figma » de la barre d'assistant autorise l'écriture
+  dans Figma (serveur `plugin:figma:figma`, quatre outils). Il reste activé d'une demande à l'autre jusqu'à ce que l'utilisateur le coupe. Sans lien dans la
   demande, l'assistant travaille dans le fichier par défaut `figmaDefaultFile`.
 - La réponse confirme ce qui est fait et redonne toujours un lien Figma ; les réponses sont mises en forme
   (Markdown sans HTML injecté) et la conversation peut être agrandie.

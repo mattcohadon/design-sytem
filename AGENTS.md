@@ -82,9 +82,9 @@ Ne laissez aucune commande ou écriture proposée s'exécuter automatiquement. S
 uniquement. C'est une consigne, pas un filtre infaillible : la vraie frontière est le schéma de réponse et la
 validation humaine.
 
-**Exception Figma.** L'interrupteur « Figma » (Claude seulement) ouvre, pour une demande, le serveur MCP
+**Exception Figma.** L'interrupteur « Figma » (Claude seulement) ouvre, pour chaque demande envoyée tant qu'il est actif, le serveur MCP
 `plugin:figma:figma` et quatre outils (`figmaTools` dans `claude.ts`). N'ajoutez aucun outil (surtout pas de
-suppression), ne l'activez pas par défaut, ne retirez pas l'interdiction de la page « Pas touch ». Ces garde-fous
+suppression), ne l'activez pas par défaut (il reste coupé à chaque ouverture de la page), ne retirez pas l'interdiction de la page « Pas touch ». Ces garde-fous
 sont dans le prompt, pas dans le code : une écriture n'est pas relue avant d'avoir lieu.
 Détails : [ASSISTANT_FIGMA](docs/ASSISTANT_FIGMA.md).
 

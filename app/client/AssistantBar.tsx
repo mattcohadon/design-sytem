@@ -161,7 +161,7 @@ export function AssistantBar(p: Props) {
                 manual
                   ? 'Mode manuel : modifiez les tokens dans l’éditeur.'
                   : p.figma
-                    ? 'Figma autorisé pour cette demande : décrivez ce qu’il faut créer.'
+                    ? 'Figma autorisé : décrivez ce qu’il faut créer.'
                     : `Demander à ${name} une modification`
               }
               maxLength={8000}
@@ -182,12 +182,12 @@ export function AssistantBar(p: Props) {
               </NativeSelect>
               {p.agent === 'claude' && (
                 <label
-                  title="Autoriser Figma pour cette demande"
+                  title="Autoriser Figma (reste actif jusqu’à ce que vous le coupiez)"
                   className="flex cursor-pointer items-center gap-2 px-1 text-xs text-muted-foreground has-data-checked:text-foreground"
                 >
                   <Switch
                     size="sm"
-                    aria-label="Autoriser Figma pour cette demande"
+                    aria-label="Autoriser Figma"
                     checked={p.figma}
                     disabled={p.thinking}
                     onCheckedChange={p.onFigma}

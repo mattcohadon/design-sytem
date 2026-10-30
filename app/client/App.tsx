@@ -386,7 +386,6 @@ export default function App() {
     if (!state || !message.trim() || thinking) return;
     const text = message;
     setMessage('');
-    setFigma(false); // L'autorisation ne vaut que pour une demande.
     setThinking(true);
     clearError();
     const previous = chat.slice(-10);

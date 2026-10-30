@@ -1,6 +1,6 @@
 # Assistant : écrire dans Figma (sur autorisation)
 
-Par défaut l'assistant n'a aucun outil. Avec Claude, un interrupteur « Autoriser Figma pour cette demande » ouvre, pour cette seule demande, le serveur MCP de Figma et quatre outils : `create_session`, `use_figma`, `get_screenshot`, `get_metadata`. L'interrupteur se referme après l'envoi.
+Par défaut l'assistant n'a aucun outil. Avec Claude, un interrupteur « Autoriser Figma » ouvre, pour chaque demande envoyée tant qu'il est activé, le serveur MCP de Figma et quatre outils : `create_session`, `use_figma`, `get_screenshot`, `get_metadata`. L'interrupteur reste activé d'une demande à l'autre jusqu'à ce que vous le coupiez ; il est désactivé à chaque ouverture ou rechargement de la page.
 
 ## Mise en place (une fois)
 
