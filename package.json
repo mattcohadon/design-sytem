@@ -67,9 +67,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mattcohadon/design-sytem.git"
+    "url": "git+https://github.com/mattcohadon/stride-ui.git"
   },
   "bugs": {
-    "url": "https://github.com/mattcohadon/design-sytem/issues"
+    "url": "https://github.com/mattcohadon/stride-ui/issues"
   }
 }

@@ -883,7 +883,7 @@ export default function App() {
             title="Composants sur GitHub"
             render={
               <a
-                href="https://github.com/mattcohadon/design-sytem/tree/main/app/client/sortui/components/ui"
+                href="https://github.com/mattcohadon/stride-ui/tree/main/app/client/sortui/components/ui"
                 target="_blank"
                 rel="noopener noreferrer"
               />
