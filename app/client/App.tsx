@@ -462,6 +462,9 @@ export default function App() {
     token.$type === 'color' ? (toHex(draft) ?? toHex(String(current))) : null;
   const iframeQuery = `preview=1&mode=${mode}`;
   const dirty = draft !== displayValue(String(current));
+  // « Composants » n'est actif que sur la page d'un composant, pas sur l'accueil.
+  const active = (kind: string) =>
+    kind === 'home' ? route.kind === 'component' : route.kind === kind;
   const found =
     route.kind === 'component'
       ? manifest
@@ -857,9 +860,9 @@ export default function App() {
               <a
                 key={kind}
                 href={href}
-                aria-current={route.kind === kind ? 'page' : undefined}
+                aria-current={active(kind) ? 'page' : undefined}
                 className={`rounded-lg px-2.5 py-1.5 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/30 ${extra} ${
-                  route.kind === kind
+                  active(kind)
                     ? 'bg-fill-2 font-medium text-foreground'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}

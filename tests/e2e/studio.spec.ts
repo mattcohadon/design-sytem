@@ -4,7 +4,7 @@ test('boucle centrale réelle : diff, validation, propagation, recharge, annulat
   page,
 }) => {
   await page.goto('/#/tokens');
-  await expect(page.getByRole('heading', { name: 'Stride UI' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /^Stride UI/ })).toBeVisible();
   await expect(
     page.getByText('Figma non connecté', { exact: true }),
   ).toBeVisible();
@@ -209,7 +209,7 @@ test('navigation : filtre de la sidebar, page composant, suivant, mode manuel de
   await expect(
     page.getByRole('heading', {
       name: 'Un design system fidèle à son code.',
-      level: 2,
+      level: 1,
     }),
   ).toBeVisible();
   const cards = page
@@ -287,11 +287,11 @@ test('pages Bienvenue et Démarrage dans la navigation flottante', async ({
   const nav = page.getByRole('navigation', { name: 'Navigation' });
   await nav.getByRole('link', { name: 'Bienvenue', exact: true }).click();
   await expect(
-    page.getByRole('heading', { name: 'Bienvenue', level: 2 }),
+    page.getByRole('heading', { name: 'Bienvenue', level: 1 }),
   ).toBeVisible();
   await nav.getByRole('link', { name: 'Démarrage', exact: true }).click();
   await expect(
-    page.getByRole('heading', { name: 'Démarrage', level: 2 }),
+    page.getByRole('heading', { name: 'Démarrage', level: 1 }),
   ).toBeVisible();
   // Sur ordinateur la navigation ne se referme pas : aucun bouton pour la masquer.
   await expect(
@@ -569,7 +569,7 @@ test('fin de page : continuer à défiler remplit la barre puis ouvre la page su
 }) => {
   await page.goto('/#/bienvenue');
   await expect(
-    page.getByRole('heading', { name: 'Bienvenue', level: 2 }),
+    page.getByRole('heading', { name: 'Bienvenue', level: 1 }),
   ).toBeVisible();
   const link = page.locator('a[href="#/demarrage"]', {
     hasText: 'Page suivante',
@@ -595,7 +595,7 @@ test('fin de page : continuer à défiler remplit la barre puis ouvre la page su
   await page.waitForTimeout(300);
   await expect(page).toHaveURL(/#\/demarrage$/);
   await expect(
-    page.getByRole('heading', { name: 'Démarrage', level: 2 }),
+    page.getByRole('heading', { name: 'Démarrage', level: 1 }),
   ).toBeVisible();
   // On atterrit en haut de la page suivante, malgré l'élan de la molette.
   expect(await page.evaluate(() => scrollY)).toBe(0);
@@ -605,7 +605,7 @@ test('nouvelle page : le titre et l’accroche se révèlent en décalé (Texts 
   page,
 }) => {
   await page.goto('/#/bienvenue');
-  const title = page.getByRole('heading', { name: 'Bienvenue', level: 2 });
+  const title = page.getByRole('heading', { name: 'Bienvenue', level: 1 });
   await expect(title).toBeVisible();
   const lines = await page.locator('.t-texts-reveal > *').evaluateAll((els) =>
     els.map((el) => {
@@ -620,7 +620,7 @@ test('nouvelle page : le titre et l’accroche se révèlent en décalé (Texts 
   // L'effet rejoue à chaque changement de page.
   await page.goto('/#/demarrage');
   await expect(
-    page.getByRole('heading', { name: 'Démarrage', level: 2 }),
+    page.getByRole('heading', { name: 'Démarrage', level: 1 }),
   ).toBeVisible();
   expect(await page.locator('.t-texts-reveal > *').count()).toBe(2);
   // Mouvement réduit : aucune animation.
