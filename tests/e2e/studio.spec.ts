@@ -729,10 +729,14 @@ test('accueil : arguments, parcours Figma → code et questions', async ({
   levels.forEach((l, i) => {
     if (i > 0) expect(l - levels[i - 1]).toBeLessThanOrEqual(1);
   });
-  // Les images sont à fournir : chaque emplacement le dit et donne son format.
+  // Les visuels de la page sont dessinés avec les vrais composants : plus aucun emplacement vide.
+  await expect(
+    page.getByRole('img', { name: /^Un nuage de composants/ }),
+  ).toBeVisible();
   await expect(page.getByRole('img', { name: /^Image à fournir/ })).toHaveCount(
-    4,
+    0,
   );
+
   await page
     .getByRole('button', { name: 'Dois-je installer un paquet ?' })
     .click();

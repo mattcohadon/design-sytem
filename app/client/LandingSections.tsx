@@ -1,9 +1,10 @@
+import { ComponentCloud } from './ComponentCloud.js';
+import { FigmaVisual, ShipVisual, SyncVisual } from './StepVisuals.js';
 import type { ReactNode } from 'react';
 import {
   AccessibilityIcon,
   ArrowRightIcon,
   FileCodeIcon,
-  ImageIcon,
   MousePointerClickIcon,
   PaletteIcon,
   RefreshCwIcon,
@@ -52,33 +53,6 @@ export function HeroActions() {
       <Button size="lg" variant="outline" render={<a href="#/demarrage" />}>
         Démarrer en cinq étapes
       </Button>
-    </div>
-  );
-}
-
-/** Emplacement d'une image à fournir : dit ce qu'il faut y mettre et à quel format. */
-function ImageSlot({
-  label,
-  ratio,
-  className = '',
-}: {
-  label: string;
-  ratio: string;
-  className?: string;
-}) {
-  return (
-    <div
-      role="img"
-      aria-label={`Image à fournir : ${label}`}
-      style={{ aspectRatio: ratio }}
-      className={`grid place-items-center gap-1 rounded-xl border border-dashed bg-fill-1 p-4 text-center text-xs text-muted-foreground ${className}`}
-    >
-      <span className="grid justify-items-center gap-1">
-        <ImageIcon className="size-5" aria-hidden />
-        <span className="font-medium text-foreground">Image à fournir</span>
-        <span>{label}</span>
-        <span className="tabular-nums">{ratio.replace('/', ' / ')}</span>
-      </span>
     </div>
   );
 }
@@ -149,17 +123,17 @@ const steps = [
   {
     title: 'Dessinez dans Figma',
     text: 'Chaque composant a ses variantes, ses états et ses variables de couleur. Rien n’est dessiné en dur : un token change, le dessin suit.',
-    image: 'Un composant Figma avec ses variantes et ses états',
+    visual: <FigmaVisual />,
   },
   {
     title: 'Synchronisez',
     text: 'Quand la bibliothèque change, une pull request résume ce qui bouge et signale les changements cassants. Chaque synchro est tracée dans le Changelog.',
-    image: 'La pull request de synchro ou la page Changelog',
+    visual: <SyncVisual />,
   },
   {
     title: 'Livrez',
     text: 'Copiez le code depuis la page du composant. Ses états, ses props et ses règles d’usage sont déjà documentés : personne n’a à les deviner.',
-    image: 'La page d’un composant avec son exemple et son code',
+    visual: <ShipVisual />,
   },
 ];
 
@@ -195,11 +169,7 @@ export function LandingIntro({
 }) {
   return (
     <div className="grid gap-16 pt-4 pb-4">
-      <ImageSlot
-        label="La page d’un composant : aperçu, états côte à côte, code"
-        ratio="16/9"
-        className="w-full"
-      />
+      <ComponentCloud />
 
       <section aria-labelledby="atouts" className="grid gap-6">
         <SectionTitle
@@ -277,7 +247,7 @@ export function LandingIntro({
         <ol className="grid gap-6 md:grid-cols-3">
           {steps.map((s, i) => (
             <li key={s.title} className="grid content-start gap-3">
-              <ImageSlot label={s.image} ratio="4/3" />
+              {s.visual}
               <h3 className="flex items-center gap-2 text-base font-medium">
                 <span
                   aria-hidden
