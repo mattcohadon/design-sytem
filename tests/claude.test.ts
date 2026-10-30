@@ -10,6 +10,7 @@ import {
   figmaDefaultFile,
   figmaServer,
   figmaTools,
+  instruction,
   parseClaudeResult,
   withFigmaLink,
 } from '../connectors/agents/claude.js';
@@ -198,4 +199,12 @@ test('réponse texte JSON (sans structured_output) acceptée', () => {
     }),
   );
   assert.deepEqual(reply, { message: 'ok', changes: [] });
+});
+
+test("consigne : ne retire pas une action Figma faite lors d'une demande précédente", () => {
+  assert.match(
+    instruction,
+    /historique peut contenir des actions faites dans Figma/,
+  );
+  assert.match(instruction, /ne les contredis jamais/);
 });
