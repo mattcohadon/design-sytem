@@ -99,7 +99,7 @@ export function Changelog({
   useEffect(() => onView?.(view), [view, onView]);
   return (
     <div className="pt-6">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <InputGroup className="max-w-sm">
           <InputGroupAddon>
             <SearchIcon />
