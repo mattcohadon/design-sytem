@@ -18,7 +18,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
-const REPO = 'https://github.com/mattcohadon/design-sytem';
+const REPO = 'https://github.com/mattcohadon/stride-ui';
 
 /** Pastille d'annonce au-dessus du titre : la dernière nouveauté, cliquable. */
 export function HeroEyebrow() {
