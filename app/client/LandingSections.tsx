@@ -1,3 +1,4 @@
+import { ComponentCloud } from './ComponentCloud.js';
 import type { ReactNode } from 'react';
 import {
   AccessibilityIcon,
@@ -195,11 +196,7 @@ export function LandingIntro({
 }) {
   return (
     <div className="grid gap-16 pt-4 pb-4">
-      <ImageSlot
-        label="La page d’un composant : aperçu, états côte à côte, code"
-        ratio="16/9"
-        className="w-full"
-      />
+      <ComponentCloud />
 
       <section aria-labelledby="atouts" className="grid gap-6">
         <SectionTitle
