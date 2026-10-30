@@ -32,7 +32,7 @@ Ne publiez, poussez ou déployez rien sans demande explicite. Lisez
 ## Entrées V2
 
 Commencez par la boucle manuelle du README. `docs/V2_AUDIT.md` sépare les défauts
-observés des hypothèses ; `docs/V2_CHANGELOG.md` et `DELIVERY_REPORT.md` donnent
+observés des hypothèses ; `docs/V2_CHANGELOG.md` et `docs/DELIVERY_REPORT.md` donnent
 les preuves réelles. Le brief du panneau est privé dans `.ds-studio/project.json` :
 ne le lisez que si l’étudiant demande d’utiliser son contexte, ne le publiez pas.
 Il peut exporter un Markdown puis choisir ce qu’il reprend dans `workspace/PFE.md`.
