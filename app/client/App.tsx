@@ -260,6 +260,7 @@ export default function App() {
   >([]);
   const [thinking, setThinking] = useState(false);
   const [figma, setFigma] = useState(false);
+  const [changelogView, setChangelogView] = useState('');
   const [saving, setSaving] = useState(false);
   const controller = useRef<AbortController | null>(null);
   const cancelButton = useRef<HTMLButtonElement>(null);
@@ -976,6 +977,7 @@ export default function App() {
               <section aria-label="Changelog">
                 <Changelog
                   history={state.history}
+                  onView={setChangelogView}
                   sourceLabel={(source) => sourceLabels[source]}
                   onUndo={(event) =>
                     void perform(async () =>
@@ -1150,7 +1152,9 @@ export default function App() {
         <aside
           className={`sticky top-20 hidden self-start py-6 ${route.kind === 'home' ? '' : 'xl:block'}`}
         >
-          <OnThisPage routeKey={`${route.kind}${found?.id ?? ''}`} />
+          <OnThisPage
+            routeKey={`${route.kind}${found?.id ?? ''}${route.kind === 'history' ? changelogView : ''}`}
+          />
         </aside>
       </div>
       {route.kind === 'home' ? (

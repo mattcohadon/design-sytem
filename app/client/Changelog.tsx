@@ -1,6 +1,13 @@
-import { Undo2Icon } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { SearchIcon, Undo2Icon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@/components/ui/input-group';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import type { Revision, TokenValue } from '../shared/model.js';
 import log from '../../figma-sync/changelog.json';
 import type { FigmaLogEntry } from '../../figma-sync/changelog.js';
@@ -34,7 +41,16 @@ function Value({ k, value }: { k: string; value: TokenValue }) {
 
 type Event =
   | { kind: 'token'; date: string; event: Revision }
-  | { kind: 'figma'; date: string; entry: FigmaLogEntry };
+  | { kind: 'figma'; date: string; entry: FigmaLogEntry; version: number };
+
+type Filter = 'all' | 'token' | 'figma';
+
+/** Sans accents ni majuscules, pour que « bibliotheque » trouve « Bibliothèque ». */
+const fold = (text: string) =>
+  text
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase();
 
 /** Une synchro Figma écrite à minuit UTC n'a pas d'heure connue : on n'affiche que la date. */
 const hasTime = (iso: string) => !iso.endsWith('T00:00:00.000Z');
@@ -44,37 +60,86 @@ export function Changelog({
   history,
   sourceLabel,
   onUndo,
+  onView,
 }: {
   history: Revision[];
   sourceLabel: (source: Revision['source']) => string;
   onUndo: (event: Revision) => void;
+  /** Prévient la page que la liste affichée a changé (pour relire « Sur cette page »). */
+  onView?: (key: string) => void;
 }) {
+  const [filter, setFilter] = useState<Filter>('all');
+  const [query, setQuery] = useState('');
   const figma = log as FigmaLogEntry[];
-  const events: Event[] = [
+  // La version d'une synchro est son rang dans le journal (ajouté seulement, jamais réordonné).
+  const all: Event[] = [
     ...history.map((event): Event => ({
       kind: 'token',
       date: event.date,
       event,
     })),
-    ...figma.map((entry): Event => ({
+    ...figma.map((entry, i): Event => ({
       kind: 'figma',
       date: entry.date,
       entry,
+      version: i + 1,
     })),
   ].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
-  const current = events.findIndex((e) => e.kind === 'token');
+  const q = fold(query.trim());
+  const terms = q.split(/\s+/).filter(Boolean);
+  const events = all.filter(
+    (e) =>
+      (filter === 'all' || filter === e.kind) &&
+      (!terms.length ||
+        terms.every((t) => fold(searchText(e, sourceLabel)).includes(t))),
+  );
+  // « Actuelle » reste sur la dernière révision de tokens, même filtrée.
+  const currentId = history.at(-1)?.id;
+  const view = `${filter}|${q}`;
+  useEffect(() => onView?.(view), [view, onView]);
   return (
-    <>
-      {!history.length && (
+    <div className="pt-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <InputGroup className="max-w-sm">
+          <InputGroupAddon>
+            <SearchIcon />
+          </InputGroupAddon>
+          <InputGroupInput
+            type="search"
+            aria-label="Rechercher dans le changelog"
+            placeholder="Token, composant, révision…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </InputGroup>
+        <ToggleGroup
+          variant="outline"
+          spacing={0}
+          aria-label="Filtrer le changelog"
+          value={[filter]}
+          onValueChange={(v) => setFilter((v[0] as Filter) ?? 'all')}
+        >
+          <ToggleGroupItem value="all">Tout</ToggleGroupItem>
+          <ToggleGroupItem value="token">Tokens</ToggleGroupItem>
+          <ToggleGroupItem value="figma">Bibliothèque Figma</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+      {!history.length && filter !== 'figma' && !q && (
         <p className="pt-8 text-sm text-muted-foreground">
           Aucun changement enregistré. Chaque validation apparaîtra ici,
           annulable une à une.
+        </p>
+      )}
+      {!events.length && (history.length > 0 || filter === 'figma' || q) && (
+        <p role="status" className="pt-8 text-sm text-muted-foreground">
+          Aucun résultat. Essayez un autre mot ou un autre filtre.
         </p>
       )}
       <ol className="py-8">
         {events.map((item, i) => {
           const date = new Date(item.date);
           const last = i === events.length - 1;
+          const current = item.kind === 'token' && item.event.id === currentId;
           return (
             <li
               key={item.kind === 'token' ? item.event.id : `figma-${item.date}`}
@@ -91,7 +156,7 @@ export function Changelog({
               <div className="flex flex-col items-center" aria-hidden>
                 <span
                   className={`mt-1 size-3 shrink-0 rounded-full border-2 ${
-                    i === current
+                    current
                       ? 'border-primary bg-primary'
                       : item.kind === 'figma'
                         ? 'border-primary bg-background'
@@ -105,20 +170,46 @@ export function Changelog({
                   <TokenEvent
                     event={item.event}
                     date={date}
-                    current={i === current}
+                    current={current}
                     sourceLabel={sourceLabel}
                     onUndo={onUndo}
                   />
                 ) : (
-                  <FigmaEvent entry={item.entry} date={date} />
+                  <FigmaEvent
+                    entry={item.entry}
+                    version={item.version}
+                    date={date}
+                  />
                 )}
               </div>
             </li>
           );
         })}
       </ol>
-    </>
+    </div>
   );
+}
+
+/** Tout ce qui s'affiche d'une entrée, pour la recherche. */
+function searchText(
+  e: Event,
+  sourceLabel: (source: Revision['source']) => string,
+) {
+  if (e.kind === 'token')
+    return [
+      `Révision ${e.event.revision}`,
+      sourceLabel(e.event.source),
+      ...e.event.patches.flatMap((p) => [
+        p.key,
+        String(p.before),
+        String(p.after),
+      ]),
+    ].join(' ');
+  return [
+    `Bibliothèque Figma v${e.version}`,
+    tally(e.entry.changes),
+    ...e.entry.changes.flatMap((c) => [describe(c), ...c.details]),
+  ].join(' ');
 }
 
 function TokenEvent({
@@ -179,11 +270,19 @@ function TokenEvent({
   );
 }
 
-function FigmaEvent({ entry, date }: { entry: FigmaLogEntry; date: Date }) {
+function FigmaEvent({
+  entry,
+  version,
+  date,
+}: {
+  entry: FigmaLogEntry;
+  version: number;
+  date: Date;
+}) {
   return (
     <>
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="text-sm font-medium">Bibliothèque Figma</h3>
+        <h3 className="text-sm font-medium">Bibliothèque Figma v{version}</h3>
         <Badge variant="outline">Figma</Badge>
         <span className="text-xs text-muted-foreground">
           {tally(entry.changes)}
