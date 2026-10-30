@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import { ScaledCanvas } from './ScaledCanvas.js';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -160,56 +161,28 @@ const items: { x: number; y: number; r: number; node: ReactNode }[] = [
 /**
  * Nuage de composants : de vrais composants du design system posés en désordre, sans maquette.
  * Les couleurs viennent des tokens, donc le dessin suit le mode clair et le mode sombre.
- * Décor seulement : la toile est inerte (ni focus ni clic) et décrite en une phrase.
  */
 export function ComponentCloud({ className = '' }: { className?: string }) {
-  const box = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-  useEffect(() => {
-    const el = box.current;
-    if (!el) return;
-    const fit = () => setScale(el.clientWidth / W);
-    fit();
-    const observer = new ResizeObserver(fit);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
   return (
-    <div
-      ref={box}
-      role="img"
-      aria-label="Un nuage de composants du design system : boutons, champs, interrupteurs, jauges et avatars"
-      style={{ height: H * scale }}
-      className={`relative isolate overflow-hidden rounded-xl border bg-fill-1 ${className}`}
+    <ScaledCanvas
+      width={W}
+      height={H}
+      className={className}
+      label="Un nuage de composants du design system : boutons, champs, interrupteurs, jauges et avatars"
     >
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10"
-        style={{
-          backgroundImage:
-            'radial-gradient(ellipse 60% 70% at 50% 45%, color-mix(in srgb, var(--hero-blue) 20%, transparent), transparent 75%), radial-gradient(ellipse 50% 60% at 85% 85%, color-mix(in srgb, var(--hero-mid) 70%, transparent), transparent 70%)',
-        }}
-      />
-      <div
-        inert
-        aria-hidden
-        className="absolute top-0 left-0 origin-top-left"
-        style={{ width: W, height: H, transform: `scale(${scale})` }}
-      >
-        {items.map((item, i) => (
-          <div
-            key={i}
-            className="absolute rounded-2xl border bg-card p-3 text-card-foreground shadow-sm"
-            style={{
-              left: item.x,
-              top: item.y,
-              transform: `rotate(${item.r}deg)`,
-            }}
-          >
-            {item.node}
-          </div>
-        ))}
-      </div>
-    </div>
+      {items.map((item, i) => (
+        <div
+          key={i}
+          className="absolute rounded-2xl border bg-card p-3 text-card-foreground shadow-sm"
+          style={{
+            left: item.x,
+            top: item.y,
+            transform: `rotate(${item.r}deg)`,
+          }}
+        >
+          {item.node}
+        </div>
+      ))}
+    </ScaledCanvas>
   );
 }
