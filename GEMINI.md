@@ -4,3 +4,4 @@ Lisez START_HERE.md et AGENTS.md. Le chat Gemini intégré n’est pas implémen
 Votre CLI externe sert à développer le starter avec vos permissions réelles.
 Pour vérifier le catalogue, lisez `.agents/skills/component-audit/SKILL.md`.
 Aucun mode d’acceptation automatique ou accès Figma parallèle n’est requis.
+Même périmètre que les autres agents : uniquement le Design System (voir AGENTS.md).

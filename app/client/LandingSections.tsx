@@ -345,11 +345,11 @@ export function LandingIntro({
       >
         <h2
           id="debut"
-          className="text-3xl font-medium tracking-tight text-[#0a0a0a] dark:text-foreground"
+          className="text-3xl font-medium tracking-tight text-[var(--hero-fg)]"
         >
           Parcourez les {components} composants
         </h2>
-        <p className="max-w-xl text-base text-[#4a4a4a] dark:text-muted-foreground">
+        <p className="max-w-xl text-base text-[var(--hero-fg-muted)]">
           Choisissez-en un : vous verrez son exemple, ses états, ses règles
           d’usage et son code, prêts à copier.
         </p>

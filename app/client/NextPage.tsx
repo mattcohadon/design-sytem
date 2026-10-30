@@ -125,10 +125,10 @@ export function NextPage({ next }: { next: NextTarget }) {
         <span className="text-lg font-medium tracking-tight">
           {next.label} →
         </span>
-        {/* Piste #EDEDED ; la barre se remplit avec le geste. */}
+        {/* Piste (token border) ; la barre se remplit avec le geste. */}
         <span
           aria-hidden
-          className="mt-1 h-1 w-48 overflow-hidden rounded-full bg-[#ededed] dark:bg-white/10"
+          className="mt-1 h-1 w-48 overflow-hidden rounded-full bg-border"
         >
           <span
             ref={bar}
