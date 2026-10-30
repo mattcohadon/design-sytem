@@ -367,6 +367,32 @@ test('recherche : palette Cmd/Ctrl+K et bouton de la barre du haut', async ({
   ).toHaveCount(0);
 });
 
+test('changelog : synchros Figma versionnées, recherche et filtre', async ({
+  page,
+}) => {
+  await page.goto('/#/changelog');
+  const region = page.getByRole('region', { name: 'Changelog' });
+  const figma = region.getByRole('heading', {
+    name: /^Bibliothèque Figma v\d+$/,
+  });
+  await expect(figma.first()).toBeVisible();
+  await region.getByRole('button', { name: 'Tokens', exact: true }).click();
+  await expect(figma).toHaveCount(0);
+  await region
+    .getByRole('button', { name: 'Bibliothèque Figma', exact: true })
+    .click();
+  await expect(
+    region.getByRole('heading', { name: /^Révision \d+$/ }),
+  ).toHaveCount(0);
+  await region.getByRole('button', { name: 'Tout', exact: true }).click();
+  await region
+    .getByLabel('Rechercher dans le changelog')
+    .fill('bibliotheque alert');
+  await expect(figma).toHaveCount(1);
+  await region.getByLabel('Rechercher dans le changelog').fill('zzzz');
+  await expect(region.getByText('Aucun résultat')).toBeVisible();
+});
+
 test('changelog en frise et tag New sur les composants issus de Figma', async ({
   page,
 }) => {

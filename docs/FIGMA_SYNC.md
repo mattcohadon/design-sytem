@@ -17,6 +17,8 @@ Chaque PR de synchro se termine par un bloc **« Entrée du Changelog »** (gén
 liste, en phrases (« Nouveau composant « Alert » », « Composant « Button » modifié : variante ajoutée : ghost »…), ce
 qui apparaîtra dans la page Changelog après la fusion, avec un décompte (ajouts, modifications, changements cassants).
 
+Chaque synchro porte un numéro de version (v1, v2…) : son rang dans le journal, qui n'est jamais réordonné. La page Changelog mêle ces synchros aux révisions de tokens, avec une recherche et un filtre (Tout, Tokens, Bibliothèque Figma).
+
 Le journal `figma-sync/changelog.json` est écrit par un script (pas par Claude) : une entrée par synchro, avec les
 composants ajoutés, supprimés, renommés ou modifiés et les changements cassants. La page Changelog de l'app l'affiche
 sous la frise des révisions de tokens.
