@@ -1,5 +1,12 @@
 name: Qualifier le starter
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+# Un nouveau push sur la même branche annule la qualification en cours (moins de files d'attente).
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -17,6 +24,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - name: Format (Prettier)
+        if: matrix.os == 'ubuntu-latest'
+        run: npx prettier --check .
       - run: npm test
       - run: npx playwright install chromium
       - run: npm run test:e2e
