@@ -5,8 +5,9 @@ on:
     - cron: '17 * * * *'
   workflow_dispatch:
 
-# Deux exécutions simultanées sont mises en file. Le nom de branche dérive du snapshot :
-# le même état de Figma retrouve la même branche et la même PR.
+# Deux exécutions simultanées sont mises en file. Une seule branche `figma-sync` est réutilisée :
+# une synchro de plus met à jour la PR ouverte au lieu d'en créer une autre. (Le nom ne dérive plus
+# du hash du snapshot : celui-ci contient l'heure de synchro, donc chaque exécution créait sa branche.)
 concurrency:
   group: figma-sync
   cancel-in-progress: false
@@ -44,9 +45,24 @@ jobs:
             echo "Aucun changement de composant ou de style : pas de PR." >> "$GITHUB_STEP_SUMMARY"
           else
             mv figma-sync/snapshot.new.json figma-sync/snapshot.json
-            npx tsx figma-sync/changelog.ts figma-sync/diff.json figma-sync/changelog.json
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "branch=figma-sync-$(sha256sum figma-sync/snapshot.json | cut -c1-10)" >> "$GITHUB_OUTPUT"
+            # Une PR de synchro est déjà ouverte pour exactement cet état de Figma (l'heure de synchro mise
+            # à part) : on n'appelle pas Claude une fois de plus chaque heure pour rien.
+            already=false
+            if [ -n "$(gh pr list --head figma-sync --state open --json number --jq '.[0].number')" ] \
+               && git fetch -q origin figma-sync 2>/dev/null; then
+              proposed=$(git show origin/figma-sync:figma-sync/snapshot.json | jq -S 'del(.syncedAt)')
+              current=$(jq -S 'del(.syncedAt)' figma-sync/snapshot.json)
+              [ "$proposed" = "$current" ] && already=true
+            fi
+            if [ "$already" = true ]; then
+              git checkout -q -- figma-sync/snapshot.json
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              echo "Une PR de synchro ouverte contient déjà cet état de Figma : rien à refaire." >> "$GITHUB_STEP_SUMMARY"
+            else
+              npx tsx figma-sync/changelog.ts figma-sync/diff.json figma-sync/changelog.json
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+              echo "branch=figma-sync" >> "$GITHUB_OUTPUT"
+            fi
           fi
           rm -f figma-sync/snapshot.new.json
         shell: bash
