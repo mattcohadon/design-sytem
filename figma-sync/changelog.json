@@ -10,5 +10,17 @@
         "breaking": false
       }
     ]
+  },
+  {
+    "date": "2026-10-29T04:58:34.000Z",
+    "changes": [
+      {
+        "kind": "componentSet",
+        "action": "created",
+        "name": "Alert",
+        "details": [],
+        "breaking": false
+      }
+    ]
   }
 ]

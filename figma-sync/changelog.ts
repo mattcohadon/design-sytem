@@ -1,14 +1,12 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import type { Change, Diff } from './diff.js';
+import type { Diff } from './diff.js';
+import { markdown, type LogChange } from './describe.js';
 
 // Journal des synchros Figma, affiché dans la page Changelog : une entrée par PR de synchro.
 export interface FigmaLogEntry {
   date: string;
-  changes: Pick<
-    Change,
-    'kind' | 'action' | 'name' | 'from' | 'details' | 'breaking'
-  >[];
+  changes: LogChange[];
 }
 
 export function appendEntry(
@@ -31,8 +29,18 @@ export function appendEntry(
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const [diffPath, logPath = 'figma-sync/changelog.json'] =
-    process.argv.slice(2);
+  const args = process.argv.slice(2);
+  // `--markdown <diff.json>` : affiche le bloc de la PR sans toucher au journal.
+  if (args[0] === '--markdown') {
+    const diff = JSON.parse(await readFile(args[1], 'utf8')) as Diff;
+    process.stdout.write(
+      appendEntry([], diff)[0]
+        ? markdown(appendEntry([], diff)[0].changes)
+        : '',
+    );
+    process.exit(0);
+  }
+  const [diffPath, logPath = 'figma-sync/changelog.json'] = args;
   if (!diffPath) {
     console.error('Usage : changelog.ts <diff.json> [changelog.json]');
     process.exit(1);

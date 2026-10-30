@@ -96,6 +96,9 @@ jobs:
           body=figma-sync/pr-body.md
           [ -s "$body" ] || cp figma-sync/diff.md "$body"
           mv "$body" "$RUNNER_TEMP/pr-body.md"
+          # Ce qui apparaîtra dans la page Changelog après la fusion, calculé par script (pas par Claude).
+          printf '\n' >> "$RUNNER_TEMP/pr-body.md"
+          npx tsx figma-sync/changelog.ts --markdown figma-sync/diff.json >> "$RUNNER_TEMP/pr-body.md"
           git config user.name "figma-sync[bot]"
           git config user.email "figma-sync@users.noreply.github.com"
           git checkout -B "$BRANCH"
