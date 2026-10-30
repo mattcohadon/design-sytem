@@ -227,5 +227,5 @@ Publier la bibliothèque Figma ouvre une pull request (composants, variantes, st
 
 ## Pour aller plus loin
 
-[Guide étudiant](docs/STUDENT_GUIDE.md) · [Guide enseignant](docs/TEACHER_GUIDE.md) ·
+[Réutiliser ce dépôt pour votre DS](docs/REUSE.md) · [Guide étudiant](docs/STUDENT_GUIDE.md) · [Guide enseignant](docs/TEACHER_GUIDE.md) ·
 [Architecture](docs/ARCHITECTURE.md) · [Backlog ouvert](docs/ROADMAP.md)
