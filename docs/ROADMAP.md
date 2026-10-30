@@ -22,9 +22,11 @@ Aucune chronologie unique ni obligation de tout construire. Pour chaque piste,
 
 ## Hors promesses de V2
 
-Pas de synchronisation Figma, de génération de tout un DS depuis une capture,
-d’émulation iOS native, d’orchestration multi-agent parallèle, de publication
-GitHub automatique ou de confinement de l’agent de développement externe.
+Pas de génération de tout un DS depuis une capture, d’émulation iOS native,
+d’orchestration multi-agent parallèle, de fusion automatique des pull requests ou de
+confinement de l’agent de développement externe. Les valeurs des variables Figma ne
+se synchronisent pas sans plan Enterprise (composants, variantes, propriétés et styles
+seulement).
 
 ## Exemple d’itération courte
 
@@ -34,6 +36,11 @@ suffire à une itération. Gardez une décision de poursuite ou d’abandon dans
 partie du résultat, à condition que le scénario démontré reste fonctionnel.
 
 ## Bilan V2 et suite priorisée
+
+Livré depuis : synchro Figma → pull request (toutes les heures), changelog qui mêle
+révisions de tokens et synchros Figma versionnées, états forcés des composants, page
+d’accueil, assistant qui écrit dans Figma sur autorisation. Voir
+[V2_CHANGELOG](V2_CHANGELOG.md) et [FIGMA_SYNC](FIGMA_SYNC.md).
 
 Livré : recherche de tokens, brief privé et export Markdown, brouillon récupérable,
 conflits visibles, copie précédente et restauration explicite, cycle serveur détaché,
@@ -46,6 +53,7 @@ signé seulement si les politiques réelles le nécessitent.
 P1 : tests avec étudiants, lecteurs d’écran, Safari/Firefox, recherche de composants,
 contrastes de tous les états et migration pédagogique pour étendre les tokens.
 
-P2 : Claude/Gemini embarqués, streaming Codex et formats d’échange enrichis restent
-à qualifier ; Figma exige une cible explicite et un connecteur officiel autorisé.
-Aucune de ces intégrations n’est simulée dans la V2.
+P2 : Gemini embarqué, streaming Codex et formats d’échange enrichis restent à
+qualifier. Claude est embarqué ; l’écriture dans Figma se fait sur autorisation, avec
+des garde-fous dans le prompt et sans relecture avant exécution (un journal des écritures
+reste à construire). Aucune de ces intégrations n’est simulée.
